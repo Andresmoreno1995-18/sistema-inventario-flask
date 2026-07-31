@@ -1,6 +1,4 @@
-from pathlib import Path
-
-app_code = r'''import os
+import os
 import pandas as pd
 import matplotlib
 
@@ -63,7 +61,7 @@ def get_db():
 
 
 # =========================================================
-# SEGURIDAD
+# SEGURIDAD DE CONTRASEÑAS
 # =========================================================
 
 def password_is_hashed(password):
@@ -93,6 +91,10 @@ def migrate_old_passwords(cursor):
                 usuario_id,
             ))
 
+
+# =========================================================
+# PERMISOS
+# =========================================================
 
 def usuario_logueado():
     return "usuario" in session
@@ -143,7 +145,9 @@ def init_db():
     cursor = conn.cursor()
 
     try:
+        # -----------------------------------------------------
         # USUARIOS
+        # -----------------------------------------------------
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS usuarios (
                 id SERIAL PRIMARY KEY,
@@ -157,8 +161,8 @@ def init_db():
 
         cursor.execute("""
             ALTER TABLE usuarios
-            ADD COLUMN IF NOT EXISTS genero TEXT
-            NOT NULL DEFAULT 'Hombre'
+            ADD COLUMN IF NOT EXISTS genero
+            TEXT NOT NULL DEFAULT 'Hombre'
         """)
 
         cursor.execute("""
@@ -167,7 +171,9 @@ def init_db():
             TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         """)
 
+        # -----------------------------------------------------
         # PROVEEDORES
+        # -----------------------------------------------------
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS proveedores (
                 id SERIAL PRIMARY KEY,
@@ -193,7 +199,9 @@ def init_db():
             ADD COLUMN IF NOT EXISTS email TEXT
         """)
 
+        # -----------------------------------------------------
         # PRODUCTOS
+        # -----------------------------------------------------
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS productos (
                 id SERIAL PRIMARY KEY,
@@ -267,7 +275,9 @@ def init_db():
             $$;
         """)
 
+        # -----------------------------------------------------
         # MOVIMIENTOS
+        # -----------------------------------------------------
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS movimientos (
                 id SERIAL PRIMARY KEY,
@@ -286,46 +296,51 @@ def init_db():
             )
         """)
 
-        for sql in (
-            """
+        cursor.execute("""
             ALTER TABLE movimientos
             ADD COLUMN IF NOT EXISTS fecha
             TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            """,
-            """
+        """)
+
+        cursor.execute("""
             ALTER TABLE movimientos
             ADD COLUMN IF NOT EXISTS producto_id INTEGER
-            """,
-            """
+        """)
+
+        cursor.execute("""
             ALTER TABLE movimientos
             ADD COLUMN IF NOT EXISTS tipo TEXT
-            """,
-            """
+        """)
+
+        cursor.execute("""
             ALTER TABLE movimientos
             ADD COLUMN IF NOT EXISTS cantidad INTEGER
-            """,
-            """
+        """)
+
+        cursor.execute("""
             ALTER TABLE movimientos
             ADD COLUMN IF NOT EXISTS motivo TEXT
-            """,
-            """
+        """)
+
+        cursor.execute("""
             ALTER TABLE movimientos
             ADD COLUMN IF NOT EXISTS factura TEXT
-            """,
-            """
+        """)
+
+        cursor.execute("""
             ALTER TABLE movimientos
             ADD COLUMN IF NOT EXISTS orden_compra TEXT
-            """,
-            """
+        """)
+
+        cursor.execute("""
             ALTER TABLE movimientos
             ADD COLUMN IF NOT EXISTS comentarios TEXT
-            """,
-            """
+        """)
+
+        cursor.execute("""
             ALTER TABLE movimientos
             ADD COLUMN IF NOT EXISTS usuario TEXT
-            """,
-        ):
-            cursor.execute(sql)
+        """)
 
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_movimientos_producto
@@ -337,14 +352,18 @@ def init_db():
             ON movimientos(fecha)
         """)
 
-        # SECUENCIA
+        # -----------------------------------------------------
+        # SECUENCIA DE FACTURAS
+        # -----------------------------------------------------
         cursor.execute("""
             CREATE SEQUENCE IF NOT EXISTS factura_numero_seq
             START WITH 1
             INCREMENT BY 1
         """)
 
+        # -----------------------------------------------------
         # FACTURAS
+        # -----------------------------------------------------
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS facturas (
                 id SERIAL PRIMARY KEY,
@@ -366,7 +385,12 @@ def init_db():
             )
         """)
 
-        # MIGRACIÓN: versiones anteriores podían usar TEXT
+        # -----------------------------------------------------
+        # MIGRACIÓN IMPORTANTE:
+        # versiones anteriores pudieron crear numero_factura
+        # como TEXT. Se convierte a BIGINT antes de usar MAX()
+        # y la secuencia.
+        # -----------------------------------------------------
         cursor.execute("""
             SELECT data_type
             FROM information_schema.columns
@@ -407,7 +431,8 @@ def init_db():
 
             cursor.execute("""
                 WITH base AS (
-                    SELECT COALESCE(MAX(numero_factura), 0) AS max_num
+                    SELECT
+                        COALESCE(MAX(numero_factura), 0) AS max_num
                     FROM facturas
                 ),
                 faltantes AS (
@@ -432,69 +457,19 @@ def init_db():
                 ALTER COLUMN numero_factura SET NOT NULL
             """)
 
-        # COLUMNAS DE FACTURAS
-        for sql in (
-            """
+        # -----------------------------------------------------
+        # ASEGURAR COLUMNAS DE FACTURAS EXISTENTES
+        # -----------------------------------------------------
+        cursor.execute("""
             ALTER TABLE facturas
             ADD COLUMN IF NOT EXISTS fecha
             TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            """,
-            """
+        """)
+
+        cursor.execute("""
             ALTER TABLE facturas
             ADD COLUMN IF NOT EXISTS usuario TEXT
-            """,
-            """
-            ALTER TABLE facturas
-            ADD COLUMN IF NOT EXISTS cliente_nombre TEXT
-            """,
-            """
-            ALTER TABLE facturas
-            ADD COLUMN IF NOT EXISTS cliente_documento TEXT
-            """,
-            """
-            ALTER TABLE facturas
-            ADD COLUMN IF NOT EXISTS cliente_telefono TEXT
-            """,
-            """
-            ALTER TABLE facturas
-            ADD COLUMN IF NOT EXISTS cliente_email TEXT
-            """,
-            """
-            ALTER TABLE facturas
-            ADD COLUMN IF NOT EXISTS metodo_pago TEXT
-            DEFAULT 'Efectivo'
-            """,
-            """
-            ALTER TABLE facturas
-            ADD COLUMN IF NOT EXISTS subtotal
-            DOUBLE PRECISION NOT NULL DEFAULT 0
-            """,
-            """
-            ALTER TABLE facturas
-            ADD COLUMN IF NOT EXISTS descuento
-            DOUBLE PRECISION NOT NULL DEFAULT 0
-            """,
-            """
-            ALTER TABLE facturas
-            ADD COLUMN IF NOT EXISTS impuesto
-            DOUBLE PRECISION NOT NULL DEFAULT 0
-            """,
-            """
-            ALTER TABLE facturas
-            ADD COLUMN IF NOT EXISTS total
-            DOUBLE PRECISION NOT NULL DEFAULT 0
-            """,
-            """
-            ALTER TABLE facturas
-            ADD COLUMN IF NOT EXISTS estado TEXT
-            NOT NULL DEFAULT 'Pagada'
-            """,
-            """
-            ALTER TABLE facturas
-            ADD COLUMN IF NOT EXISTS observaciones TEXT
-            """,
-        ):
-            cursor.execute(sql)
+        """)
 
         cursor.execute("""
             UPDATE facturas
@@ -509,6 +484,69 @@ def init_db():
 
         cursor.execute("""
             ALTER TABLE facturas
+            ADD COLUMN IF NOT EXISTS cliente_nombre TEXT
+        """)
+
+        cursor.execute("""
+            ALTER TABLE facturas
+            ADD COLUMN IF NOT EXISTS cliente_documento TEXT
+        """)
+
+        cursor.execute("""
+            ALTER TABLE facturas
+            ADD COLUMN IF NOT EXISTS cliente_telefono TEXT
+        """)
+
+        cursor.execute("""
+            ALTER TABLE facturas
+            ADD COLUMN IF NOT EXISTS cliente_email TEXT
+        """)
+
+        cursor.execute("""
+            ALTER TABLE facturas
+            ADD COLUMN IF NOT EXISTS metodo_pago TEXT
+            DEFAULT 'Efectivo'
+        """)
+
+        cursor.execute("""
+            ALTER TABLE facturas
+            ADD COLUMN IF NOT EXISTS subtotal
+            DOUBLE PRECISION NOT NULL DEFAULT 0
+        """)
+
+        cursor.execute("""
+            ALTER TABLE facturas
+            ADD COLUMN IF NOT EXISTS descuento
+            DOUBLE PRECISION NOT NULL DEFAULT 0
+        """)
+
+        cursor.execute("""
+            ALTER TABLE facturas
+            ADD COLUMN IF NOT EXISTS impuesto
+            DOUBLE PRECISION NOT NULL DEFAULT 0
+        """)
+
+        cursor.execute("""
+            ALTER TABLE facturas
+            ADD COLUMN IF NOT EXISTS total
+            DOUBLE PRECISION NOT NULL DEFAULT 0
+        """)
+
+        cursor.execute("""
+            ALTER TABLE facturas
+            ADD COLUMN IF NOT EXISTS estado TEXT
+            NOT NULL DEFAULT 'Pagada'
+        """)
+
+        cursor.execute("""
+            ALTER TABLE facturas
+            ADD COLUMN IF NOT EXISTS observaciones TEXT
+        """)
+
+        # Eliminar cualquier default antiguo incompatible
+        # y colocar el correcto para la numeración.
+        cursor.execute("""
+            ALTER TABLE facturas
             ALTER COLUMN numero_factura DROP DEFAULT
         """)
 
@@ -518,7 +556,9 @@ def init_db():
             SET DEFAULT nextval('factura_numero_seq')
         """)
 
-        # DETALLES
+        # -----------------------------------------------------
+        # DETALLES DE FACTURA
+        # -----------------------------------------------------
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS factura_detalles (
                 id SERIAL PRIMARY KEY,
@@ -540,48 +580,54 @@ def init_db():
             )
         """)
 
-        for sql in (
-            """
+        cursor.execute("""
             ALTER TABLE factura_detalles
             ADD COLUMN IF NOT EXISTS producto_id INTEGER
-            """,
-            """
+        """)
+
+        cursor.execute("""
             ALTER TABLE factura_detalles
             ADD COLUMN IF NOT EXISTS producto_nombre TEXT
-            """,
-            """
+        """)
+
+        cursor.execute("""
             ALTER TABLE factura_detalles
             ADD COLUMN IF NOT EXISTS cantidad INTEGER
-            """,
-            """
+        """)
+
+        cursor.execute("""
             ALTER TABLE factura_detalles
             ADD COLUMN IF NOT EXISTS precio_compra
             DOUBLE PRECISION NOT NULL DEFAULT 0
-            """,
-            """
+        """)
+
+        cursor.execute("""
             ALTER TABLE factura_detalles
             ADD COLUMN IF NOT EXISTS precio_unitario
             DOUBLE PRECISION NOT NULL DEFAULT 0
-            """,
-            """
+        """)
+
+        cursor.execute("""
             ALTER TABLE factura_detalles
             ADD COLUMN IF NOT EXISTS descuento
             DOUBLE PRECISION NOT NULL DEFAULT 0
-            """,
-            """
+        """)
+
+        cursor.execute("""
             ALTER TABLE factura_detalles
             ADD COLUMN IF NOT EXISTS subtotal
             DOUBLE PRECISION NOT NULL DEFAULT 0
-            """,
-            """
+        """)
+
+        cursor.execute("""
             ALTER TABLE factura_detalles
             ADD COLUMN IF NOT EXISTS utilidad
             DOUBLE PRECISION NOT NULL DEFAULT 0
-            """,
-        ):
-            cursor.execute(sql)
+        """)
 
+        # -----------------------------------------------------
         # ÍNDICES
+        # -----------------------------------------------------
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_facturas_fecha
             ON facturas(fecha)
@@ -602,7 +648,9 @@ def init_db():
             ON factura_detalles(producto_id)
         """)
 
-        # SECUENCIA
+        # -----------------------------------------------------
+        # AJUSTAR SECUENCIA
+        # -----------------------------------------------------
         cursor.execute("""
             SELECT COALESCE(MAX(numero_factura), 0)
             FROM facturas
@@ -627,14 +675,18 @@ def init_db():
                 )
             """)
 
-        # ADMIN
+        # -----------------------------------------------------
+        # ADMINISTRADOR
+        # -----------------------------------------------------
         cursor.execute("""
-            SELECT id
+            SELECT id, password, rol
             FROM usuarios
             WHERE usuario = %s
         """, ("admin",))
 
-        if cursor.fetchone() is None:
+        usuario_admin = cursor.fetchone()
+
+        if usuario_admin is None:
             cursor.execute("""
                 INSERT INTO usuarios (
                     usuario,
@@ -676,11 +728,12 @@ def init_db():
         conn.close()
 
 
+# Crear / actualizar automáticamente las tablas.
 init_db()
 
 
 # =========================================================
-# INICIO
+# PÁGINA PRINCIPAL
 # =========================================================
 
 @app.route("/")
@@ -762,6 +815,10 @@ def index():
 
     productos = cursor.fetchall()
 
+    # IMPORTANTE:
+    # Se devuelve m.fecha como fecha real de PostgreSQL,
+    # no como texto, porque movimientos.html utiliza
+    # .strftime().
     if busqueda or filtro_stock != "todos":
         ids_productos = [
             producto["id"]
@@ -831,7 +888,11 @@ def index():
         for producto in productos
     )
 
-    valor_potencial_venta = valor_inventario
+    valor_potencial_venta = sum(
+        float(producto["precio"] or 0)
+        * producto["existencias"]
+        for producto in productos
+    )
 
     utilidad_potencial = (
         valor_potencial_venta
@@ -939,7 +1000,7 @@ def login():
 
 
 # =========================================================
-# REGISTRO
+# REGISTRO DE USUARIOS
 # =========================================================
 
 @app.route("/registro", methods=["GET", "POST"])
@@ -1006,6 +1067,7 @@ def registro():
                 "Ese nombre de usuario ya existe.",
                 "danger",
             )
+
             return render_template("registro.html")
 
         cursor.execute("""
@@ -1061,7 +1123,7 @@ def logout():
 
 
 # =========================================================
-# PRODUCTOS
+# AGREGAR PRODUCTO
 # =========================================================
 
 @app.route("/agregar", methods=["GET", "POST"])
@@ -1135,9 +1197,18 @@ def agregar():
                 "producto_form.html"
             )
 
-        if precio < 0 or precio_compra < 0:
+        if precio < 0:
             flash(
-                "Los precios no pueden ser negativos.",
+                "El precio de venta no puede ser negativo.",
+                "danger",
+            )
+            return render_template(
+                "producto_form.html"
+            )
+
+        if precio_compra < 0:
+            flash(
+                "El precio de compra no puede ser negativo.",
                 "danger",
             )
             return render_template(
@@ -1195,18 +1266,26 @@ def agregar():
                     VALUES (
                         CURRENT_TIMESTAMP,
                         %s,
-                        'Entrada',
                         %s,
-                        'Ajuste de inventario',
-                        '',
-                        '',
-                        'Stock inicial del producto',
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
                         %s
                     )
                 """, (
                     producto_id,
+                    "Entrada",
                     existencias,
-                    session.get("usuario", "admin"),
+                    "Ajuste de inventario",
+                    "",
+                    "",
+                    "Stock inicial del producto",
+                    session.get(
+                        "usuario",
+                        "admin",
+                    ),
                 ))
 
             conn.commit()
@@ -1218,19 +1297,30 @@ def agregar():
 
         except Exception:
             conn.rollback()
+
             flash(
                 "No fue posible agregar el producto.",
                 "danger",
             )
 
-        finally:
             cursor.close()
             conn.close()
+
+            return render_template(
+                "producto_form.html"
+            )
+
+        cursor.close()
+        conn.close()
 
         return redirect(url_for("index"))
 
     return render_template("producto_form.html")
 
+
+# =========================================================
+# EDITAR PRODUCTO
+# =========================================================
 
 @app.route("/editar/<int:id>", methods=["GET", "POST"])
 def editar(id):
@@ -1255,7 +1345,10 @@ def editar(id):
 
         try:
             precio = float(
-                request.form.get("precio", 0)
+                request.form.get(
+                    "precio",
+                    0,
+                )
             )
 
             precio_compra = float(
@@ -1294,7 +1387,9 @@ def editar(id):
 
         if proveedor_id:
             try:
-                proveedor_id = int(proveedor_id)
+                proveedor_id = int(
+                    proveedor_id
+                )
             except ValueError:
                 proveedor_id = None
         else:
@@ -1391,6 +1486,10 @@ def editar(id):
     )
 
 
+# =========================================================
+# ELIMINAR PRODUCTO
+# =========================================================
+
 @app.route("/eliminar/<int:id>")
 def eliminar(id):
     if not requiere_admin():
@@ -1410,6 +1509,7 @@ def eliminar(id):
     """, (id,))
 
     conn.commit()
+
     cursor.close()
     conn.close()
 
@@ -1482,6 +1582,11 @@ def movimientos():
             "",
         ).strip()
 
+        usuario = session.get(
+            "usuario",
+            "admin",
+        )
+
         cursor.execute("""
             SELECT existencias
             FROM productos
@@ -1490,22 +1595,33 @@ def movimientos():
 
         producto = cursor.fetchone()
 
-        error = None
-
         if producto is None:
-            error = "El producto no existe."
+            flash(
+                "El producto no existe.",
+                "danger",
+            )
+
         elif cantidad <= 0:
-            error = "La cantidad debe ser mayor que cero."
+            flash(
+                "La cantidad debe ser mayor que cero.",
+                "danger",
+            )
+
         elif (
             tipo == "Salida"
             and cantidad > producto["existencias"]
         ):
-            error = (
-                "No hay suficiente stock. "
-                f"Disponible: {producto['existencias']}"
+            flash(
+                f"No hay suficiente stock. Disponible: {producto['existencias']}",
+                "danger",
             )
+
         elif tipo not in ("Entrada", "Salida"):
-            error = "Tipo de movimiento no válido."
+            flash(
+                "Tipo de movimiento no válido.",
+                "danger",
+            )
+
         elif motivo not in (
             "Compra",
             "Venta",
@@ -1514,7 +1630,11 @@ def movimientos():
             "Ajuste de inventario",
             "Otro",
         ):
-            error = "Debe seleccionar un motivo válido."
+            flash(
+                "Debe seleccionar un motivo válido.",
+                "danger",
+            )
+
         elif (
             motivo in (
                 "Devolución de cliente",
@@ -1522,20 +1642,22 @@ def movimientos():
             )
             and not comentarios
         ):
-            error = (
-                "En una devolución debe indicar "
-                "el motivo o explicación en comentarios."
+            flash(
+                "En una devolución debe indicar el motivo o explicación en comentarios.",
+                "danger",
             )
 
-        if error:
-            flash(error, "danger")
         else:
             stock_actual = producto["existencias"]
 
             if tipo == "Entrada":
-                nuevo_stock = stock_actual + cantidad
+                nuevo_stock = (
+                    stock_actual + cantidad
+                )
             else:
-                nuevo_stock = stock_actual - cantidad
+                nuevo_stock = (
+                    stock_actual - cantidad
+                )
 
             cursor.execute("""
                 UPDATE productos
@@ -1577,7 +1699,7 @@ def movimientos():
                 factura,
                 orden_compra,
                 comentarios,
-                session.get("usuario", "admin"),
+                usuario,
             ))
 
             conn.commit()
@@ -1601,6 +1723,10 @@ def movimientos():
 
     productos = cursor.fetchall()
 
+    # IMPORTANTE:
+    # No usamos TO_CHAR() aquí. movimientos.html llama
+    # a mov['fecha'].strftime(), por lo que fecha debe llegar
+    # como datetime de PostgreSQL.
     cursor.execute("""
         SELECT
             m.fecha,
@@ -1731,446 +1857,7 @@ def proveedores():
 
 
 # =========================================================
-# FACTURACIÓN - PANTALLA
-# =========================================================
-
-@app.route("/facturacion", methods=["GET"])
-def facturacion():
-    if not requiere_login():
-        return redirect(url_for("login"))
-
-    return render_template(
-        "facturacion.html"
-    )
-
-
-# =========================================================
-# FACTURACIÓN - CREAR FACTURA
-# =========================================================
-
-@app.route(
-    "/api/facturas/crear",
-    methods=["POST"]
-)
-def crear_factura():
-    if not requiere_login():
-        return jsonify({
-            "error": "No autorizado"
-        }), 401
-
-    datos = request.get_json(silent=True) or {}
-
-    items = datos.get("items", [])
-
-    if not isinstance(items, list) or not items:
-        return jsonify({
-            "error": "La factura debe tener al menos un producto."
-        }), 400
-
-    cliente_nombre = str(
-        datos.get("cliente_nombre", "")
-    ).strip()
-
-    cliente_documento = str(
-        datos.get("cliente_documento", "")
-    ).strip()
-
-    cliente_telefono = str(
-        datos.get("cliente_telefono", "")
-    ).strip()
-
-    cliente_email = str(
-        datos.get("cliente_email", "")
-    ).strip()
-
-    metodo_pago = str(
-        datos.get(
-            "metodo_pago",
-            "Efectivo",
-        )
-    ).strip()
-
-    observaciones = str(
-        datos.get("observaciones", "")
-    ).strip()
-
-    if metodo_pago not in (
-        "Efectivo",
-        "Tarjeta",
-        "Transferencia",
-        "Otro",
-    ):
-        metodo_pago = "Otro"
-
-    try:
-        descuento_general = float(
-            datos.get("descuento", 0) or 0
-        )
-
-        impuesto_porcentaje = float(
-            datos.get(
-                "impuesto_porcentaje",
-                0,
-            ) or 0
-        )
-    except (TypeError, ValueError):
-        return jsonify({
-            "error": "Descuento o impuesto no válidos."
-        }), 400
-
-    if descuento_general < 0:
-        return jsonify({
-            "error": "El descuento no puede ser negativo."
-        }), 400
-
-    if impuesto_porcentaje < 0:
-        return jsonify({
-            "error": "El impuesto no puede ser negativo."
-        }), 400
-
-    conn = get_db()
-    cursor = conn.cursor(
-        cursor_factory=RealDictCursor
-    )
-
-    try:
-        # Consolidar productos repetidos
-        cantidades = {}
-
-        descuentos_linea = {}
-
-        for item in items:
-            try:
-                producto_id = int(
-                    item.get("producto_id")
-                )
-
-                cantidad = int(
-                    item.get("cantidad")
-                )
-
-                descuento_linea = float(
-                    item.get("descuento", 0) or 0
-                )
-            except (TypeError, ValueError):
-                raise ValueError(
-                    "Uno de los productos de la factura no es válido."
-                )
-
-            if cantidad <= 0:
-                raise ValueError(
-                    "La cantidad de cada producto debe ser mayor que cero."
-                )
-
-            if descuento_linea < 0:
-                raise ValueError(
-                    "El descuento de un producto no puede ser negativo."
-                )
-
-            cantidades[producto_id] = (
-                cantidades.get(producto_id, 0)
-                + cantidad
-            )
-
-            # Si se repite el producto, se suman los descuentos.
-            descuentos_linea[producto_id] = (
-                descuentos_linea.get(producto_id, 0)
-                + descuento_linea
-            )
-
-        productos_factura = []
-
-        for producto_id, cantidad in cantidades.items():
-            cursor.execute("""
-                SELECT
-                    id,
-                    nombre,
-                    categoria,
-                    precio,
-                    precio_compra,
-                    existencias
-                FROM productos
-                WHERE id = %s
-                FOR UPDATE
-            """, (producto_id,))
-
-            producto = cursor.fetchone()
-
-            if producto is None:
-                raise ValueError(
-                    f"El producto con ID {producto_id} no existe."
-                )
-
-            if cantidad > producto["existencias"]:
-                raise ValueError(
-                    f"No hay suficiente stock para "
-                    f"'{producto['nombre']}'. "
-                    f"Disponible: {producto['existencias']}."
-                )
-
-            precio = float(
-                producto["precio"] or 0
-            )
-
-            precio_compra = float(
-                producto["precio_compra"] or 0
-            )
-
-            descuento_producto = min(
-                float(
-                    descuentos_linea.get(
-                        producto_id,
-                        0,
-                    )
-                ),
-                precio * cantidad,
-            )
-
-            subtotal_linea = max(
-                0,
-                (precio * cantidad)
-                - descuento_producto,
-            )
-
-            productos_factura.append({
-                "id": producto["id"],
-                "nombre": producto["nombre"],
-                "precio": precio,
-                "precio_compra": precio_compra,
-                "existencias": producto["existencias"],
-                "cantidad": cantidad,
-                "descuento": descuento_producto,
-                "subtotal": subtotal_linea,
-            })
-
-        subtotal = sum(
-            item["subtotal"]
-            for item in productos_factura
-        )
-
-        descuento_general = min(
-            descuento_general,
-            subtotal,
-        )
-
-        base_impuesto = max(
-            0,
-            subtotal - descuento_general,
-        )
-
-        impuesto = (
-            base_impuesto
-            * impuesto_porcentaje
-            / 100
-        )
-
-        total = (
-            base_impuesto
-            + impuesto
-        )
-
-        # El descuento general se reparte proporcionalmente
-        # entre las líneas para calcular utilidad real.
-        for item in productos_factura:
-            if subtotal > 0:
-                proporcion = (
-                    item["subtotal"]
-                    / subtotal
-                )
-            else:
-                proporcion = 0
-
-            descuento_asignado = (
-                descuento_general
-                * proporcion
-            )
-
-            utilidad = (
-                item["subtotal"]
-                - descuento_asignado
-                - (
-                    item["precio_compra"]
-                    * item["cantidad"]
-                )
-            )
-
-            item["utilidad"] = utilidad
-
-        cursor.execute("""
-            INSERT INTO facturas (
-                numero_factura,
-                fecha,
-                usuario,
-                cliente_nombre,
-                cliente_documento,
-                cliente_telefono,
-                cliente_email,
-                metodo_pago,
-                subtotal,
-                descuento,
-                impuesto,
-                total,
-                estado,
-                observaciones
-            )
-            VALUES (
-                nextval('factura_numero_seq'),
-                CURRENT_TIMESTAMP,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                'Pagada',
-                %s
-            )
-            RETURNING
-                id,
-                numero_factura,
-                fecha,
-                usuario,
-                cliente_nombre,
-                cliente_documento,
-                cliente_telefono,
-                cliente_email,
-                metodo_pago,
-                subtotal,
-                descuento,
-                impuesto,
-                total,
-                estado,
-                observaciones
-        """, (
-            session.get("usuario", "admin"),
-            cliente_nombre or None,
-            cliente_documento or None,
-            cliente_telefono or None,
-            cliente_email or None,
-            metodo_pago,
-            subtotal,
-            descuento_general,
-            impuesto,
-            total,
-            observaciones or None,
-        ))
-
-        factura = cursor.fetchone()
-
-        for item in productos_factura:
-            cursor.execute("""
-                INSERT INTO factura_detalles (
-                    factura_id,
-                    producto_id,
-                    producto_nombre,
-                    cantidad,
-                    precio_compra,
-                    precio_unitario,
-                    descuento,
-                    subtotal,
-                    utilidad
-                )
-                VALUES (
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s
-                )
-            """, (
-                factura["id"],
-                item["id"],
-                item["nombre"],
-                item["cantidad"],
-                item["precio_compra"],
-                item["precio"],
-                item["descuento"],
-                item["subtotal"],
-                item["utilidad"],
-            ))
-
-            cursor.execute("""
-                UPDATE productos
-                SET existencias = existencias - %s
-                WHERE id = %s
-            """, (
-                item["cantidad"],
-                item["id"],
-            ))
-
-            cursor.execute("""
-                INSERT INTO movimientos (
-                    fecha,
-                    producto_id,
-                    tipo,
-                    cantidad,
-                    motivo,
-                    factura,
-                    orden_compra,
-                    comentarios,
-                    usuario
-                )
-                VALUES (
-                    CURRENT_TIMESTAMP,
-                    %s,
-                    'Salida',
-                    %s,
-                    'Venta',
-                    %s,
-                    '',
-                    %s,
-                    %s
-                )
-            """, (
-                item["id"],
-                item["cantidad"],
-                str(factura["numero_factura"]),
-                (
-                    "Venta registrada mediante facturación."
-                ),
-                session.get("usuario", "admin"),
-            ))
-
-        conn.commit()
-
-        return jsonify({
-            "ok": True,
-            "mensaje": "Factura creada correctamente.",
-            "factura": factura,
-        })
-
-    except ValueError as error:
-        conn.rollback()
-
-        return jsonify({
-            "error": str(error)
-        }), 400
-
-    except Exception as error:
-        conn.rollback()
-
-        return jsonify({
-            "error": (
-                "No fue posible crear la factura. "
-                f"Detalle: {str(error)}"
-            )
-        }), 500
-
-    finally:
-        cursor.close()
-        conn.close()
-
-
-# =========================================================
-# API PRODUCTOS
+# API - PRODUCTOS
 # =========================================================
 
 @app.route("/api/productos", methods=["GET"])
@@ -2245,6 +1932,10 @@ def api_productos():
     })
 
 
+# =========================================================
+# API - PRODUCTO INDIVIDUAL
+# =========================================================
+
 @app.route("/api/productos/<int:id>", methods=["GET"])
 def api_producto(id):
     if not requiere_login():
@@ -2287,7 +1978,7 @@ def api_producto(id):
 
 
 # =========================================================
-# API DASHBOARD
+# API - DASHBOARD
 # =========================================================
 
 @app.route("/api/dashboard", methods=["GET"])
@@ -2456,7 +2147,7 @@ def api_dashboard():
 
 
 # =========================================================
-# API FACTURAS
+# API - CONSULTAR FACTURA
 # =========================================================
 
 @app.route("/api/facturas/<int:id>", methods=["GET"])
@@ -2504,6 +2195,10 @@ def api_factura(id):
         "detalles": detalles,
     })
 
+
+# =========================================================
+# API - LISTAR FACTURAS
+# =========================================================
 
 @app.route("/api/facturas", methods=["GET"])
 def api_facturas():
@@ -2562,7 +2257,7 @@ def api_facturas():
 
 
 # =========================================================
-# EXPORTACIONES
+# EXPORTAR FACTURAS
 # =========================================================
 
 @app.route("/exportar_facturas")
@@ -2609,6 +2304,10 @@ def exportar_facturas():
         mimetype="text/csv",
     )
 
+
+# =========================================================
+# EXPORTAR INVENTARIO
+# =========================================================
 
 @app.route("/exportar")
 def exportar():
@@ -2689,6 +2388,7 @@ def grafico():
             "No hay datos para generar el gráfico.",
             "warning",
         )
+
         return redirect(url_for("index"))
 
     plt.figure(figsize=(8, 4))
@@ -2726,7 +2426,7 @@ def grafico():
 
 
 # =========================================================
-# EJECUTAR
+# EJECUTAR APLICACIÓN
 # =========================================================
 
 if __name__ == "__main__":
@@ -2742,14 +2442,3 @@ if __name__ == "__main__":
         port=port,
         debug=False,
     )
-'''
-
-# Validación de sintaxis antes de entregar
-compile(app_code, "app.py", "exec")
-
-path = Path("/mnt/data/app.py")
-path.write_text(app_code, encoding="utf-8")
-
-print("Archivo app.py creado y validado correctamente.")
-print(f"Líneas: {len(app_code.splitlines())}")
-print(f"Ubicación: {path}")
