@@ -1,3 +1,4 @@
+```python
 import os
 import pandas as pd
 import matplotlib
@@ -47,14 +48,12 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 def get_db():
 
     if not DATABASE_URL:
-
         raise RuntimeError(
             "No se encontró la variable DATABASE_URL."
         )
 
     conn = psycopg2.connect(DATABASE_URL)
 
-    # Hora oficial de Colombia
     cursor = conn.cursor()
 
     cursor.execute(
@@ -193,12 +192,11 @@ def init_db():
         )
     """)
 
-
     cursor.execute("""
         ALTER TABLE usuarios
-        ADD COLUMN IF NOT EXISTS genero TEXT NOT NULL DEFAULT 'Hombre'
+        ADD COLUMN IF NOT EXISTS genero
+        TEXT NOT NULL DEFAULT 'Hombre'
     """)
-
 
     cursor.execute("""
         ALTER TABLE usuarios
@@ -260,7 +258,7 @@ def init_db():
 
 
     # =====================================================
-    # AGREGAR CAMPOS SI YA EXISTÍA LA TABLA
+    # CAMPOS ADICIONALES
     # =====================================================
 
     cursor.execute("""
@@ -268,12 +266,10 @@ def init_db():
         ADD COLUMN IF NOT EXISTS factura TEXT
     """)
 
-
     cursor.execute("""
         ALTER TABLE movimientos
         ADD COLUMN IF NOT EXISTS orden_compra TEXT
     """)
-
 
     cursor.execute("""
         ALTER TABLE movimientos
@@ -292,10 +288,7 @@ def init_db():
             rol
         FROM usuarios
         WHERE usuario = %s
-    """, (
-        "admin",
-    ))
-
+    """, ("admin",))
 
     usuario_admin = cursor.fetchone()
 
@@ -339,7 +332,7 @@ def init_db():
 
 
     # =====================================================
-    # MIGRAR CONTRASEÑAS ANTIGUAS
+    # MIGRAR CONTRASEÑAS
     # =====================================================
 
     migrate_old_passwords(cursor)
@@ -373,10 +366,6 @@ def index():
         )
 
 
-    # =====================================================
-    # DATOS DE BÚSQUEDA
-    # =====================================================
-
     busqueda = request.args.get(
         "q",
         ""
@@ -407,7 +396,7 @@ def index():
 
 
     # =====================================================
-    # CONSTRUIR FILTROS DE PRODUCTOS
+    # FILTROS DE PRODUCTOS
     # =====================================================
 
     condiciones = []
@@ -419,9 +408,9 @@ def index():
 
         condiciones.append("""
             (
-                CAST(id AS TEXT) ILIKE %s
-                OR nombre ILIKE %s
-                OR COALESCE(categoria, '') ILIKE %s
+                CAST(p.id AS TEXT) ILIKE %s
+                OR p.nombre ILIKE %s
+                OR COALESCE(p.categoria, '') ILIKE %s
             )
         """)
 
@@ -437,21 +426,21 @@ def index():
     if filtro_stock == "stock":
 
         condiciones.append("""
-            existencias > 0
+            p.existencias > 0
         """)
 
 
     elif filtro_stock == "bajo":
 
         condiciones.append("""
-            existencias BETWEEN 1 AND 5
+            p.existencias BETWEEN 1 AND 5
         """)
 
 
     elif filtro_stock == "agotado":
 
         condiciones.append("""
-            existencias = 0
+            p.existencias = 0
         """)
 
 
@@ -472,16 +461,16 @@ def index():
 
     cursor.execute(f"""
         SELECT
-            id,
-            nombre,
-            categoria,
-            precio,
-            existencias
-        FROM productos
+            p.id,
+            p.nombre,
+            p.categoria,
+            p.precio,
+            p.existencias
+        FROM productos p
 
         {where_sql}
 
-        ORDER BY id DESC
+        ORDER BY p.id DESC
     """, parametros)
 
 
@@ -491,48 +480,61 @@ def index():
     # =====================================================
     # MOVIMIENTOS
     #
-    # IMPORTANTE:
+    # SI SE BUSCA UN PRODUCTO:
+    # SOLO MUESTRA MOVIMIENTOS DE ESE PRODUCTO.
     #
-    # Si se está consultando un producto:
-    # solamente aparecen movimientos de los productos
-    # que coinciden con la consulta.
-    #
-    # Si no se está consultando ningún producto:
-    # aparecen los últimos 5 movimientos generales.
+    # SI NO HAY BÚSQUEDA:
+    # MUESTRA LOS ÚLTIMOS 50 MOVIMIENTOS.
     # =====================================================
 
     if busqueda or filtro_stock != "todos":
 
-        cursor.execute(f"""
-            SELECT
-                m.fecha,
-                p.nombre,
-                m.tipo,
-                m.cantidad,
-                m.motivo,
-                m.factura,
-                m.orden_compra,
-                m.comentarios,
-                m.usuario
-            FROM movimientos m
-
-            INNER JOIN productos p
-                ON m.producto_id = p.id
-
-            {where_sql}
-
-            ORDER BY m.id DESC
-            LIMIT 50
-        """, parametros)
+        ids_productos = [
+            producto["id"]
+            for producto in productos
+        ]
 
 
-        movimientos = cursor.fetchall()
+        if ids_productos:
+
+            cursor.execute("""
+                SELECT
+                    TO_CHAR(
+                        m.fecha,
+                        'DD/MM/YYYY HH24:MI:SS'
+                    ) AS fecha,
+                    p.nombre,
+                    m.tipo,
+                    m.cantidad,
+                    m.motivo,
+                    m.factura,
+                    m.orden_compra,
+                    m.comentarios,
+                    m.usuario
+                FROM movimientos m
+                INNER JOIN productos p
+                    ON m.producto_id = p.id
+                WHERE m.producto_id = ANY(%s)
+                ORDER BY m.id DESC
+                LIMIT 50
+            """, (
+                ids_productos,
+            ))
+
+            movimientos = cursor.fetchall()
+
+        else:
+
+            movimientos = []
 
     else:
 
         cursor.execute("""
             SELECT
-                m.fecha,
+                TO_CHAR(
+                    m.fecha,
+                    'DD/MM/YYYY HH24:MI:SS'
+                ) AS fecha,
                 p.nombre,
                 m.tipo,
                 m.cantidad,
@@ -542,14 +544,11 @@ def index():
                 m.comentarios,
                 m.usuario
             FROM movimientos m
-
             LEFT JOIN productos p
                 ON m.producto_id = p.id
-
             ORDER BY m.id DESC
-            LIMIT 5
+            LIMIT 50
         """)
-
 
         movimientos = cursor.fetchall()
 
@@ -1429,10 +1428,6 @@ def movimientos():
             ))
 
 
-            # =================================================
-            # REGISTRAR MOVIMIENTO
-            # =================================================
-
             cursor.execute("""
                 INSERT INTO movimientos
                 (
@@ -1499,19 +1494,14 @@ def movimientos():
 
     # =====================================================
     # HISTORIAL DE MOVIMIENTOS
-    #
-    # IMPORTANTE:
-    # NO usamos TO_CHAR.
-    #
-    # fecha queda como TIMESTAMP para que el HTML pueda
-    # utilizar:
-    #
-    # mov["fecha"].strftime(...)
     # =====================================================
 
     cursor.execute("""
         SELECT
-            m.fecha,
+            TO_CHAR(
+                m.fecha,
+                'DD/MM/YYYY HH24:MI:SS'
+            ) AS fecha,
             p.nombre,
             m.tipo,
             m.cantidad,
@@ -1822,3 +1812,4 @@ if __name__ == "__main__":
         port=port,
         debug=False
     )
+```
