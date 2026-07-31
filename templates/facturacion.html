@@ -1,1 +1,1249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>Facturación | Sistema de Inventario</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f9;
+            color: #1f2937;
+        }
+
+        .topbar {
+            background: #172033;
+            color: white;
+            padding: 18px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .topbar p {
+            margin: 5px 0 0;
+            opacity: .75;
+            font-size: 13px;
+        }
+
+        .top-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 8px;
+            padding: 11px 16px;
+            cursor: pointer;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+        }
+
+        .btn-light {
+            background: white;
+            color: #172033;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        .container {
+            max-width: 1450px;
+            margin: 25px auto;
+            padding: 0 20px 40px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1.45fr .85fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, .07);
+            padding: 22px;
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            margin: 0 0 18px;
+            font-size: 18px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 11px 12px;
+            font-size: 14px;
+            background: white;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .product-search {
+            display: grid;
+            grid-template-columns: 1fr 120px 130px;
+            gap: 10px;
+            align-items: end;
+            margin-bottom: 15px;
+        }
+
+        .search-results {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+            margin-top: -8px;
+            margin-bottom: 15px;
+        }
+
+        .search-result {
+            padding: 12px 14px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            border-bottom: 1px solid #eef0f3;
+            background: white;
+        }
+
+        .search-result:last-child {
+            border-bottom: 0;
+        }
+
+        .search-result:hover {
+            background: #f8fafc;
+        }
+
+        .result-name {
+            font-weight: 700;
+        }
+
+        .result-info {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        .stock-ok {
+            color: #15803d;
+            font-weight: 700;
+        }
+
+        .stock-low {
+            color: #b45309;
+            font-weight: 700;
+        }
+
+        .stock-zero {
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f8fafc;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+
+        .empty {
+            text-align: center;
+            color: #64748b;
+            padding: 30px;
+        }
+
+        .summary {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 8px 0;
+            border-bottom: 1px solid #eef0f3;
+        }
+
+        .summary-row:last-child {
+            border-bottom: 0;
+        }
+
+        .summary-total {
+            margin-top: 7px;
+            padding-top: 16px;
+            border-top: 2px solid #172033;
+            font-size: 23px;
+            font-weight: 800;
+        }
+
+        .summary-total span:last-child {
+            color: #16a34a;
+        }
+
+        .status {
+            display: none;
+            border-radius: 9px;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .status.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .invoice-number {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 18px;
+            text-align: center;
+            font-weight: 800;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .small {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .money {
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .line-input {
+            max-width: 110px;
+        }
+
+        @media (max-width: 1050px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full {
+                grid-column: auto;
+            }
+
+            .product-search {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                padding: 16px;
+            }
+
+            .container {
+                padding: 0 12px 30px;
+            }
+        }
+
+        @media print {
+            .topbar,
+            .actions,
+            .product-search,
+            .search-results,
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                background: white;
+            }
+
+            .card {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header class="topbar">
+    <div>
+        <h1>🧾 Facturación</h1>
+        <p>Registro de ventas y control automático del inventario</p>
+    </div>
+
+    <div class="top-actions">
+        <a href="{{ url_for('index') }}" class="btn btn-light">← Inventario</a>
+        <a href="{{ url_for('movimientos') }}" class="btn btn-light">Movimientos</a>
+        <a href="{{ url_for('logout') }}" class="btn btn-secondary">Cerrar sesión</a>
+    </div>
+</header>
+
+<main class="container">
+
+    <div id="status" class="status"></div>
+
+    <div class="grid">
+
+        <section>
+
+            <div class="card">
+                <h2>👤 Información del cliente</h2>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="cliente_nombre">Nombre del cliente</label>
+                        <input id="cliente_nombre" type="text" placeholder="Nombre completo">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cliente_documento">Documento</label>
+                        <input id="cliente_documento" type="text" placeholder="Cédula / NIT">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cliente_telefono">Teléfono</label>
+                        <input id="cliente_telefono" type="text" placeholder="Teléfono">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cliente_email">Correo electrónico</label>
+                        <input id="cliente_email" type="email" placeholder="cliente@correo.com">
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🛒 Productos de la venta</h2>
+
+                <div class="product-search">
+
+                    <div class="form-group">
+                        <label for="buscar_producto">Buscar producto</label>
+                        <input
+                            id="buscar_producto"
+                            type="text"
+                            autocomplete="off"
+                            placeholder="Nombre, categoría o ID..."
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cantidad_producto">Cantidad</label>
+                        <input
+                            id="cantidad_producto"
+                            type="number"
+                            min="1"
+                            value="1"
+                        >
+                    </div>
+
+                    <button
+                        type="button"
+                        id="btnAgregar"
+                        class="btn btn-primary"
+                    >
+                        + Agregar
+                    </button>
+
+                </div>
+
+                <div id="searchResults" class="search-results"></div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Stock</th>
+                                <th>Cantidad</th>
+                                <th>Precio</th>
+                                <th>Descuento</th>
+                                <th>Subtotal</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="cartBody">
+                            <tr>
+                                <td colspan="7" class="empty">
+                                    No hay productos agregados.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>💳 Pago y observaciones</h2>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="metodo_pago">Método de pago</label>
+                        <select id="metodo_pago">
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Tarjeta">Tarjeta</option>
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="impuesto_porcentaje">Impuesto (%)</label>
+                        <input
+                            id="impuesto_porcentaje"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value="0"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descuento_factura">Descuento general</label>
+                        <input
+                            id="descuento_factura"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value="0"
+                        >
+                    </div>
+
+                    <div class="form-group full">
+                        <label for="observaciones">Observaciones</label>
+                        <textarea
+                            id="observaciones"
+                            placeholder="Observaciones de la venta..."
+                        ></textarea>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+        <aside>
+
+            <div class="card">
+                <div class="invoice-number">
+                    FACTURA<br>
+                    <span class="small">El número se asigna automáticamente al guardar</span>
+                </div>
+
+                <h2>💰 Resumen de la venta</h2>
+
+                <div class="summary">
+
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <strong id="subtotal">$0</strong>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Descuento</span>
+                        <strong id="descuentoResumen">$0</strong>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Impuesto</span>
+                        <strong id="impuestoResumen">$0</strong>
+                    </div>
+
+                    <div class="summary-row summary-total">
+                        <span>TOTAL</span>
+                        <span id="total">$0</span>
+                    </div>
+
+                </div>
+
+                <div class="actions">
+                    <button
+                        type="button"
+                        id="btnFacturar"
+                        class="btn btn-success"
+                        style="width:100%;"
+                    >
+                        🧾 Generar factura
+                    </button>
+
+                    <button
+                        type="button"
+                        id="btnLimpiar"
+                        class="btn btn-danger"
+                        style="width:100%;"
+                    >
+                        Limpiar venta
+                    </button>
+                </div>
+
+                <p class="small" style="margin-top:16px;">
+                    Al generar la factura se descontará automáticamente
+                    el stock y se registrará el movimiento de salida.
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>ℹ️ Estado del sistema</h2>
+
+                <p class="small">
+                    Usuario actual:
+                    <strong>{{ session.get('usuario', '') }}</strong>
+                </p>
+
+                <p class="small">
+                    La factura se guardará como <strong>Pagada</strong>.
+                </p>
+            </div>
+
+        </aside>
+
+    </div>
+
+</main>
+
+<script>
+    const state = {
+        selectedProduct: null,
+        cart: []
+    };
+
+    const money = value => {
+        return new Intl.NumberFormat("es-CO", {
+            style: "currency",
+            currency: "COP",
+            maximumFractionDigits: 0
+        }).format(Number(value) || 0);
+    };
+
+    const escapeHtml = value => {
+        return String(value ?? "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    };
+
+    function showStatus(message, type) {
+        const box = document.getElementById("status");
+
+        box.textContent = message;
+        box.className = "status " + type;
+        box.style.display = "block";
+
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+
+    function hideStatus() {
+        const box = document.getElementById("status");
+        box.style.display = "none";
+    }
+
+    function getInvoiceDiscount() {
+        return Math.max(
+            0,
+            Number(
+                document.getElementById("descuento_factura").value
+            ) || 0
+        );
+    }
+
+    function getTaxPercentage() {
+        return Math.max(
+            0,
+            Number(
+                document.getElementById("impuesto_porcentaje").value
+            ) || 0
+        );
+    }
+
+    function calculateSubtotal() {
+        return state.cart.reduce((sum, item) => {
+            const lineSubtotal =
+                (item.precio * item.cantidad)
+                - item.descuento;
+
+            return sum + Math.max(0, lineSubtotal);
+        }, 0);
+    }
+
+    function updateSummary() {
+        const subtotal = calculateSubtotal();
+
+        let discount = getInvoiceDiscount();
+
+        if (discount > subtotal) {
+            discount = subtotal;
+        }
+
+        const base = subtotal - discount;
+
+        const tax =
+            base
+            * getTaxPercentage()
+            / 100;
+
+        const total = base + tax;
+
+        document.getElementById("subtotal").textContent = money(subtotal);
+        document.getElementById("descuentoResumen").textContent = money(discount);
+        document.getElementById("impuestoResumen").textContent = money(tax);
+        document.getElementById("total").textContent = money(total);
+    }
+
+    function renderCart() {
+        const body = document.getElementById("cartBody");
+
+        if (state.cart.length === 0) {
+            body.innerHTML = `
+                <tr>
+                    <td colspan="7" class="empty">
+                        No hay productos agregados.
+                    </td>
+                </tr>
+            `;
+
+            updateSummary();
+            return;
+        }
+
+        body.innerHTML = state.cart.map((item, index) => {
+
+            const subtotal =
+                (item.precio * item.cantidad)
+                - item.descuento;
+
+            let stockClass = "stock-ok";
+
+            if (item.existencias === 0) {
+                stockClass = "stock-zero";
+            } else if (item.existencias <= 5) {
+                stockClass = "stock-low";
+            }
+
+            return `
+                <tr>
+                    <td>
+                        <strong>${escapeHtml(item.nombre)}</strong>
+                        <div class="small">${escapeHtml(item.categoria || "Sin categoría")}</div>
+                    </td>
+
+                    <td>
+                        <span class="${stockClass}">
+                            ${item.existencias}
+                        </span>
+                    </td>
+
+                    <td>
+                        <input
+                            class="line-input"
+                            type="number"
+                            min="1"
+                            max="${item.existencias}"
+                            value="${item.cantidad}"
+                            onchange="changeQuantity(${index}, this.value)"
+                        >
+                    </td>
+
+                    <td class="money">
+                        ${money(item.precio)}
+                    </td>
+
+                    <td>
+                        <input
+                            class="line-input"
+                            type="number"
+                            min="0"
+                            step="1"
+                            value="${item.descuento}"
+                            onchange="changeDiscount(${index}, this.value)"
+                        >
+                    </td>
+
+                    <td class="money">
+                        ${money(subtotal)}
+                    </td>
+
+                    <td>
+                        <button
+                            type="button"
+                            class="btn btn-danger"
+                            onclick="removeItem(${index})"
+                        >
+                            🗑️
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+
+        updateSummary();
+    }
+
+    function changeQuantity(index, value) {
+        let quantity = parseInt(value, 10);
+
+        if (!Number.isFinite(quantity) || quantity < 1) {
+            quantity = 1;
+        }
+
+        if (quantity > state.cart[index].existencias) {
+            quantity = state.cart[index].existencias;
+        }
+
+        state.cart[index].cantidad = quantity;
+
+        renderCart();
+    }
+
+    function changeDiscount(index, value) {
+        let discount = Number(value);
+
+        if (!Number.isFinite(discount) || discount < 0) {
+            discount = 0;
+        }
+
+        const maxDiscount =
+            state.cart[index].precio
+            * state.cart[index].cantidad;
+
+        if (discount > maxDiscount) {
+            discount = maxDiscount;
+        }
+
+        state.cart[index].descuento = discount;
+
+        renderCart();
+    }
+
+    function removeItem(index) {
+        state.cart.splice(index, 1);
+        renderCart();
+    }
+
+    async function searchProducts() {
+        const query =
+            document.getElementById("buscar_producto").value.trim();
+
+        const resultsBox =
+            document.getElementById("searchResults");
+
+        if (!query) {
+            resultsBox.style.display = "none";
+            resultsBox.innerHTML = "";
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                "/api/productos?q="
+                + encodeURIComponent(query)
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error || "No fue posible consultar productos."
+                );
+            }
+
+            if (!data.productos || data.productos.length === 0) {
+                resultsBox.innerHTML = `
+                    <div class="search-result">
+                        <span>No se encontraron productos.</span>
+                    </div>
+                `;
+
+                resultsBox.style.display = "block";
+                return;
+            }
+
+            resultsBox.innerHTML = data.productos.map(product => {
+
+                let stockClass = "stock-ok";
+
+                if (product.existencias === 0) {
+                    stockClass = "stock-zero";
+                } else if (product.existencias <= 5) {
+                    stockClass = "stock-low";
+                }
+
+                return `
+                    <div
+                        class="search-result"
+                        onclick='selectProduct(${JSON.stringify(product).replace(/'/g, "&#039;")})'
+                    >
+                        <div>
+                            <div class="result-name">
+                                ${escapeHtml(product.nombre)}
+                            </div>
+
+                            <div class="result-info">
+                                ID: ${product.id}
+                                · ${escapeHtml(product.categoria || "Sin categoría")}
+                            </div>
+                        </div>
+
+                        <div style="text-align:right;">
+                            <div class="money">
+                                ${money(product.precio)}
+                            </div>
+
+                            <div class="${stockClass}">
+                                Stock: ${product.existencias}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            resultsBox.style.display = "block";
+
+        } catch (error) {
+            showStatus(error.message, "error");
+        }
+    }
+
+    function selectProduct(product) {
+        state.selectedProduct = product;
+
+        document.getElementById("buscar_producto").value =
+            product.nombre;
+
+        document.getElementById("searchResults").style.display =
+            "none";
+
+        document.getElementById("cantidad_producto").focus();
+    }
+
+    function addSelectedProduct() {
+
+        hideStatus();
+
+        if (!state.selectedProduct) {
+            showStatus(
+                "Primero busca y selecciona un producto.",
+                "error"
+            );
+            return;
+        }
+
+        const product = state.selectedProduct;
+
+        if (product.existencias <= 0) {
+            showStatus(
+                "El producto seleccionado está agotado.",
+                "error"
+            );
+            return;
+        }
+
+        let quantity = parseInt(
+            document.getElementById("cantidad_producto").value,
+            10
+        );
+
+        if (!Number.isFinite(quantity) || quantity < 1) {
+            quantity = 1;
+        }
+
+        const existing = state.cart.find(
+            item => item.producto_id === product.id
+        );
+
+        if (existing) {
+
+            const newQuantity =
+                existing.cantidad + quantity;
+
+            if (newQuantity > product.existencias) {
+                showStatus(
+                    "La cantidad supera el stock disponible.",
+                    "error"
+                );
+                return;
+            }
+
+            existing.cantidad = newQuantity;
+
+        } else {
+
+            if (quantity > product.existencias) {
+                showStatus(
+                    "La cantidad supera el stock disponible.",
+                    "error"
+                );
+                return;
+            }
+
+            state.cart.push({
+                producto_id: product.id,
+                nombre: product.nombre,
+                categoria: product.categoria,
+                precio: Number(product.precio) || 0,
+                precio_compra: Number(product.precio_compra) || 0,
+                existencias: Number(product.existencias) || 0,
+                cantidad: quantity,
+                descuento: 0
+            });
+        }
+
+        state.selectedProduct = null;
+
+        document.getElementById("buscar_producto").value = "";
+        document.getElementById("cantidad_producto").value = 1;
+        document.getElementById("searchResults").style.display = "none";
+
+        renderCart();
+        document.getElementById("buscar_producto").focus();
+    }
+
+    async function createInvoice() {
+
+        hideStatus();
+
+        if (state.cart.length === 0) {
+            showStatus(
+                "Agrega al menos un producto antes de generar la factura.",
+                "error"
+            );
+            return;
+        }
+
+        const subtotal = calculateSubtotal();
+        const discount = Math.min(
+            getInvoiceDiscount(),
+            subtotal
+        );
+
+        const taxPercentage = getTaxPercentage();
+
+        const button =
+            document.getElementById("btnFacturar");
+
+        button.disabled = true;
+        button.textContent = "Procesando...";
+
+        const payload = {
+            cliente_nombre:
+                document.getElementById("cliente_nombre").value.trim(),
+
+            cliente_documento:
+                document.getElementById("cliente_documento").value.trim(),
+
+            cliente_telefono:
+                document.getElementById("cliente_telefono").value.trim(),
+
+            cliente_email:
+                document.getElementById("cliente_email").value.trim(),
+
+            metodo_pago:
+                document.getElementById("metodo_pago").value,
+
+            descuento: discount,
+
+            impuesto_porcentaje: taxPercentage,
+
+            observaciones:
+                document.getElementById("observaciones").value.trim(),
+
+            items: state.cart.map(item => ({
+                producto_id: item.producto_id,
+                cantidad: item.cantidad,
+                descuento: item.descuento
+            }))
+        };
+
+        try {
+
+            const response = await fetch(
+                "/api/facturas/crear",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error || "No fue posible generar la factura."
+                );
+            }
+
+            showStatus(
+                `Factura #${data.factura.numero_factura} creada correctamente. Total: ${money(data.factura.total)}.`,
+                "success"
+            );
+
+            const invoiceNumber =
+                data.factura.numero_factura;
+
+            const total =
+                data.factura.total;
+
+            resetForm();
+
+            showStatus(
+                `Factura #${invoiceNumber} creada correctamente. Total: ${money(total)}. El inventario fue actualizado.`,
+                "success"
+            );
+
+        } catch (error) {
+
+            showStatus(
+                error.message,
+                "error"
+            );
+
+        } finally {
+
+            button.disabled = false;
+            button.textContent = "🧾 Generar factura";
+        }
+    }
+
+    function resetForm() {
+
+        state.selectedProduct = null;
+        state.cart = [];
+
+        document.getElementById("cliente_nombre").value = "";
+        document.getElementById("cliente_documento").value = "";
+        document.getElementById("cliente_telefono").value = "";
+        document.getElementById("cliente_email").value = "";
+        document.getElementById("metodo_pago").value = "Efectivo";
+        document.getElementById("descuento_factura").value = "0";
+        document.getElementById("impuesto_porcentaje").value = "0";
+        document.getElementById("observaciones").value = "";
+        document.getElementById("buscar_producto").value = "";
+        document.getElementById("cantidad_producto").value = "1";
+        document.getElementById("searchResults").style.display = "none";
+
+        renderCart();
+    }
+
+    document
+        .getElementById("buscar_producto")
+        .addEventListener(
+            "input",
+            searchProducts
+        );
+
+    document
+        .getElementById("buscar_producto")
+        .addEventListener(
+            "keydown",
+            event => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    addSelectedProduct();
+                }
+            }
+        );
+
+    document
+        .getElementById("cantidad_producto")
+        .addEventListener(
+            "keydown",
+            event => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    addSelectedProduct();
+                }
+            }
+        );
+
+    document
+        .getElementById("btnAgregar")
+        .addEventListener(
+            "click",
+            addSelectedProduct
+        );
+
+    document
+        .getElementById("btnFacturar")
+        .addEventListener(
+            "click",
+            createInvoice
+        );
+
+    document
+        .getElementById("btnLimpiar")
+        .addEventListener(
+            "click",
+            () => {
+                if (
+                    state.cart.length > 0
+                    && !confirm(
+                        "¿Seguro que deseas limpiar la venta actual?"
+                    )
+                ) {
+                    return;
+                }
+
+                hideStatus();
+                resetForm();
+            }
+        );
+
+    document
+        .getElementById("descuento_factura")
+        .addEventListener(
+            "input",
+            updateSummary
+        );
+
+    document
+        .getElementById("impuesto_porcentaje")
+        .addEventListener(
+            "input",
+            updateSummary
+        );
+
+    document.addEventListener(
+        "click",
+        event => {
+            const searchBox =
+                document.getElementById("buscar_producto");
+
+            const results =
+                document.getElementById("searchResults");
+
+            if (
+                !searchBox.contains(event.target)
+                && !results.contains(event.target)
+            ) {
+                results.style.display = "none";
+            }
+        }
+    );
+
+    renderCart();
+</script>
+
+</body>
+</html>
