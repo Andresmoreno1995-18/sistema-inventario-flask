@@ -6,8 +6,6 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 
-from datetime import datetime
-
 from flask import (
     Flask,
     render_template,
@@ -178,248 +176,404 @@ def init_db():
 
     cursor = conn.cursor()
 
-    # =====================================================
-    # USUARIOS
-    # =====================================================
+    try:
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS usuarios (
-            id SERIAL PRIMARY KEY,
-            usuario TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            rol TEXT NOT NULL DEFAULT 'admin',
-            genero TEXT NOT NULL DEFAULT 'Hombre',
-            fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-
-    cursor.execute("""
-        ALTER TABLE usuarios
-        ADD COLUMN IF NOT EXISTS genero
-        TEXT NOT NULL DEFAULT 'Hombre'
-    """)
-
-    cursor.execute("""
-        ALTER TABLE usuarios
-        ADD COLUMN IF NOT EXISTS fecha_registro
-        TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    """)
-
-    # =====================================================
-    # PROVEEDORES
-    # =====================================================
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS proveedores (
-            id SERIAL PRIMARY KEY,
-            nombre TEXT NOT NULL,
-            contacto TEXT,
-            telefono TEXT,
-            email TEXT
-        )
-    """)
-
-    cursor.execute("""
-        ALTER TABLE proveedores
-        ADD COLUMN IF NOT EXISTS email TEXT
-    """)
-
-    # =====================================================
-    # PRODUCTOS
-    # =====================================================
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS productos (
-            id SERIAL PRIMARY KEY,
-            nombre TEXT NOT NULL,
-            categoria TEXT,
-            precio DOUBLE PRECISION NOT NULL DEFAULT 0,
-            existencias INTEGER NOT NULL DEFAULT 0
-        )
-    """)
-
-    # Costo de compra para calcular rentabilidad
-    cursor.execute("""
-        ALTER TABLE productos
-        ADD COLUMN IF NOT EXISTS precio_compra
-        DOUBLE PRECISION NOT NULL DEFAULT 0
-    """)
-
-    # Relación con proveedor
-    cursor.execute("""
-        ALTER TABLE productos
-        ADD COLUMN IF NOT EXISTS proveedor_id
-        INTEGER
-    """)
-
-    # =====================================================
-    # MOVIMIENTOS
-    # =====================================================
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS movimientos (
-            id SERIAL PRIMARY KEY,
-            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            producto_id INTEGER,
-            tipo TEXT NOT NULL,
-            cantidad INTEGER NOT NULL,
-            motivo TEXT,
-            factura TEXT,
-            orden_compra TEXT,
-            comentarios TEXT,
-            usuario TEXT,
-            FOREIGN KEY (producto_id)
-                REFERENCES productos(id)
-                ON DELETE CASCADE
-        )
-    """)
-
-    cursor.execute("""
-        ALTER TABLE movimientos
-        ADD COLUMN IF NOT EXISTS factura TEXT
-    """)
-
-    cursor.execute("""
-        ALTER TABLE movimientos
-        ADD COLUMN IF NOT EXISTS orden_compra TEXT
-    """)
-
-    cursor.execute("""
-        ALTER TABLE movimientos
-        ADD COLUMN IF NOT EXISTS comentarios TEXT
-    """)
-
-    # =====================================================
-    # FACTURAS
-    # =====================================================
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS facturas (
-            id SERIAL PRIMARY KEY,
-            numero_factura TEXT UNIQUE NOT NULL,
-            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            cliente TEXT DEFAULT 'Cliente general',
-            documento_cliente TEXT,
-            telefono_cliente TEXT,
-            subtotal DOUBLE PRECISION NOT NULL DEFAULT 0,
-            descuento DOUBLE PRECISION NOT NULL DEFAULT 0,
-            impuesto DOUBLE PRECISION NOT NULL DEFAULT 0,
-            total DOUBLE PRECISION NOT NULL DEFAULT 0,
-            metodo_pago TEXT DEFAULT 'Efectivo',
-            usuario TEXT,
-            estado TEXT DEFAULT 'Pagada'
-        )
-    """)
-
-    # =====================================================
-    # DETALLE DE FACTURAS
-    # =====================================================
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS factura_detalles (
-            id SERIAL PRIMARY KEY,
-            factura_id INTEGER NOT NULL,
-            producto_id INTEGER NOT NULL,
-            producto_nombre TEXT NOT NULL,
-            cantidad INTEGER NOT NULL,
-            precio_unitario DOUBLE PRECISION NOT NULL DEFAULT 0,
-            costo_unitario DOUBLE PRECISION NOT NULL DEFAULT 0,
-            subtotal DOUBLE PRECISION NOT NULL DEFAULT 0,
-            FOREIGN KEY (factura_id)
-                REFERENCES facturas(id)
-                ON DELETE CASCADE,
-            FOREIGN KEY (producto_id)
-                REFERENCES productos(id)
-        )
-    """)
-
-    # =====================================================
-    # ÍNDICES PARA MEJORAR CONSULTAS
-    # =====================================================
-
-    cursor.execute("""
-        CREATE INDEX IF NOT EXISTS idx_movimientos_fecha
-        ON movimientos(fecha)
-    """)
-
-    cursor.execute("""
-        CREATE INDEX IF NOT EXISTS idx_movimientos_producto
-        ON movimientos(producto_id)
-    """)
-
-    cursor.execute("""
-        CREATE INDEX IF NOT EXISTS idx_facturas_fecha
-        ON facturas(fecha)
-    """)
-
-    cursor.execute("""
-        CREATE INDEX IF NOT EXISTS idx_factura_detalles_factura
-        ON factura_detalles(factura_id)
-    """)
-
-    # =====================================================
-    # USUARIO ADMINISTRADOR
-    # =====================================================
-
-    cursor.execute("""
-        SELECT
-            id,
-            password,
-            rol
-        FROM usuarios
-        WHERE usuario = %s
-    """, ("admin",))
-
-    usuario_admin = cursor.fetchone()
-
-    if usuario_admin is None:
-
-        password_admin = generate_password_hash(
-            "admin123"
-        )
+        # =====================================================
+        # USUARIOS
+        # =====================================================
 
         cursor.execute("""
-            INSERT INTO usuarios
-            (
-                usuario,
-                password,
-                rol,
-                genero,
-                fecha_registro
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id SERIAL PRIMARY KEY,
+                usuario TEXT UNIQUE NOT NULL,
+                password TEXT NOT NULL,
+                rol TEXT NOT NULL DEFAULT 'admin',
+                genero TEXT NOT NULL DEFAULT 'Hombre',
+                fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
-            VALUES (
-                %s,
-                %s,
-                %s,
-                %s,
-                CURRENT_TIMESTAMP
-            )
-        """, (
-            "admin",
-            password_admin,
-            "admin",
-            "Hombre"
-        ))
-
-    else:
-
-        cursor.execute("""
-            UPDATE usuarios
-            SET rol = 'admin'
-            WHERE usuario = 'admin'
         """)
 
-    migrate_old_passwords(cursor)
+        cursor.execute("""
+            ALTER TABLE usuarios
+            ADD COLUMN IF NOT EXISTS genero
+            TEXT NOT NULL DEFAULT 'Hombre'
+        """)
 
-    conn.commit()
+        cursor.execute("""
+            ALTER TABLE usuarios
+            ADD COLUMN IF NOT EXISTS fecha_registro
+            TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        """)
 
-    cursor.close()
 
-    conn.close()
+        # =====================================================
+        # PROVEEDORES
+        # =====================================================
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS proveedores (
+                id SERIAL PRIMARY KEY,
+                nombre TEXT NOT NULL,
+                contacto TEXT,
+                telefono TEXT,
+                email TEXT
+            )
+        """)
+
+        cursor.execute("""
+            ALTER TABLE proveedores
+            ADD COLUMN IF NOT EXISTS email TEXT
+        """)
+
+
+        # =====================================================
+        # PRODUCTOS
+        # =====================================================
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS productos (
+                id SERIAL PRIMARY KEY,
+                nombre TEXT NOT NULL,
+                categoria TEXT,
+                precio DOUBLE PRECISION NOT NULL DEFAULT 0,
+                existencias INTEGER NOT NULL DEFAULT 0,
+                precio_compra DOUBLE PRECISION NOT NULL DEFAULT 0,
+                proveedor_id INTEGER
+            )
+        """)
+
+        cursor.execute("""
+            ALTER TABLE productos
+            ADD COLUMN IF NOT EXISTS precio_compra
+            DOUBLE PRECISION NOT NULL DEFAULT 0
+        """)
+
+        cursor.execute("""
+            ALTER TABLE productos
+            ADD COLUMN IF NOT EXISTS proveedor_id
+            INTEGER
+        """)
+
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_productos_nombre
+            ON productos(nombre)
+        """)
+
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_productos_categoria
+            ON productos(categoria)
+        """)
+
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_productos_proveedor
+            ON productos(proveedor_id)
+        """)
+
+
+        # =====================================================
+        # RELACIÓN PRODUCTOS → PROVEEDORES
+        # =====================================================
+
+        cursor.execute("""
+            DO $$
+            BEGIN
+
+                IF NOT EXISTS (
+                    SELECT 1
+                    FROM pg_constraint
+                    WHERE conname = 'fk_productos_proveedor'
+                ) THEN
+
+                    ALTER TABLE productos
+                    ADD CONSTRAINT fk_productos_proveedor
+                    FOREIGN KEY (proveedor_id)
+                    REFERENCES proveedores(id)
+                    ON DELETE SET NULL;
+
+                END IF;
+
+            END
+            $$;
+        """)
+
+
+        # =====================================================
+        # MOVIMIENTOS
+        # =====================================================
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS movimientos (
+                id SERIAL PRIMARY KEY,
+                fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                producto_id INTEGER,
+                tipo TEXT NOT NULL,
+                cantidad INTEGER NOT NULL,
+                motivo TEXT,
+                factura TEXT,
+                orden_compra TEXT,
+                comentarios TEXT,
+                usuario TEXT,
+                FOREIGN KEY (producto_id)
+                    REFERENCES productos(id)
+                    ON DELETE CASCADE
+            )
+        """)
+
+        cursor.execute("""
+            ALTER TABLE movimientos
+            ADD COLUMN IF NOT EXISTS factura TEXT
+        """)
+
+        cursor.execute("""
+            ALTER TABLE movimientos
+            ADD COLUMN IF NOT EXISTS orden_compra TEXT
+        """)
+
+        cursor.execute("""
+            ALTER TABLE movimientos
+            ADD COLUMN IF NOT EXISTS comentarios TEXT
+        """)
+
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_movimientos_producto
+            ON movimientos(producto_id)
+        """)
+
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_movimientos_fecha
+            ON movimientos(fecha)
+        """)
+
+
+        # =====================================================
+        # SECUENCIA DE FACTURACIÓN
+        # =====================================================
+
+        cursor.execute("""
+            CREATE SEQUENCE IF NOT EXISTS factura_numero_seq
+            START WITH 1
+            INCREMENT BY 1
+        """)
+
+
+        # =====================================================
+        # FACTURAS
+        # =====================================================
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS facturas (
+
+                id SERIAL PRIMARY KEY,
+
+                numero_factura BIGINT
+                    UNIQUE NOT NULL
+                    DEFAULT nextval('factura_numero_seq'),
+
+                fecha TIMESTAMP
+                    DEFAULT CURRENT_TIMESTAMP,
+
+                usuario TEXT NOT NULL,
+
+                cliente_nombre TEXT,
+
+                cliente_documento TEXT,
+
+                cliente_telefono TEXT,
+
+                cliente_email TEXT,
+
+                metodo_pago TEXT
+                    DEFAULT 'Efectivo',
+
+                subtotal DOUBLE PRECISION
+                    NOT NULL DEFAULT 0,
+
+                descuento DOUBLE PRECISION
+                    NOT NULL DEFAULT 0,
+
+                impuesto DOUBLE PRECISION
+                    NOT NULL DEFAULT 0,
+
+                total DOUBLE PRECISION
+                    NOT NULL DEFAULT 0,
+
+                estado TEXT
+                    NOT NULL DEFAULT 'Pagada',
+
+                observaciones TEXT
+
+            )
+        """)
+
+
+        # =====================================================
+        # DETALLES DE FACTURA
+        # =====================================================
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS factura_detalles (
+
+                id SERIAL PRIMARY KEY,
+
+                factura_id INTEGER NOT NULL,
+
+                producto_id INTEGER,
+
+                producto_nombre TEXT NOT NULL,
+
+                cantidad INTEGER NOT NULL,
+
+                precio_compra DOUBLE PRECISION
+                    NOT NULL DEFAULT 0,
+
+                precio_unitario DOUBLE PRECISION
+                    NOT NULL DEFAULT 0,
+
+                descuento DOUBLE PRECISION
+                    NOT NULL DEFAULT 0,
+
+                subtotal DOUBLE PRECISION
+                    NOT NULL DEFAULT 0,
+
+                utilidad DOUBLE PRECISION
+                    NOT NULL DEFAULT 0,
+
+                FOREIGN KEY (factura_id)
+                    REFERENCES facturas(id)
+                    ON DELETE CASCADE,
+
+                FOREIGN KEY (producto_id)
+                    REFERENCES productos(id)
+                    ON DELETE SET NULL
+
+            )
+        """)
+
+
+        # =====================================================
+        # ÍNDICES DE FACTURACIÓN
+        # =====================================================
+
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_facturas_fecha
+            ON facturas(fecha)
+        """)
+
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_facturas_usuario
+            ON facturas(usuario)
+        """)
+
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_factura_detalles_factura
+            ON factura_detalles(factura_id)
+        """)
+
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_factura_detalles_producto
+            ON factura_detalles(producto_id)
+        """)
+
+
+        # =====================================================
+        # AJUSTAR SECUENCIA AL ÚLTIMO NÚMERO EXISTENTE
+        # =====================================================
+
+        cursor.execute("""
+            SELECT COALESCE(
+                MAX(numero_factura),
+                0
+            )
+            FROM facturas
+        """)
+
+        ultimo_numero = cursor.fetchone()[0]
+
+        cursor.execute("""
+            SELECT setval(
+                'factura_numero_seq',
+                GREATEST(%s, 1),
+                %s
+            )
+        """, (
+            ultimo_numero,
+            ultimo_numero > 0
+        ))
+
+
+        # =====================================================
+        # USUARIO ADMINISTRADOR
+        # =====================================================
+
+        cursor.execute("""
+            SELECT
+                id,
+                password,
+                rol
+            FROM usuarios
+            WHERE usuario = %s
+        """, ("admin",))
+
+        usuario_admin = cursor.fetchone()
+
+
+        if usuario_admin is None:
+
+            password_admin = generate_password_hash(
+                "admin123"
+            )
+
+            cursor.execute("""
+                INSERT INTO usuarios
+                (
+                    usuario,
+                    password,
+                    rol,
+                    genero,
+                    fecha_registro
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    CURRENT_TIMESTAMP
+                )
+            """, (
+                "admin",
+                password_admin,
+                "admin",
+                "Hombre"
+            ))
+
+        else:
+
+            cursor.execute("""
+                UPDATE usuarios
+                SET rol = 'admin'
+                WHERE usuario = 'admin'
+            """)
+
+
+        migrate_old_passwords(cursor)
+
+        conn.commit()
+
+    except Exception:
+
+        conn.rollback()
+
+        raise
+
+    finally:
+
+        cursor.close()
+
+        conn.close()
 
 
 # =========================================================
-# CREAR TABLAS AUTOMÁTICAMENTE
+# CREAR / ACTUALIZAR TABLAS AUTOMÁTICAMENTE
 # =========================================================
 
 init_db()
@@ -438,15 +592,18 @@ def index():
             url_for("login")
         )
 
+
     busqueda = request.args.get(
         "q",
         ""
     ).strip()
 
+
     filtro_stock = request.args.get(
         "stock",
         "todos"
     ).strip().lower()
+
 
     if filtro_stock not in (
         "todos",
@@ -457,15 +614,18 @@ def index():
 
         filtro_stock = "todos"
 
+
     conn = get_db()
 
     cursor = conn.cursor(
         cursor_factory=RealDictCursor
     )
 
+
     condiciones = []
 
     parametros = []
+
 
     if busqueda:
 
@@ -485,11 +645,13 @@ def index():
             texto_busqueda
         ])
 
+
     if filtro_stock == "stock":
 
         condiciones.append(
             "p.existencias > 0"
         )
+
 
     elif filtro_stock == "bajo":
 
@@ -497,11 +659,13 @@ def index():
             "p.existencias BETWEEN 1 AND 5"
         )
 
+
     elif filtro_stock == "agotado":
 
         condiciones.append(
             "p.existencias = 0"
         )
+
 
     where_sql = ""
 
@@ -511,6 +675,7 @@ def index():
             "WHERE "
             + " AND ".join(condiciones)
         )
+
 
     # =====================================================
     # PRODUCTOS
@@ -524,13 +689,17 @@ def index():
             p.precio,
             p.precio_compra,
             p.existencias,
-            p.proveedor_id
+            p.proveedor_id,
+            pr.nombre AS proveedor_nombre
         FROM productos p
+        LEFT JOIN proveedores pr
+            ON p.proveedor_id = pr.id
         {where_sql}
         ORDER BY p.id DESC
     """, parametros)
 
     productos = cursor.fetchall()
+
 
     # =====================================================
     # MOVIMIENTOS
@@ -542,6 +711,7 @@ def index():
             producto["id"]
             for producto in productos
         ]
+
 
         if ids_productos:
 
@@ -600,6 +770,7 @@ def index():
 
         movimientos = cursor.fetchall()
 
+
     # =====================================================
     # RESUMEN
     # =====================================================
@@ -617,6 +788,23 @@ def index():
         for producto in productos
     )
 
+    valor_inventario_costo = sum(
+        float(producto["precio_compra"] or 0)
+        * producto["existencias"]
+        for producto in productos
+    )
+
+    valor_potencial_venta = sum(
+        float(producto["precio"] or 0)
+        * producto["existencias"]
+        for producto in productos
+    )
+
+    utilidad_potencial = (
+        valor_potencial_venta
+        - valor_inventario_costo
+    )
+
     stock_bajo = sum(
         1
         for producto in productos
@@ -629,9 +817,11 @@ def index():
         if producto["existencias"] == 0
     )
 
+
     cursor.close()
 
     conn.close()
+
 
     return render_template(
         "index.html",
@@ -640,6 +830,9 @@ def index():
         total_productos=total_productos,
         unidades_totales=unidades_totales,
         valor_inventario=valor_inventario,
+        valor_inventario_costo=valor_inventario_costo,
+        valor_potencial_venta=valor_potencial_venta,
+        utilidad_potencial=utilidad_potencial,
         stock_bajo=stock_bajo,
         agotados=agotados,
         busqueda=busqueda,
@@ -669,6 +862,7 @@ def login():
             ""
         )
 
+
         if not usuario or not password:
 
             flash(
@@ -680,11 +874,13 @@ def login():
                 "login.html"
             )
 
+
         conn = get_db()
 
         cursor = conn.cursor(
             cursor_factory=RealDictCursor
         )
+
 
         cursor.execute("""
             SELECT
@@ -699,11 +895,14 @@ def login():
             usuario,
         ))
 
+
         user = cursor.fetchone()
+
 
         cursor.close()
 
         conn.close()
+
 
         if user and check_password_hash(
             user["password"],
@@ -714,19 +913,23 @@ def login():
             session["rol"] = user["rol"]
             session["genero"] = user["genero"]
 
+
             flash(
                 "¡Inicio de sesión exitoso!",
                 "success"
             )
 
+
             return redirect(
                 url_for("index")
             )
+
 
         flash(
             "Usuario o contraseña incorrectos.",
             "danger"
         )
+
 
     return render_template(
         "login.html"
@@ -748,6 +951,7 @@ def registro():
         return redirect(
             url_for("index")
         )
+
 
     if request.method == "POST":
 
@@ -771,6 +975,7 @@ def registro():
             ""
         ).strip()
 
+
         if not usuario or not password:
 
             flash(
@@ -781,6 +986,7 @@ def registro():
             return render_template(
                 "registro.html"
             )
+
 
         if genero not in (
             "Hombre",
@@ -796,6 +1002,7 @@ def registro():
                 "registro.html"
             )
 
+
         if rol not in (
             "admin",
             "usuario"
@@ -810,9 +1017,11 @@ def registro():
                 "registro.html"
             )
 
+
         conn = get_db()
 
         cursor = conn.cursor()
+
 
         cursor.execute("""
             SELECT id
@@ -822,7 +1031,9 @@ def registro():
             usuario,
         ))
 
+
         usuario_existente = cursor.fetchone()
+
 
         if usuario_existente:
 
@@ -839,9 +1050,11 @@ def registro():
                 "registro.html"
             )
 
+
         password_protegida = generate_password_hash(
             password
         )
+
 
         cursor.execute("""
             INSERT INTO usuarios
@@ -866,20 +1079,24 @@ def registro():
             genero
         ))
 
+
         conn.commit()
 
         cursor.close()
 
         conn.close()
 
+
         flash(
             "Usuario registrado correctamente.",
             "success"
         )
 
+
         return redirect(
             url_for("index")
         )
+
 
     return render_template(
         "registro.html"
@@ -921,6 +1138,7 @@ def agregar():
             url_for("index")
         )
 
+
     if request.method == "POST":
 
         nombre = request.form.get(
@@ -932,6 +1150,7 @@ def agregar():
             "categoria",
             ""
         ).strip()
+
 
         try:
 
@@ -959,13 +1178,44 @@ def agregar():
         except (TypeError, ValueError):
 
             flash(
-                "Precio o existencias no tienen un valor válido.",
+                "Precio, precio de compra o existencias no tienen un valor válido.",
                 "danger"
             )
 
             return render_template(
                 "producto_form.html"
             )
+
+
+        proveedor_id = request.form.get(
+            "proveedor_id",
+            ""
+        ).strip()
+
+
+        if proveedor_id:
+
+            try:
+
+                proveedor_id = int(
+                    proveedor_id
+                )
+
+            except ValueError:
+
+                flash(
+                    "El proveedor seleccionado no es válido.",
+                    "danger"
+                )
+
+                return render_template(
+                    "producto_form.html"
+                )
+
+        else:
+
+            proveedor_id = None
+
 
         if not nombre:
 
@@ -978,16 +1228,30 @@ def agregar():
                 "producto_form.html"
             )
 
-        if precio < 0 or precio_compra < 0:
+
+        if precio < 0:
 
             flash(
-                "Los precios no pueden ser negativos.",
+                "El precio de venta no puede ser negativo.",
                 "danger"
             )
 
             return render_template(
                 "producto_form.html"
             )
+
+
+        if precio_compra < 0:
+
+            flash(
+                "El precio de compra no puede ser negativo.",
+                "danger"
+            )
+
+            return render_template(
+                "producto_form.html"
+            )
+
 
         if existencias < 0:
 
@@ -1000,16 +1264,11 @@ def agregar():
                 "producto_form.html"
             )
 
-        proveedor_id = request.form.get(
-            "proveedor_id"
-        )
-
-        if not proveedor_id:
-            proveedor_id = None
 
         conn = get_db()
 
         cursor = conn.cursor()
+
 
         try:
 
@@ -1034,7 +1293,9 @@ def agregar():
                 proveedor_id
             ))
 
+
             producto_id = cursor.fetchone()[0]
+
 
             if existencias > 0:
 
@@ -1077,12 +1338,15 @@ def agregar():
                     )
                 ))
 
+
             conn.commit()
+
 
             flash(
                 "Producto agregado con éxito.",
                 "success"
             )
+
 
         except Exception:
 
@@ -1101,41 +1365,19 @@ def agregar():
                 "producto_form.html"
             )
 
+
         cursor.close()
 
         conn.close()
+
 
         return redirect(
             url_for("index")
         )
 
-    # Proveedores disponibles para el formulario
-    conn = get_db()
-
-    cursor = conn.cursor(
-        cursor_factory=RealDictCursor
-    )
-
-    cursor.execute("""
-        SELECT
-            id,
-            nombre,
-            contacto,
-            telefono,
-            email
-        FROM proveedores
-        ORDER BY nombre
-    """)
-
-    proveedores = cursor.fetchall()
-
-    cursor.close()
-
-    conn.close()
 
     return render_template(
-        "producto_form.html",
-        proveedores=proveedores
+        "producto_form.html"
     )
 
 
@@ -1155,11 +1397,13 @@ def editar(id):
             url_for("index")
         )
 
+
     conn = get_db()
 
     cursor = conn.cursor(
         cursor_factory=RealDictCursor
     )
+
 
     if request.method == "POST":
 
@@ -1172,6 +1416,7 @@ def editar(id):
             "categoria",
             ""
         ).strip()
+
 
         try:
 
@@ -1214,6 +1459,30 @@ def editar(id):
                 )
             )
 
+
+        proveedor_id = request.form.get(
+            "proveedor_id",
+            ""
+        ).strip()
+
+
+        if proveedor_id:
+
+            try:
+
+                proveedor_id = int(
+                    proveedor_id
+                )
+
+            except ValueError:
+
+                proveedor_id = None
+
+        else:
+
+            proveedor_id = None
+
+
         if precio < 0 or precio_compra < 0:
 
             cursor.close()
@@ -1231,6 +1500,7 @@ def editar(id):
                     id=id
                 )
             )
+
 
         if existencias < 0:
 
@@ -1250,12 +1520,6 @@ def editar(id):
                 )
             )
 
-        proveedor_id = request.form.get(
-            "proveedor_id"
-        )
-
-        if not proveedor_id:
-            proveedor_id = None
 
         cursor.execute("""
             UPDATE productos
@@ -1277,47 +1541,45 @@ def editar(id):
             id
         ))
 
+
         conn.commit()
 
         cursor.close()
 
         conn.close()
 
+
         flash(
             "Producto actualizado.",
             "success"
         )
 
+
         return redirect(
             url_for("index")
         )
 
+
     cursor.execute("""
-        SELECT *
-        FROM productos
-        WHERE id = %s
+        SELECT
+            p.*,
+            pr.nombre AS proveedor_nombre
+        FROM productos p
+        LEFT JOIN proveedores pr
+            ON p.proveedor_id = pr.id
+        WHERE p.id = %s
     """, (
         id,
     ))
 
+
     producto = cursor.fetchone()
 
-    cursor.execute("""
-        SELECT
-            id,
-            nombre,
-            contacto,
-            telefono,
-            email
-        FROM proveedores
-        ORDER BY nombre
-    """)
-
-    proveedores = cursor.fetchall()
 
     cursor.close()
 
     conn.close()
+
 
     if producto is None:
 
@@ -1330,10 +1592,10 @@ def editar(id):
             url_for("index")
         )
 
+
     return render_template(
         "producto_form.html",
-        producto=producto,
-        proveedores=proveedores
+        producto=producto
     )
 
 
@@ -1352,9 +1614,11 @@ def eliminar(id):
             url_for("index")
         )
 
+
     conn = get_db()
 
     cursor = conn.cursor()
+
 
     cursor.execute("""
         DELETE FROM movimientos
@@ -1363,6 +1627,7 @@ def eliminar(id):
         id,
     ))
 
+
     cursor.execute("""
         DELETE FROM productos
         WHERE id = %s
@@ -1370,16 +1635,19 @@ def eliminar(id):
         id,
     ))
 
+
     conn.commit()
 
     cursor.close()
 
     conn.close()
 
+
     flash(
         "Producto eliminado.",
         "warning"
     )
+
 
     return redirect(
         url_for("index")
@@ -1402,11 +1670,13 @@ def movimientos():
             url_for("login")
         )
 
+
     conn = get_db()
 
     cursor = conn.cursor(
         cursor_factory=RealDictCursor
     )
+
 
     if request.method == "POST":
 
@@ -1442,6 +1712,7 @@ def movimientos():
                 url_for("movimientos")
             )
 
+
         tipo = request.form.get(
             "tipo",
             ""
@@ -1472,6 +1743,7 @@ def movimientos():
             "admin"
         )
 
+
         cursor.execute("""
             SELECT existencias
             FROM productos
@@ -1480,7 +1752,9 @@ def movimientos():
             producto_id,
         ))
 
+
         producto = cursor.fetchone()
+
 
         if producto is None:
 
@@ -1489,12 +1763,14 @@ def movimientos():
                 "danger"
             )
 
+
         elif cantidad <= 0:
 
             flash(
                 "La cantidad debe ser mayor que cero.",
                 "danger"
             )
+
 
         elif (
             tipo == "Salida"
@@ -1506,6 +1782,7 @@ def movimientos():
                 "danger"
             )
 
+
         elif tipo not in (
             "Entrada",
             "Salida"
@@ -1515,6 +1792,7 @@ def movimientos():
                 "Tipo de movimiento no válido.",
                 "danger"
             )
+
 
         elif motivo not in (
             "Compra",
@@ -1530,6 +1808,7 @@ def movimientos():
                 "danger"
             )
 
+
         elif (
             motivo in (
                 "Devolución de cliente",
@@ -1543,11 +1822,13 @@ def movimientos():
                 "danger"
             )
 
+
         else:
 
             stock_actual = producto[
                 "existencias"
             ]
+
 
             if tipo == "Entrada":
 
@@ -1561,6 +1842,7 @@ def movimientos():
                     stock_actual - cantidad
                 )
 
+
             cursor.execute("""
                 UPDATE productos
                 SET existencias = %s
@@ -1569,6 +1851,7 @@ def movimientos():
                 nuevo_stock,
                 producto_id
             ))
+
 
             cursor.execute("""
                 INSERT INTO movimientos
@@ -1605,16 +1888,15 @@ def movimientos():
                 usuario
             ))
 
+
             conn.commit()
+
 
             flash(
                 "Movimiento registrado correctamente.",
                 "success"
             )
 
-    # =====================================================
-    # PRODUCTOS
-    # =====================================================
 
     cursor.execute("""
         SELECT
@@ -1628,11 +1910,9 @@ def movimientos():
         ORDER BY nombre
     """)
 
+
     productos = cursor.fetchall()
 
-    # =====================================================
-    # HISTORIAL
-    # =====================================================
 
     cursor.execute("""
         SELECT
@@ -1654,11 +1934,14 @@ def movimientos():
         ORDER BY m.id DESC
     """)
 
+
     lista_movimientos = cursor.fetchall()
+
 
     cursor.close()
 
     conn.close()
+
 
     return render_template(
         "movimientos.html",
@@ -1683,11 +1966,13 @@ def proveedores():
             url_for("login")
         )
 
+
     conn = get_db()
 
     cursor = conn.cursor(
         cursor_factory=RealDictCursor
     )
+
 
     if request.method == "POST":
 
@@ -1705,6 +1990,7 @@ def proveedores():
             return redirect(
                 url_for("proveedores")
             )
+
 
         nombre = request.form.get(
             "nombre",
@@ -1726,6 +2012,7 @@ def proveedores():
             ""
         ).strip()
 
+
         if not nombre:
 
             cursor.close()
@@ -1740,6 +2027,7 @@ def proveedores():
             return redirect(
                 url_for("proveedores")
             )
+
 
         cursor.execute("""
             INSERT INTO proveedores
@@ -1757,12 +2045,15 @@ def proveedores():
             email
         ))
 
+
         conn.commit()
+
 
         flash(
             "Proveedor agregado.",
             "success"
         )
+
 
     cursor.execute("""
         SELECT *
@@ -1770,11 +2061,14 @@ def proveedores():
         ORDER BY id DESC
     """)
 
+
     provs = cursor.fetchall()
+
 
     cursor.close()
 
     conn.close()
+
 
     return render_template(
         "proveedores.html",
@@ -1783,890 +2077,12 @@ def proveedores():
 
 
 # =========================================================
-# DASHBOARD PROFESIONAL
-# =========================================================
-
-@app.route("/dashboard")
-def dashboard():
-
-    if not requiere_login():
-
-        return redirect(
-            url_for("login")
-        )
-
-    conn = get_db()
-
-    cursor = conn.cursor(
-        cursor_factory=RealDictCursor
-    )
-
-    # =====================================================
-    # VENTAS DEL DÍA
-    # =====================================================
-
-    cursor.execute("""
-        SELECT
-            COALESCE(SUM(total), 0) AS total
-        FROM facturas
-        WHERE DATE(fecha) = CURRENT_DATE
-        AND estado = 'Pagada'
-    """)
-
-    ventas_dia = float(
-        cursor.fetchone()["total"] or 0
-    )
-
-    # =====================================================
-    # VENTAS DEL MES
-    # =====================================================
-
-    cursor.execute("""
-        SELECT
-            COALESCE(SUM(total), 0) AS total
-        FROM facturas
-        WHERE DATE_TRUNC('month', fecha)
-              = DATE_TRUNC('month', CURRENT_DATE)
-        AND estado = 'Pagada'
-    """)
-
-    ventas_mes = float(
-        cursor.fetchone()["total"] or 0
-    )
-
-    # =====================================================
-    # COMPRAS DEL MES
-    # =====================================================
-
-    cursor.execute("""
-        SELECT
-            COALESCE(
-                SUM(
-                    m.cantidad * COALESCE(p.precio_compra, 0)
-                ),
-                0
-            ) AS total
-        FROM movimientos m
-        INNER JOIN productos p
-            ON m.producto_id = p.id
-        WHERE m.tipo = 'Entrada'
-        AND m.motivo = 'Compra'
-        AND DATE_TRUNC('month', m.fecha)
-            = DATE_TRUNC('month', CURRENT_DATE)
-    """)
-
-    compras_mes = float(
-        cursor.fetchone()["total"] or 0
-    )
-
-    # =====================================================
-    # VALOR DEL INVENTARIO
-    # =====================================================
-
-    cursor.execute("""
-        SELECT
-            COALESCE(
-                SUM(
-                    existencias * precio_compra
-                ),
-                0
-            ) AS total
-        FROM productos
-    """)
-
-    valor_inventario_costo = float(
-        cursor.fetchone()["total"] or 0
-    )
-
-    cursor.execute("""
-        SELECT
-            COALESCE(
-                SUM(
-                    existencias * precio
-                ),
-                0
-            ) AS total
-        FROM productos
-    """)
-
-    valor_inventario_venta = float(
-        cursor.fetchone()["total"] or 0
-    )
-
-    # =====================================================
-    # PRODUCTOS AGOTADOS
-    # =====================================================
-
-    cursor.execute("""
-        SELECT COUNT(*) AS total
-        FROM productos
-        WHERE existencias = 0
-    """)
-
-    productos_agotados = cursor.fetchone()["total"]
-
-    # =====================================================
-    # STOCK BAJO
-    # =====================================================
-
-    cursor.execute("""
-        SELECT COUNT(*) AS total
-        FROM productos
-        WHERE existencias BETWEEN 1 AND 5
-    """)
-
-    productos_stock_bajo = cursor.fetchone()["total"]
-
-    # =====================================================
-    # TOTAL DE PRODUCTOS
-    # =====================================================
-
-    cursor.execute("""
-        SELECT COUNT(*) AS total
-        FROM productos
-    """)
-
-    total_productos = cursor.fetchone()["total"]
-
-    # =====================================================
-    # UNIDADES EN INVENTARIO
-    # =====================================================
-
-    cursor.execute("""
-        SELECT
-            COALESCE(SUM(existencias), 0) AS total
-        FROM productos
-    """)
-
-    unidades_totales = cursor.fetchone()["total"]
-
-    # =====================================================
-    # PRODUCTOS MÁS VENDIDOS
-    # =====================================================
-
-    cursor.execute("""
-        SELECT
-            fd.producto_nombre AS nombre,
-            SUM(fd.cantidad) AS unidades_vendidas,
-            SUM(fd.subtotal) AS ventas
-        FROM factura_detalles fd
-        INNER JOIN facturas f
-            ON fd.factura_id = f.id
-        WHERE f.estado = 'Pagada'
-        GROUP BY fd.producto_nombre
-        ORDER BY unidades_vendidas DESC
-        LIMIT 10
-    """)
-
-    productos_mas_vendidos = cursor.fetchall()
-
-    # =====================================================
-    # CATEGORÍAS MÁS RENTABLES
-    # =====================================================
-
-    cursor.execute("""
-        SELECT
-            COALESCE(p.categoria, 'Sin categoría')
-                AS categoria,
-            SUM(fd.subtotal) AS ventas,
-            SUM(
-                fd.cantidad *
-                fd.costo_unitario
-            ) AS costo,
-            SUM(
-                fd.subtotal -
-                (
-                    fd.cantidad *
-                    fd.costo_unitario
-                )
-            ) AS utilidad
-        FROM factura_detalles fd
-        INNER JOIN facturas f
-            ON fd.factura_id = f.id
-        INNER JOIN productos p
-            ON fd.producto_id = p.id
-        WHERE f.estado = 'Pagada'
-        GROUP BY p.categoria
-        ORDER BY utilidad DESC
-        LIMIT 10
-    """)
-
-    categorias_rentables = cursor.fetchall()
-
-    # =====================================================
-    # ÚLTIMAS FACTURAS
-    # =====================================================
-
-    cursor.execute("""
-        SELECT
-            id,
-            numero_factura,
-            TO_CHAR(
-                fecha,
-                'DD/MM/YYYY HH24:MI:SS'
-            ) AS fecha,
-            cliente,
-            total,
-            metodo_pago,
-            usuario,
-            estado
-        FROM facturas
-        ORDER BY id DESC
-        LIMIT 10
-    """)
-
-    ultimas_facturas = cursor.fetchall()
-
-    cursor.close()
-
-    conn.close()
-
-    return render_template(
-        "dashboard.html",
-        ventas_dia=ventas_dia,
-        ventas_mes=ventas_mes,
-        compras_mes=compras_mes,
-        valor_inventario_costo=valor_inventario_costo,
-        valor_inventario_venta=valor_inventario_venta,
-        productos_agotados=productos_agotados,
-        productos_stock_bajo=productos_stock_bajo,
-        total_productos=total_productos,
-        unidades_totales=unidades_totales,
-        productos_mas_vendidos=productos_mas_vendidos,
-        categorias_rentables=categorias_rentables,
-        ultimas_facturas=ultimas_facturas
-    )
-
-
-# =========================================================
-# FACTURACIÓN
+# API - BUSCAR PRODUCTOS
 # =========================================================
 
 @app.route(
-    "/facturacion",
-    methods=["GET", "POST"]
-)
-def facturacion():
-
-    if not requiere_login():
-
-        return redirect(
-            url_for("login")
-        )
-
-    if request.method == "GET":
-
-        conn = get_db()
-
-        cursor = conn.cursor(
-            cursor_factory=RealDictCursor
-        )
-
-        cursor.execute("""
-            SELECT
-                id,
-                nombre,
-                categoria,
-                precio,
-                precio_compra,
-                existencias
-            FROM productos
-            WHERE existencias > 0
-            ORDER BY nombre
-        """)
-
-        productos = cursor.fetchall()
-
-        cursor.close()
-
-        conn.close()
-
-        return render_template(
-            "facturacion.html",
-            productos=productos
-        )
-
-    # =====================================================
-    # CREAR FACTURA
-    # =====================================================
-
-    cliente = request.form.get(
-        "cliente",
-        "Cliente general"
-    ).strip()
-
-    documento_cliente = request.form.get(
-        "documento_cliente",
-        ""
-    ).strip()
-
-    telefono_cliente = request.form.get(
-        "telefono_cliente",
-        ""
-    ).strip()
-
-    metodo_pago = request.form.get(
-        "metodo_pago",
-        "Efectivo"
-    ).strip()
-
-    descuento = request.form.get(
-        "descuento",
-        "0"
-    )
-
-    impuesto = request.form.get(
-        "impuesto",
-        "0"
-    )
-
-    try:
-
-        descuento = float(descuento)
-
-        impuesto = float(impuesto)
-
-    except (TypeError, ValueError):
-
-        flash(
-            "Descuento o impuesto no válidos.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("facturacion")
-        )
-
-    if descuento < 0 or impuesto < 0:
-
-        flash(
-            "Descuento e impuesto no pueden ser negativos.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("facturacion")
-        )
-
-    # =====================================================
-    # RECIBIR PRODUCTOS
-    # =====================================================
-
-    productos_ids = request.form.getlist(
-        "producto_id"
-    )
-
-    cantidades = request.form.getlist(
-        "cantidad"
-    )
-
-    if not productos_ids:
-
-        flash(
-            "Debe agregar al menos un producto.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("facturacion")
-        )
-
-    if len(productos_ids) != len(cantidades):
-
-        flash(
-            "Los productos y cantidades no coinciden.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("facturacion")
-        )
-
-    conn = get_db()
-
-    cursor = conn.cursor(
-        cursor_factory=RealDictCursor
-    )
-
-    try:
-
-        detalles = []
-
-        subtotal = 0
-
-        # =================================================
-        # VALIDAR CADA PRODUCTO
-        # =================================================
-
-        for producto_id, cantidad_texto in zip(
-            productos_ids,
-            cantidades
-        ):
-
-            try:
-
-                producto_id = int(
-                    producto_id
-                )
-
-                cantidad = int(
-                    cantidad_texto
-                )
-
-            except (TypeError, ValueError):
-
-                raise ValueError(
-                    "Producto o cantidad inválidos."
-                )
-
-            if cantidad <= 0:
-
-                raise ValueError(
-                    "Las cantidades deben ser mayores que cero."
-                )
-
-            cursor.execute("""
-                SELECT
-                    id,
-                    nombre,
-                    precio,
-                    precio_compra,
-                    existencias
-                FROM productos
-                WHERE id = %s
-                FOR UPDATE
-            """, (
-                producto_id,
-            ))
-
-            producto = cursor.fetchone()
-
-            if producto is None:
-
-                raise ValueError(
-                    "Uno de los productos seleccionados no existe."
-                )
-
-            if cantidad > producto["existencias"]:
-
-                raise ValueError(
-                    f"No hay suficiente stock de {producto['nombre']}. "
-                    f"Disponible: {producto['existencias']}."
-                )
-
-            precio_unitario = float(
-                producto["precio"]
-            )
-
-            costo_unitario = float(
-                producto["precio_compra"] or 0
-            )
-
-            subtotal_producto = (
-                precio_unitario * cantidad
-            )
-
-            subtotal += subtotal_producto
-
-            detalles.append({
-                "producto_id": producto["id"],
-                "producto_nombre": producto["nombre"],
-                "cantidad": cantidad,
-                "precio_unitario": precio_unitario,
-                "costo_unitario": costo_unitario,
-                "subtotal": subtotal_producto
-            })
-
-        # =================================================
-        # CALCULAR TOTAL
-        # =================================================
-
-        if descuento > subtotal:
-
-            descuento = subtotal
-
-        base_imponible = (
-            subtotal - descuento
-        )
-
-        impuesto_valor = (
-            base_imponible
-            * impuesto
-            / 100
-        )
-
-        total = (
-            base_imponible
-            + impuesto_valor
-        )
-
-        # =================================================
-        # GENERAR NÚMERO DE FACTURA
-        # =================================================
-
-        fecha_codigo = datetime.now().strftime(
-            "%Y%m%d"
-        )
-
-        cursor.execute("""
-            SELECT COUNT(*) AS total
-            FROM facturas
-            WHERE DATE(fecha) = CURRENT_DATE
-        """)
-
-        consecutivo = (
-            cursor.fetchone()["total"] + 1
-        )
-
-        numero_factura = (
-            f"FAC-{fecha_codigo}-"
-            f"{consecutivo:04d}"
-        )
-
-        # =================================================
-        # CREAR FACTURA
-        # =================================================
-
-        cursor.execute("""
-            INSERT INTO facturas
-            (
-                numero_factura,
-                fecha,
-                cliente,
-                documento_cliente,
-                telefono_cliente,
-                subtotal,
-                descuento,
-                impuesto,
-                total,
-                metodo_pago,
-                usuario,
-                estado
-            )
-            VALUES
-            (
-                %s,
-                CURRENT_TIMESTAMP,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s,
-                %s
-            )
-            RETURNING id
-        """, (
-            numero_factura,
-            cliente or "Cliente general",
-            documento_cliente,
-            telefono_cliente,
-            subtotal,
-            descuento,
-            impuesto_valor,
-            total,
-            metodo_pago,
-            session.get(
-                "usuario",
-                "admin"
-            ),
-            "Pagada"
-        ))
-
-        factura_id = cursor.fetchone()["id"]
-
-        # =================================================
-        # DETALLES Y ACTUALIZACIÓN DEL STOCK
-        # =================================================
-
-        for detalle in detalles:
-
-            cursor.execute("""
-                INSERT INTO factura_detalles
-                (
-                    factura_id,
-                    producto_id,
-                    producto_nombre,
-                    cantidad,
-                    precio_unitario,
-                    costo_unitario,
-                    subtotal
-                )
-                VALUES
-                (
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s
-                )
-            """, (
-                factura_id,
-                detalle["producto_id"],
-                detalle["producto_nombre"],
-                detalle["cantidad"],
-                detalle["precio_unitario"],
-                detalle["costo_unitario"],
-                detalle["subtotal"]
-            ))
-
-            cursor.execute("""
-                UPDATE productos
-                SET existencias =
-                    existencias - %s
-                WHERE id = %s
-            """, (
-                detalle["cantidad"],
-                detalle["producto_id"]
-            ))
-
-            cursor.execute("""
-                INSERT INTO movimientos
-                (
-                    fecha,
-                    producto_id,
-                    tipo,
-                    cantidad,
-                    motivo,
-                    factura,
-                    orden_compra,
-                    comentarios,
-                    usuario
-                )
-                VALUES
-                (
-                    CURRENT_TIMESTAMP,
-                    %s,
-                    'Salida',
-                    %s,
-                    'Venta',
-                    %s,
-                    '',
-                    %s,
-                    %s
-                )
-            """, (
-                detalle["producto_id"],
-                detalle["cantidad"],
-                numero_factura,
-                "Venta registrada mediante facturación",
-                session.get(
-                    "usuario",
-                    "admin"
-                )
-            ))
-
-        conn.commit()
-
-        cursor.close()
-
-        conn.close()
-
-        flash(
-            f"Factura {numero_factura} creada correctamente.",
-            "success"
-        )
-
-        return redirect(
-            url_for(
-                "factura_detalle",
-                factura_id=factura_id
-            )
-        )
-
-    except ValueError as error:
-
-        conn.rollback()
-
-        cursor.close()
-
-        conn.close()
-
-        flash(
-            str(error),
-            "danger"
-        )
-
-        return redirect(
-            url_for("facturacion")
-        )
-
-    except Exception:
-
-        conn.rollback()
-
-        cursor.close()
-
-        conn.close()
-
-        flash(
-            "No fue posible generar la factura.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("facturacion")
-        )
-
-
-# =========================================================
-# LISTADO DE FACTURAS
-# =========================================================
-
-@app.route("/facturas")
-def facturas():
-
-    if not requiere_login():
-
-        return redirect(
-            url_for("login")
-        )
-
-    conn = get_db()
-
-    cursor = conn.cursor(
-        cursor_factory=RealDictCursor
-    )
-
-    cursor.execute("""
-        SELECT
-            id,
-            numero_factura,
-            TO_CHAR(
-                fecha,
-                'DD/MM/YYYY HH24:MI:SS'
-            ) AS fecha,
-            cliente,
-            documento_cliente,
-            subtotal,
-            descuento,
-            impuesto,
-            total,
-            metodo_pago,
-            usuario,
-            estado
-        FROM facturas
-        ORDER BY id DESC
-    """)
-
-    lista_facturas = cursor.fetchall()
-
-    cursor.close()
-
-    conn.close()
-
-    return render_template(
-        "facturas.html",
-        facturas=lista_facturas
-    )
-
-
-# =========================================================
-# DETALLE DE FACTURA
-# =========================================================
-
-@app.route(
-    "/factura/<int:factura_id>"
-)
-def factura_detalle(factura_id):
-
-    if not requiere_login():
-
-        return redirect(
-            url_for("login")
-        )
-
-    conn = get_db()
-
-    cursor = conn.cursor(
-        cursor_factory=RealDictCursor
-    )
-
-    cursor.execute("""
-        SELECT
-            id,
-            numero_factura,
-            TO_CHAR(
-                fecha,
-                'DD/MM/YYYY HH24:MI:SS'
-            ) AS fecha,
-            cliente,
-            documento_cliente,
-            telefono_cliente,
-            subtotal,
-            descuento,
-            impuesto,
-            total,
-            metodo_pago,
-            usuario,
-            estado
-        FROM facturas
-        WHERE id = %s
-    """, (
-        factura_id,
-    ))
-
-    factura = cursor.fetchone()
-
-    if factura is None:
-
-        cursor.close()
-
-        conn.close()
-
-        flash(
-            "Factura no encontrada.",
-            "danger"
-        )
-
-        return redirect(
-            url_for("facturas")
-        )
-
-    cursor.execute("""
-        SELECT
-            id,
-            producto_id,
-            producto_nombre,
-            cantidad,
-            precio_unitario,
-            costo_unitario,
-            subtotal,
-            (
-                subtotal -
-                (cantidad * costo_unitario)
-            ) AS utilidad
-        FROM factura_detalles
-        WHERE factura_id = %s
-        ORDER BY id
-    """, (
-        factura_id,
-    ))
-
-    detalles = cursor.fetchall()
-
-    cursor.close()
-
-    conn.close()
-
-    return render_template(
-        "factura_detalle.html",
-        factura=factura,
-        detalles=detalles
-    )
-
-
-# =========================================================
-# API DE PRODUCTOS PARA FACTURACIÓN
-# =========================================================
-
-@app.route(
-    "/api/productos"
+    "/api/productos",
+    methods=["GET"]
 )
 def api_productos():
 
@@ -2676,42 +2092,89 @@ def api_productos():
             "error": "No autorizado"
         }), 401
 
+
+    busqueda = request.args.get(
+        "q",
+        ""
+    ).strip()
+
+
     conn = get_db()
 
     cursor = conn.cursor(
         cursor_factory=RealDictCursor
     )
 
-    cursor.execute("""
-        SELECT
-            id,
-            nombre,
-            categoria,
-            precio,
-            precio_compra,
-            existencias
-        FROM productos
-        WHERE existencias > 0
-        ORDER BY nombre
-    """)
+
+    if busqueda:
+
+        texto = f"%{busqueda}%"
+
+        cursor.execute("""
+            SELECT
+                p.id,
+                p.nombre,
+                p.categoria,
+                p.precio,
+                p.precio_compra,
+                p.existencias,
+                p.proveedor_id,
+                pr.nombre AS proveedor_nombre
+            FROM productos p
+            LEFT JOIN proveedores pr
+                ON p.proveedor_id = pr.id
+            WHERE
+                CAST(p.id AS TEXT) ILIKE %s
+                OR p.nombre ILIKE %s
+                OR COALESCE(p.categoria, '') ILIKE %s
+            ORDER BY p.nombre
+            LIMIT 50
+        """, (
+            texto,
+            texto,
+            texto
+        ))
+
+    else:
+
+        cursor.execute("""
+            SELECT
+                p.id,
+                p.nombre,
+                p.categoria,
+                p.precio,
+                p.precio_compra,
+                p.existencias,
+                p.proveedor_id,
+                pr.nombre AS proveedor_nombre
+            FROM productos p
+            LEFT JOIN proveedores pr
+                ON p.proveedor_id = pr.id
+            ORDER BY p.nombre
+            LIMIT 100
+        """)
+
 
     productos = cursor.fetchall()
+
 
     cursor.close()
 
     conn.close()
 
-    return jsonify(
-        productos
-    )
+
+    return jsonify({
+        "productos": productos
+    })
 
 
 # =========================================================
-# API DE UN PRODUCTO
+# API - PRODUCTO INDIVIDUAL
 # =========================================================
 
 @app.route(
-    "/api/producto/<int:id>"
+    "/api/productos/<int:id>",
+    methods=["GET"]
 )
 def api_producto(id):
 
@@ -2721,31 +2184,40 @@ def api_producto(id):
             "error": "No autorizado"
         }), 401
 
+
     conn = get_db()
 
     cursor = conn.cursor(
         cursor_factory=RealDictCursor
     )
 
+
     cursor.execute("""
         SELECT
-            id,
-            nombre,
-            categoria,
-            precio,
-            precio_compra,
-            existencias
-        FROM productos
-        WHERE id = %s
+            p.id,
+            p.nombre,
+            p.categoria,
+            p.precio,
+            p.precio_compra,
+            p.existencias,
+            p.proveedor_id,
+            pr.nombre AS proveedor_nombre
+        FROM productos p
+        LEFT JOIN proveedores pr
+            ON p.proveedor_id = pr.id
+        WHERE p.id = %s
     """, (
         id,
     ))
 
+
     producto = cursor.fetchone()
+
 
     cursor.close()
 
     conn.close()
+
 
     if producto is None:
 
@@ -2753,8 +2225,509 @@ def api_producto(id):
             "error": "Producto no encontrado"
         }), 404
 
-    return jsonify(
-        producto
+
+    return jsonify(producto)
+
+
+# =========================================================
+# API - DASHBOARD
+# =========================================================
+
+@app.route(
+    "/api/dashboard",
+    methods=["GET"]
+)
+def api_dashboard():
+
+    if not requiere_login():
+
+        return jsonify({
+            "error": "No autorizado"
+        }), 401
+
+
+    conn = get_db()
+
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+
+    # =====================================================
+    # INVENTARIO
+    # =====================================================
+
+    cursor.execute("""
+        SELECT
+
+            COUNT(*) AS total_productos,
+
+            COALESCE(
+                SUM(existencias),
+                0
+            ) AS unidades_totales,
+
+            COALESCE(
+                SUM(
+                    existencias * precio_compra
+                ),
+                0
+            ) AS inventario_costo,
+
+            COALESCE(
+                SUM(
+                    existencias * precio
+                ),
+                0
+            ) AS inventario_venta,
+
+            COALESCE(
+                SUM(
+                    existencias
+                    * (precio - precio_compra)
+                ),
+                0
+            ) AS utilidad_potencial,
+
+            COUNT(
+                CASE
+                    WHEN existencias BETWEEN 1 AND 5
+                    THEN 1
+                END
+            ) AS stock_bajo,
+
+            COUNT(
+                CASE
+                    WHEN existencias = 0
+                    THEN 1
+                END
+            ) AS agotados
+
+        FROM productos
+    """)
+
+
+    inventario = cursor.fetchone()
+
+
+    # =====================================================
+    # VENTAS DEL DÍA
+    # =====================================================
+
+    cursor.execute("""
+        SELECT
+
+            COUNT(*) AS cantidad_facturas,
+
+            COALESCE(
+                SUM(total),
+                0
+            ) AS total_ventas
+
+        FROM facturas
+
+        WHERE
+            fecha::date = CURRENT_DATE
+            AND estado <> 'Anulada'
+    """)
+
+
+    ventas_dia = cursor.fetchone()
+
+
+    # =====================================================
+    # VENTAS DEL MES
+    # =====================================================
+
+    cursor.execute("""
+        SELECT
+
+            COUNT(*) AS cantidad_facturas,
+
+            COALESCE(
+                SUM(total),
+                0
+            ) AS total_ventas
+
+        FROM facturas
+
+        WHERE
+            DATE_TRUNC('month', fecha)
+            =
+            DATE_TRUNC('month', CURRENT_TIMESTAMP)
+
+            AND estado <> 'Anulada'
+    """)
+
+
+    ventas_mes = cursor.fetchone()
+
+
+    # =====================================================
+    # COMPRAS DEL MES
+    # =====================================================
+
+    cursor.execute("""
+        SELECT
+
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN m.tipo = 'Entrada'
+                        AND m.motivo = 'Compra'
+                        THEN
+                            m.cantidad
+                            * COALESCE(
+                                p.precio_compra,
+                                0
+                            )
+                        ELSE 0
+                    END
+                ),
+                0
+            ) AS compras_mes
+
+        FROM movimientos m
+
+        LEFT JOIN productos p
+            ON m.producto_id = p.id
+
+        WHERE
+            DATE_TRUNC('month', m.fecha)
+            =
+            DATE_TRUNC('month', CURRENT_TIMESTAMP)
+    """)
+
+
+    compras_mes = cursor.fetchone()
+
+
+    # =====================================================
+    # PRODUCTOS MÁS VENDIDOS
+    # =====================================================
+
+    cursor.execute("""
+        SELECT
+
+            fd.producto_id,
+
+            fd.producto_nombre,
+
+            COALESCE(
+                SUM(fd.cantidad),
+                0
+            ) AS unidades_vendidas,
+
+            COALESCE(
+                SUM(fd.subtotal),
+                0
+            ) AS ventas,
+
+            COALESCE(
+                SUM(fd.utilidad),
+                0
+            ) AS utilidad
+
+        FROM factura_detalles fd
+
+        INNER JOIN facturas f
+            ON fd.factura_id = f.id
+
+        WHERE
+            f.estado <> 'Anulada'
+
+        GROUP BY
+            fd.producto_id,
+            fd.producto_nombre
+
+        ORDER BY
+            unidades_vendidas DESC
+
+        LIMIT 10
+    """)
+
+
+    productos_mas_vendidos = cursor.fetchall()
+
+
+    # =====================================================
+    # CATEGORÍAS MÁS RENTABLES
+    # =====================================================
+
+    cursor.execute("""
+        SELECT
+
+            COALESCE(
+                p.categoria,
+                'Sin categoría'
+            ) AS categoria,
+
+            COALESCE(
+                SUM(fd.subtotal),
+                0
+            ) AS ventas,
+
+            COALESCE(
+                SUM(fd.utilidad),
+                0
+            ) AS utilidad
+
+        FROM factura_detalles fd
+
+        INNER JOIN facturas f
+            ON fd.factura_id = f.id
+
+        LEFT JOIN productos p
+            ON fd.producto_id = p.id
+
+        WHERE
+            f.estado <> 'Anulada'
+
+        GROUP BY
+            p.categoria
+
+        ORDER BY
+            utilidad DESC
+
+        LIMIT 10
+    """)
+
+
+    categorias_rentables = cursor.fetchall()
+
+
+    cursor.close()
+
+    conn.close()
+
+
+    return jsonify({
+        "inventario": inventario,
+        "ventas_dia": ventas_dia,
+        "ventas_mes": ventas_mes,
+        "compras_mes": compras_mes,
+        "productos_mas_vendidos": productos_mas_vendidos,
+        "categorias_mas_rentables": categorias_rentables
+    })
+
+
+# =========================================================
+# CONSULTAR FACTURA
+# =========================================================
+
+@app.route(
+    "/api/facturas/<int:id>",
+    methods=["GET"]
+)
+def api_factura(id):
+
+    if not requiere_login():
+
+        return jsonify({
+            "error": "No autorizado"
+        }), 401
+
+
+    conn = get_db()
+
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+
+    cursor.execute("""
+        SELECT
+            *
+        FROM facturas
+        WHERE id = %s
+    """, (
+        id,
+    ))
+
+
+    factura = cursor.fetchone()
+
+
+    if factura is None:
+
+        cursor.close()
+
+        conn.close()
+
+        return jsonify({
+            "error": "Factura no encontrada"
+        }), 404
+
+
+    cursor.execute("""
+        SELECT
+            *
+        FROM factura_detalles
+        WHERE factura_id = %s
+        ORDER BY id
+    """, (
+        id,
+    ))
+
+
+    detalles = cursor.fetchall()
+
+
+    cursor.close()
+
+    conn.close()
+
+
+    return jsonify({
+        "factura": factura,
+        "detalles": detalles
+    })
+
+
+# =========================================================
+# LISTAR FACTURAS
+# =========================================================
+
+@app.route(
+    "/api/facturas",
+    methods=["GET"]
+)
+def api_facturas():
+
+    if not requiere_login():
+
+        return jsonify({
+            "error": "No autorizado"
+        }), 401
+
+
+    conn = get_db()
+
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+
+    limite = request.args.get(
+        "limite",
+        "100"
+    )
+
+
+    try:
+
+        limite = int(limite)
+
+    except ValueError:
+
+        limite = 100
+
+
+    limite = max(
+        1,
+        min(
+            limite,
+            500
+        )
+    )
+
+
+    cursor.execute("""
+        SELECT
+            id,
+            numero_factura,
+            fecha,
+            usuario,
+            cliente_nombre,
+            cliente_documento,
+            metodo_pago,
+            subtotal,
+            descuento,
+            impuesto,
+            total,
+            estado
+        FROM facturas
+        ORDER BY id DESC
+        LIMIT %s
+    """, (
+        limite,
+    ))
+
+
+    facturas = cursor.fetchall()
+
+
+    cursor.close()
+
+    conn.close()
+
+
+    return jsonify({
+        "facturas": facturas
+    })
+
+
+# =========================================================
+# EXPORTAR FACTURAS
+# =========================================================
+
+@app.route(
+    "/exportar_facturas"
+)
+def exportar_facturas():
+
+    if not requiere_admin():
+
+        return redirect(
+            url_for("index")
+        )
+
+
+    conn = get_db()
+
+
+    df = pd.read_sql_query("""
+        SELECT
+
+            f.numero_factura,
+            f.fecha,
+            f.usuario,
+            f.cliente_nombre,
+            f.cliente_documento,
+            f.cliente_telefono,
+            f.cliente_email,
+            f.metodo_pago,
+            f.subtotal,
+            f.descuento,
+            f.impuesto,
+            f.total,
+            f.estado,
+            f.observaciones
+
+        FROM facturas f
+
+        ORDER BY f.id DESC
+    """, conn)
+
+
+    conn.close()
+
+
+    csv_path = "facturas_export.csv"
+
+
+    df.to_csv(
+        csv_path,
+        index=False,
+        encoding="utf-8-sig"
+    )
+
+
+    return send_file(
+        csv_path,
+        as_attachment=True,
+        download_name="facturas_export.csv",
+        mimetype="text/csv"
     )
 
 
@@ -2771,35 +2744,64 @@ def exportar():
             url_for("index")
         )
 
+
     conn = get_db()
 
-    df = pd.read_sql_query(
-        """
+
+    df = pd.read_sql_query("""
         SELECT
+
             p.id,
+
             p.nombre,
+
             p.categoria,
+
             p.precio_compra,
+
             p.precio,
+
             p.existencias,
+
+            COALESCE(
+                p.existencias * p.precio_compra,
+                0
+            ) AS valor_inventario_costo,
+
+            COALESCE(
+                p.existencias * p.precio,
+                0
+            ) AS valor_inventario_venta,
+
+            COALESCE(
+                p.existencias
+                * (p.precio - p.precio_compra),
+                0
+            ) AS utilidad_potencial,
+
             pr.nombre AS proveedor
+
         FROM productos p
+
         LEFT JOIN proveedores pr
             ON p.proveedor_id = pr.id
+
         ORDER BY p.id
-        """,
-        conn
-    )
+    """, conn)
+
 
     conn.close()
 
+
     csv_path = "inventario_export.csv"
+
 
     df.to_csv(
         csv_path,
         index=False,
         encoding="utf-8-sig"
     )
+
 
     return send_file(
         csv_path,
@@ -2810,60 +2812,7 @@ def exportar():
 
 
 # =========================================================
-# EXPORTAR FACTURAS
-# =========================================================
-
-@app.route("/exportar_facturas")
-def exportar_facturas():
-
-    if not requiere_admin():
-
-        return redirect(
-            url_for("index")
-        )
-
-    conn = get_db()
-
-    df = pd.read_sql_query(
-        """
-        SELECT
-            numero_factura,
-            fecha,
-            cliente,
-            documento_cliente,
-            subtotal,
-            descuento,
-            impuesto,
-            total,
-            metodo_pago,
-            usuario,
-            estado
-        FROM facturas
-        ORDER BY fecha DESC
-        """,
-        conn
-    )
-
-    conn.close()
-
-    csv_path = "facturas_export.csv"
-
-    df.to_csv(
-        csv_path,
-        index=False,
-        encoding="utf-8-sig"
-    )
-
-    return send_file(
-        csv_path,
-        as_attachment=True,
-        download_name="facturas_export.csv",
-        mimetype="text/csv"
-    )
-
-
-# =========================================================
-# GRÁFICO DE INVENTARIO
+# GRÁFICO
 # =========================================================
 
 @app.route("/grafico")
@@ -2875,19 +2824,21 @@ def grafico():
             url_for("login")
         )
 
+
     conn = get_db()
 
-    df = pd.read_sql_query(
-        """
+
+    df = pd.read_sql_query("""
         SELECT
             nombre,
             existencias
         FROM productos
-        """,
-        conn
-    )
+        ORDER BY existencias DESC
+    """, conn)
+
 
     conn.close()
+
 
     if df.empty:
 
@@ -2900,14 +2851,17 @@ def grafico():
             url_for("index")
         )
 
+
     plt.figure(
         figsize=(8, 4)
     )
+
 
     plt.bar(
         df["nombre"],
         df["existencias"]
     )
+
 
     plt.xlabel(
         "Productos"
@@ -2921,115 +2875,32 @@ def grafico():
         "Stock Actual por Producto"
     )
 
+
     plt.xticks(
         rotation=45,
         ha="right"
     )
 
+
     plt.tight_layout()
+
 
     os.makedirs(
         "static",
         exist_ok=True
     )
+
 
     img_path = "static/grafico.png"
 
-    plt.savefig(
-        img_path
-    )
-
-    plt.close()
-
-    return send_file(
-        img_path,
-        mimetype="image/png"
-    )
-
-
-# =========================================================
-# GRÁFICO DE VENTAS
-# =========================================================
-
-@app.route("/grafico_ventas")
-def grafico_ventas():
-
-    if not requiere_login():
-
-        return redirect(
-            url_for("login")
-        )
-
-    conn = get_db()
-
-    df = pd.read_sql_query(
-        """
-        SELECT
-            DATE(fecha) AS fecha,
-            SUM(total) AS ventas
-        FROM facturas
-        WHERE estado = 'Pagada'
-        GROUP BY DATE(fecha)
-        ORDER BY fecha
-        LIMIT 30
-        """,
-        conn
-    )
-
-    conn.close()
-
-    if df.empty:
-
-        flash(
-            "No hay ventas para generar el gráfico.",
-            "warning"
-        )
-
-        return redirect(
-            url_for("dashboard")
-        )
-
-    plt.figure(
-        figsize=(9, 4)
-    )
-
-    plt.plot(
-        df["fecha"].astype(str),
-        df["ventas"],
-        marker="o"
-    )
-
-    plt.xlabel(
-        "Fecha"
-    )
-
-    plt.ylabel(
-        "Ventas"
-    )
-
-    plt.title(
-        "Ventas de los últimos días"
-    )
-
-    plt.xticks(
-        rotation=45,
-        ha="right"
-    )
-
-    plt.tight_layout()
-
-    os.makedirs(
-        "static",
-        exist_ok=True
-    )
-
-    img_path = "static/grafico_ventas.png"
 
     plt.savefig(
         img_path
     )
 
+
     plt.close()
+
 
     return send_file(
         img_path,
@@ -3049,6 +2920,7 @@ if __name__ == "__main__":
             5000
         )
     )
+
 
     app.run(
         host="0.0.0.0",
