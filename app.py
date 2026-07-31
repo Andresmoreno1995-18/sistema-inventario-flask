@@ -384,9 +384,7 @@ def index():
             )
         """)
 
-
         texto_busqueda = f"%{busqueda}%"
-
 
         parametros.extend([
             texto_busqueda,
@@ -464,25 +462,137 @@ def index():
 
 
     # =====================================================
-    # ÚLTIMOS MOVIMIENTOS
+    # MOVIMIENTOS RELACIONADOS CON LA BÚSQUEDA
+    #
+    # SI NO HAY FILTROS:
+    #     MUESTRA LOS ÚLTIMOS 5 GENERALES.
+    #
+    # SI HAY BÚSQUEDA/FILTRO:
+    #     MUESTRA SOLO MOVIMIENTOS DE LOS PRODUCTOS
+    #     QUE COINCIDEN CON ESA BÚSQUEDA/FILTRO.
     # =====================================================
 
-    cursor.execute("""
-        SELECT
-            m.fecha,
-            p.nombre,
-            m.tipo,
-            m.cantidad,
-            m.usuario
-        FROM movimientos m
-        LEFT JOIN productos p
-            ON m.producto_id = p.id
-        ORDER BY m.id DESC
-        LIMIT 5
-    """)
+    if busqueda or filtro_stock != "todos":
+
+        condiciones_movimientos = []
+
+        parametros_movimientos = []
 
 
-    movimientos = cursor.fetchall()
+        # -------------------------------------------------
+        # FILTRO POR ID, NOMBRE O CATEGORÍA DEL PRODUCTO
+        # -------------------------------------------------
+
+        if busqueda:
+
+            condiciones_movimientos.append("""
+                (
+                    CAST(p.id AS TEXT) ILIKE %s
+                    OR p.nombre ILIKE %s
+                    OR COALESCE(p.categoria, '') ILIKE %s
+                )
+            """)
+
+            texto_movimiento = f"%{busqueda}%"
+
+            parametros_movimientos.extend([
+                texto_movimiento,
+                texto_movimiento,
+                texto_movimiento
+            ])
+
+
+        # -------------------------------------------------
+        # FILTRO POR STOCK ACTUAL DEL PRODUCTO
+        # -------------------------------------------------
+
+        if filtro_stock == "stock":
+
+            condiciones_movimientos.append("""
+                p.existencias > 0
+            """)
+
+
+        elif filtro_stock == "bajo":
+
+            condiciones_movimientos.append("""
+                p.existencias BETWEEN 1 AND 5
+            """)
+
+
+        elif filtro_stock == "agotado":
+
+            condiciones_movimientos.append("""
+                p.existencias = 0
+            """)
+
+
+        where_movimientos = ""
+
+
+        if condiciones_movimientos:
+
+            where_movimientos = (
+                "WHERE "
+                + " AND ".join(
+                    condiciones_movimientos
+                )
+            )
+
+
+        consulta_movimientos = f"""
+            SELECT
+                m.fecha,
+                p.nombre,
+                p.categoria,
+                m.tipo,
+                m.cantidad,
+                m.motivo,
+                m.usuario
+            FROM movimientos m
+            LEFT JOIN productos p
+                ON m.producto_id = p.id
+
+            {where_movimientos}
+
+            ORDER BY m.id DESC
+        """
+
+
+        cursor.execute(
+            consulta_movimientos,
+            parametros_movimientos
+        )
+
+
+        movimientos = cursor.fetchall()
+
+
+    else:
+
+        # -------------------------------------------------
+        # SIN BÚSQUEDA:
+        # MOSTRAR ÚLTIMOS 5 MOVIMIENTOS GENERALES
+        # -------------------------------------------------
+
+        cursor.execute("""
+            SELECT
+                m.fecha,
+                p.nombre,
+                p.categoria,
+                m.tipo,
+                m.cantidad,
+                m.motivo,
+                m.usuario
+            FROM movimientos m
+            LEFT JOIN productos p
+                ON m.producto_id = p.id
+            ORDER BY m.id DESC
+            LIMIT 5
+        """)
+
+
+        movimientos = cursor.fetchall()
 
 
     # =====================================================
