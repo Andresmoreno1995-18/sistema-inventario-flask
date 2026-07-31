@@ -216,16 +216,16 @@ def init_db():
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS movimientos (
-            id SERIAL PRIMARY KEY,
-            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            producto_id INTEGER,
-            tipo TEXT NOT NULL,
-            cantidad INTEGER NOT NULL,
-            motivo TEXT,
-            usuario TEXT,
-            FOREIGN KEY (producto_id)
-                REFERENCES productos(id)
-                ON DELETE CASCADE
+        id SERIAL PRIMARY KEY,
+        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        producto_id INTEGER,
+        tipo TEXT NOT NULL,
+        cantidad INTEGER NOT NULL,
+        motivo TEXT,
+        usuario TEXT,
+        FOREIGN KEY (producto_id)
+            REFERENCES productos(id)
+            ON DELETE CASCADE
         )
     """)
 
@@ -275,7 +275,7 @@ def init_db():
         """)
 
     # -------------------------
-    # MIGRAR CONTRASEÑAS ANTIGUAS
+    # MIGRAR CONTRASEÑAS
     # -------------------------
 
     migrate_old_passwords(cursor)
@@ -292,6 +292,7 @@ init_db()
 
 # =========================================================
 # PÁGINA PRINCIPAL
+# BUSCADOR + FILTROS DE STOCK
 # =========================================================
 
 @app.route("/")
@@ -300,13 +301,48 @@ def index():
     if not requiere_login():
         return redirect(url_for("login"))
 
+    # -----------------------------------------------------
+    # DATOS DEL BUSCADOR
+    # -----------------------------------------------------
+
+    busqueda = request.args.get(
+        "q",
+        ""
+    ).strip()
+
+    filtro_stock = request.args.get(
+        "stock",
+        "todos"
+    ).strip().lower()
+
+    filtros_validos = (
+        "todos",
+        "stock",
+        "bajo",
+        "agotado"
+    )
+
+    if filtro_stock not in filtros_validos:
+
+        filtro_stock = "todos"
+
+
+    # -----------------------------------------------------
+    # CONEXIÓN
+    # -----------------------------------------------------
+
     conn = get_db()
 
     cursor = conn.cursor(
         cursor_factory=RealDictCursor
     )
 
-    cursor.execute("""
+
+    # -----------------------------------------------------
+    # CONSULTA DE PRODUCTOS
+    # -----------------------------------------------------
+
+    consulta = """
         SELECT
             id,
             nombre,
@@ -314,10 +350,76 @@ def index():
             precio,
             existencias
         FROM productos
+        WHERE 1 = 1
+    """
+
+    parametros = []
+
+
+    # -----------------------------------------------------
+    # BUSCAR POR NOMBRE O CATEGORÍA
+    # -----------------------------------------------------
+
+    if busqueda:
+
+        consulta += """
+            AND (
+                nombre ILIKE %s
+                OR COALESCE(categoria, '') ILIKE %s
+            )
+        """
+
+        texto_busqueda = f"%{busqueda}%"
+
+        parametros.extend([
+            texto_busqueda,
+            texto_busqueda
+        ])
+
+
+    # -----------------------------------------------------
+    # FILTRO DE STOCK
+    # -----------------------------------------------------
+
+    if filtro_stock == "stock":
+
+        consulta += """
+            AND existencias > 0
+        """
+
+    elif filtro_stock == "bajo":
+
+        consulta += """
+            AND existencias BETWEEN 1 AND 5
+        """
+
+    elif filtro_stock == "agotado":
+
+        consulta += """
+            AND existencias = 0
+        """
+
+
+    # -----------------------------------------------------
+    # ORDENAR
+    # -----------------------------------------------------
+
+    consulta += """
         ORDER BY id DESC
-    """)
+    """
+
+
+    cursor.execute(
+        consulta,
+        parametros
+    )
 
     productos = cursor.fetchall()
+
+
+    # -----------------------------------------------------
+    # ÚLTIMOS MOVIMIENTOS
+    # -----------------------------------------------------
 
     cursor.execute("""
         SELECT
@@ -334,6 +436,11 @@ def index():
     """)
 
     movimientos = cursor.fetchall()
+
+
+    # -----------------------------------------------------
+    # ESTADÍSTICAS DE LOS RESULTADOS
+    # -----------------------------------------------------
 
     total_productos = len(productos)
 
@@ -360,8 +467,14 @@ def index():
         if producto["existencias"] == 0
     )
 
+
     cursor.close()
     conn.close()
+
+
+    # -----------------------------------------------------
+    # ENVIAR DATOS A HTML
+    # -----------------------------------------------------
 
     return render_template(
         "index.html",
@@ -371,7 +484,9 @@ def index():
         unidades_totales=unidades_totales,
         valor_inventario=valor_inventario,
         stock_bajo=stock_bajo,
-        agotados=agotados
+        agotados=agotados,
+        busqueda=busqueda,
+        filtro_stock=filtro_stock
     )
 
 
@@ -459,6 +574,7 @@ def login():
 
 # =========================================================
 # REGISTRO DE USUARIOS
+# SOLO ADMIN
 # =========================================================
 
 @app.route(
