@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Usuarios - Sistema de Inventario
+    </title>
+
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+
+    <style>
+
+        body {
+
+            min-height: 100vh;
+
+            background:
+
+                radial-gradient(
+                    circle at 10% 20%,
+                    rgba(13, 110, 253, 0.15),
+                    transparent 30%
+                ),
+
+                radial-gradient(
+                    circle at 90% 10%,
+                    rgba(25, 135, 84, 0.12),
+                    transparent 30%
+                ),
+
+                linear-gradient(
+                    135deg,
+                    #eef3f8,
+                    #f8fafc,
+                    #e9f0f7
+                );
+
+        }
+
+
+        .main-card {
+
+            border: none;
+
+            border-radius: 16px;
+
+            box-shadow:
+                0 8px 24px
+                rgba(15, 23, 42, 0.08);
+
+        }
+
+
+        .table {
+
+            margin-bottom: 0;
+
+        }
+
+
+        .table thead th {
+
+            font-size: 13px;
+
+            text-transform: uppercase;
+
+        }
+
+
+        .btn {
+
+            border-radius: 10px;
+
+            font-weight: 600;
+
+        }
+
+
+        .fecha {
+
+            white-space: nowrap;
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =====================================================
+     NAVBAR
+===================================================== -->
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+
+    <div class="container-fluid px-4">
+
+
+        <a
+            href="/"
+            class="navbar-brand fw-bold"
+        >
+
+            📦 Sistema de Gestión de Inventario
+
+        </a>
+
+
+        <div class="d-flex gap-2">
+
+
+            <a
+                href="/registro"
+                class="btn btn-primary btn-sm"
+            >
+
+                ➕ Crear Usuario
+
+            </a>
+
+
+            <a
+                href="/"
+                class="btn btn-outline-light btn-sm"
+            >
+
+                Volver al Panel
+
+            </a>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+
+<div class="container-fluid px-4 pb-5">
+
+
+    <!-- =====================================================
+         ENCABEZADO
+    ====================================================== -->
+
+    <div class="mb-4">
+
+
+        <h2 class="fw-bold">
+
+            👥 Gestión de Usuarios
+
+        </h2>
+
+
+        <p class="text-muted">
+
+            Registro de usuarios creados en la plataforma,
+            incluyendo fecha y hora exacta.
+
+        </p>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         MENSAJES
+    ====================================================== -->
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            {% for category, message in messages %}
+
+                <div
+                    class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show"
+                    role="alert"
+                >
+
+                    {{ message }}
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                    ></button>
+
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
+
+
+    <!-- =====================================================
+         RESUMEN
+    ====================================================== -->
+
+    <div class="row g-3 mb-4">
+
+
+        <div class="col-md-4">
+
+            <div class="card main-card p-3">
+
+                <small class="text-muted fw-bold">
+
+                    TOTAL DE USUARIOS
+
+                </small>
+
+
+                <div class="fs-2 fw-bold">
+
+                    {{ usuarios|length }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4">
+
+            <div class="card main-card p-3">
+
+                <small class="text-muted fw-bold">
+
+                    ADMINISTRADORES
+
+                </small>
+
+
+                <div class="fs-2 fw-bold text-primary">
+
+                    {{ usuarios|selectattr('rol', 'equalto', 'admin')|list|length }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-4">
+
+            <div class="card main-card p-3">
+
+                <small class="text-muted fw-bold">
+
+                    USUARIOS NORMALES
+
+                </small>
+
+
+                <div class="fs-2 fw-bold text-success">
+
+                    {{ usuarios|selectattr('rol', 'equalto', 'usuario')|list|length }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =====================================================
+         TABLA
+    ====================================================== -->
+
+    <div class="card main-card">
+
+
+        <div class="card-header bg-dark text-white">
+
+            <h5 class="mb-0">
+
+                📋 Registro de usuarios
+
+            </h5>
+
+        </div>
+
+
+        <div class="card-body p-0">
+
+
+            <div class="table-responsive">
+
+
+                <table class="table table-hover align-middle">
+
+
+                    <thead class="table-light">
+
+                        <tr>
+
+                            <th>ID</th>
+
+                            <th>Usuario</th>
+
+                            <th>Género</th>
+
+                            <th>Rol</th>
+
+                            <th>Fecha de creación</th>
+
+                            <th>Hora</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        {% if usuarios %}
+
+
+                            {% for user in usuarios %}
+
+
+                                <tr>
+
+
+                                    <!-- ID -->
+
+                                    <td>
+
+                                        #{{ user['id'] }}
+
+                                    </td>
+
+
+
+                                    <!-- USUARIO -->
+
+                                    <td>
+
+                                        <strong>
+
+                                            {% if user['genero'] == 'Mujer' %}
+
+                                                👩
+
+                                            {% else %}
+
+                                                👨
+
+                                            {% endif %}
+
+                                            {{ user['usuario'] }}
+
+                                        </strong>
+
+                                    </td>
+
+
+
+                                    <!-- GÉNERO -->
+
+                                    <td>
+
+                                        {% if user['genero'] == 'Mujer' %}
+
+                                            <span class="badge bg-danger">
+
+                                                Mujer
+
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="badge bg-primary">
+
+                                                Hombre
+
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+
+                                    <!-- ROL -->
+
+                                    <td>
+
+                                        {% if user['rol'] == 'admin' %}
+
+                                            <span class="badge bg-dark">
+
+                                                👑 Administrador
+
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="badge bg-success">
+
+                                                👤 Usuario
+
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+
+                                    <!-- FECHA -->
+
+                                    <td class="fecha">
+
+                                        {% if user['fecha_creacion'] %}
+
+                                            {{ user['fecha_creacion'].strftime('%d/%m/%Y') }}
+
+                                        {% else %}
+
+                                            -
+
+                                        {% endif %}
+
+                                    </td>
+
+
+
+                                    <!-- HORA -->
+
+                                    <td>
+
+                                        {% if user['fecha_creacion'] %}
+
+                                            <span class="badge bg-primary">
+
+                                                🕐 {{ user['fecha_creacion'].strftime('%H:%M:%S') }}
+
+                                            </span>
+
+                                        {% else %}
+
+                                            -
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                </tr>
+
+
+                            {% endfor %}
+
+
+                        {% else %}
+
+
+                            <tr>
+
+                                <td
+                                    colspan="6"
+                                    class="text-center text-muted py-5"
+                                >
+
+                                    No hay usuarios registrados.
+
+                                </td>
+
+                            </tr>
+
+
+                        {% endif %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         INFORMACIÓN
+    ====================================================== -->
+
+    <div class="alert alert-info mt-4">
+
+        <strong>ℹ️ Registro de auditoría:</strong>
+
+        La fecha y hora se guardan automáticamente utilizando
+        la hora oficial de Colombia.
+
+        Cada nuevo usuario queda registrado con sus datos
+        de creación.
+
+    </div>
+
+
+</div>
+
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+></script>
+
+</body>
+
+</html>
