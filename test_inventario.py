@@ -11,5 +11,5 @@ def test_api_dashboard_requiere_login(self):
     respuesta = app.test_client().get("/api/dashboard")
     self.assertEqual(respuesta.status_code, 401)
 
-if name == "main":
-unittest.main()
+if __name__ == "__main__":
+    unittest.main()
