@@ -1,3 +1,4 @@
+```python
 import os
 import pandas as pd
 import matplotlib
@@ -479,11 +480,15 @@ def index():
 
     # =====================================================
     # ÚLTIMOS MOVIMIENTOS
+    # SIN MICROSEGUNDOS
     # =====================================================
 
     cursor.execute("""
         SELECT
-            m.fecha,
+            TO_CHAR(
+                m.fecha,
+                'DD/MM/YYYY HH24:MI:SS'
+            ) AS fecha,
             p.nombre,
             m.tipo,
             m.cantidad,
@@ -1375,7 +1380,9 @@ def movimientos():
 
 
             # =================================================
-            # REGISTRAR MOVIMIENTO CON HORA DE COLOMBIA
+            # REGISTRAR MOVIMIENTO
+            # HORA DE COLOMBIA
+            # SIN MICROSEGUNDOS
             # =================================================
 
             cursor.execute("""
@@ -1444,11 +1451,15 @@ def movimientos():
 
     # =====================================================
     # HISTORIAL DE MOVIMIENTOS
+    # SIN MICROSEGUNDOS
     # =====================================================
 
     cursor.execute("""
         SELECT
-            m.fecha,
+            TO_CHAR(
+                m.fecha,
+                'DD/MM/YYYY HH24:MI:SS'
+            ) AS fecha,
             p.nombre,
             m.tipo,
             m.cantidad,
@@ -1759,3 +1770,4 @@ if __name__ == "__main__":
         port=port,
         debug=False
     )
+```
