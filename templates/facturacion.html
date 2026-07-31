@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Nueva Factura - Sistema de Inventario</title>
+    <title>Facturación - Sistema de Inventario</title>
 
     <style>
         * {
@@ -19,10 +19,58 @@
             color: #212529;
         }
 
+        /* =====================================================
+           BARRA SUPERIOR
+        ===================================================== */
+
+        .navbar {
+            background: #20252b;
+            color: white;
+            min-height: 54px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .navbar .brand {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .navbar .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .navbar .user-info {
+            font-size: 12px;
+            color: #d8dde3;
+            margin-right: 6px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: bold;
+            background: #33383f;
+            padding: 7px 11px;
+            border-radius: 6px;
+        }
+
+        .nav-link:hover {
+            background: #454b53;
+        }
+
         .contenedor {
             max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
+            margin: 25px auto;
+            padding: 0 20px 60px;
         }
 
         .encabezado {
@@ -35,11 +83,18 @@
             justify-content: space-between;
             align-items: center;
             gap: 15px;
+            flex-wrap: wrap;
         }
 
         .encabezado h1 {
             margin: 0;
-            font-size: 28px;
+            font-size: 26px;
+        }
+
+        .encabezado p {
+            margin: 4px 0 0;
+            color: #6c757d;
+            font-size: 13px;
         }
 
         .boton {
@@ -50,6 +105,7 @@
             font-weight: bold;
             text-decoration: none;
             display: inline-block;
+            font-size: 13px;
         }
 
         .boton-volver {
@@ -62,10 +118,42 @@
             color: white;
         }
 
+        .boton-secundario {
+            background: #126de0;
+            color: white;
+        }
+
         .boton-eliminar {
             background: #dc3545;
             color: white;
             padding: 7px 12px;
+        }
+
+        /* =====================================================
+           PESTAÑAS
+        ===================================================== */
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .tab-btn {
+            border: none;
+            background: white;
+            color: #495057;
+            padding: 12px 18px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+
+        .tab-btn.activo {
+            background: #198754;
+            color: white;
         }
 
         .grid {
@@ -127,6 +215,7 @@
             padding: 12px 10px;
             border-bottom: 1px solid #dee2e6;
             text-align: left;
+            font-size: 13px;
         }
 
         th {
@@ -222,6 +311,158 @@
             color: #6c757d;
         }
 
+        /* =====================================================
+           HISTORIAL
+        ===================================================== */
+
+        .filtros-historial {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filtros-historial input,
+        .filtros-historial select {
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 7px;
+            font-size: 13px;
+        }
+
+        .filtros-historial input {
+            flex: 1;
+            min-width: 220px;
+        }
+
+        .estado-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .estado-pagada {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .estado-otro {
+            background: #fde0e3;
+            color: #a11e2d;
+        }
+
+        .fila-clic {
+            cursor: pointer;
+        }
+
+        .fila-clic:hover {
+            background: #f8f9fa;
+        }
+
+        .btn-ver {
+            background: #e4f0ff;
+            color: #1264c5;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* =====================================================
+           MODAL DETALLE / IMPRESIÓN
+        ===================================================== */
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.5);
+            z-index: 999;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 30px 15px;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.activo {
+            display: flex;
+        }
+
+        .modal-caja {
+            background: white;
+            border-radius: 12px;
+            max-width: 700px;
+            width: 100%;
+            padding: 25px;
+            position: relative;
+        }
+
+        .modal-cerrar {
+            position: absolute;
+            top: 15px;
+            right: 18px;
+            border: none;
+            background: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .factura-cabecera {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #212529;
+            padding-bottom: 12px;
+        }
+
+        .factura-cabecera h2 {
+            margin: 0 0 4px;
+        }
+
+        .factura-datos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+
+        .factura-datos strong {
+            display: block;
+            color: #6c757d;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        @media print {
+
+            body * {
+                visibility: hidden;
+            }
+
+            #areaImprimir,
+            #areaImprimir * {
+                visibility: visible;
+            }
+
+            #areaImprimir {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+
+            .no-imprimir {
+                display: none !important;
+            }
+        }
+
         @media (max-width: 800px) {
             .grid {
                 grid-template-columns: 1fr;
@@ -235,18 +476,39 @@
                 flex-direction: column;
                 align-items: stretch;
             }
+
+            .factura-datos {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 
 <body>
 
+<header class="navbar">
+    <div class="brand">📦 Sistema de Gestión de Inventario</div>
+
+    <div class="nav-right">
+        <span class="user-info">
+            👤 {{ session.get('usuario', 'Usuario') }}
+            -
+            {{ 'Administrador' if session.get('rol') == 'admin' else 'Usuario' }}
+        </span>
+
+        <a href="{{ url_for('index') }}" class="nav-link">📊 Dashboard</a>
+        <a href="{{ url_for('movimientos') }}" class="nav-link">📦 Movimientos</a>
+        <a href="{{ url_for('proveedores') }}" class="nav-link">🚚 Proveedores</a>
+        <a href="{{ url_for('logout') }}" class="nav-link">Salir</a>
+    </div>
+</header>
+
 <div class="contenedor">
 
     <div class="encabezado">
         <div>
-            <h1>🧾 Nueva Factura</h1>
-            <p>Crear una nueva venta y actualizar automáticamente el inventario.</p>
+            <h1>🧾 Facturación</h1>
+            <p>Crear ventas, consultar el historial e imprimir facturas.</p>
         </div>
 
         <a href="{{ url_for('index') }}" class="boton boton-volver">
@@ -254,260 +516,376 @@
         </a>
     </div>
 
-    <div id="mensaje" class="mensaje"></div>
+    <div class="tabs">
+        <button type="button" id="tabNueva" class="tab-btn activo" onclick="mostrarVista('nueva')">
+            🧾 Nueva Factura
+        </button>
 
-    <div class="grid">
-
-        <!-- CLIENTE -->
-        <div class="tarjeta">
-
-            <h2>👤 Información del cliente</h2>
-
-            <div class="campo">
-                <label for="cliente_nombre">Nombre del cliente</label>
-                <input
-                    type="text"
-                    id="cliente_nombre"
-                    placeholder="Nombre completo"
-                >
-            </div>
-
-            <div class="campo">
-                <label for="cliente_documento">Documento</label>
-                <input
-                    type="text"
-                    id="cliente_documento"
-                    placeholder="Cédula / NIT"
-                >
-            </div>
-
-            <div class="campo">
-                <label for="cliente_telefono">Teléfono</label>
-                <input
-                    type="text"
-                    id="cliente_telefono"
-                    placeholder="Teléfono"
-                >
-            </div>
-
-            <div class="campo">
-                <label for="cliente_email">Correo electrónico</label>
-                <input
-                    type="email"
-                    id="cliente_email"
-                    placeholder="correo@ejemplo.com"
-                >
-            </div>
-
-        </div>
-
-        <!-- PAGO -->
-        <div class="tarjeta">
-
-            <h2>💳 Información de pago</h2>
-
-            <div class="campo">
-                <label for="metodo_pago">Método de pago</label>
-
-                <select id="metodo_pago">
-                    <option value="Efectivo">Efectivo</option>
-                    <option value="Tarjeta">Tarjeta</option>
-                    <option value="Transferencia">Transferencia</option>
-                    <option value="Nequi">Nequi</option>
-                    <option value="Daviplata">Daviplata</option>
-                    <option value="Otro">Otro</option>
-                </select>
-            </div>
-
-            <div class="campo">
-                <label for="descuento">Descuento</label>
-
-                <input
-                    type="number"
-                    id="descuento"
-                    value="0"
-                    min="0"
-                    step="0.01"
-                    oninput="calcularTotales()"
-                >
-            </div>
-
-            <div class="campo">
-                <label for="impuesto">Impuesto</label>
-
-                <input
-                    type="number"
-                    id="impuesto"
-                    value="0"
-                    min="0"
-                    step="0.01"
-                    oninput="calcularTotales()"
-                >
-            </div>
-
-            <div class="campo">
-                <label for="observaciones">Observaciones</label>
-
-                <input
-                    type="text"
-                    id="observaciones"
-                    placeholder="Observaciones de la venta"
-                >
-            </div>
-
-        </div>
-
+        <button type="button" id="tabHistorial" class="tab-btn" onclick="mostrarVista('historial')">
+            📋 Historial de Facturas
+        </button>
     </div>
 
-    <!-- AGREGAR PRODUCTOS -->
-    <div class="tarjeta">
+    <div id="mensaje" class="mensaje"></div>
 
-        <h2>📦 Agregar productos</h2>
+    <!-- =====================================================
+         VISTA: NUEVA FACTURA
+    ====================================================== -->
 
-        <div class="productos-form">
+    <section id="vista-nueva">
 
-            <div class="campo" style="margin-bottom: 0;">
+        <div class="grid">
 
-                <label for="busqueda_producto">
-                    Buscar producto
-                </label>
+            <!-- CLIENTE -->
+            <div class="tarjeta">
 
-                <div class="buscador">
+                <h2>👤 Información del cliente</h2>
 
-                    <input
-                        type="text"
-                        id="busqueda_producto"
-                        placeholder="Escriba el nombre o código..."
-                        autocomplete="off"
-                        oninput="buscarProductos()"
-                    >
+                <div class="campo">
+                    <label for="cliente_nombre">Nombre del cliente</label>
+                    <input type="text" id="cliente_nombre" placeholder="Nombre completo">
+                </div>
 
-                    <div
-                        id="resultados"
-                        class="resultados"
-                    ></div>
+                <div class="campo">
+                    <label for="cliente_documento">Documento</label>
+                    <input type="text" id="cliente_documento" placeholder="Cédula / NIT">
+                </div>
 
+                <div class="campo">
+                    <label for="cliente_telefono">Teléfono</label>
+                    <input type="text" id="cliente_telefono" placeholder="Teléfono">
+                </div>
+
+                <div class="campo">
+                    <label for="cliente_email">Correo electrónico</label>
+                    <input type="email" id="cliente_email" placeholder="correo@ejemplo.com">
                 </div>
 
             </div>
 
-            <div class="campo" style="margin-bottom: 0;">
+            <!-- PAGO -->
+            <div class="tarjeta">
 
-                <label for="cantidad_producto">
-                    Cantidad
-                </label>
+                <h2>💳 Información de pago</h2>
 
-                <input
-                    type="number"
-                    id="cantidad_producto"
-                    value="1"
-                    min="1"
-                >
+                <div class="campo">
+                    <label for="metodo_pago">Método de pago</label>
+
+                    <select id="metodo_pago">
+                        <option value="Efectivo">Efectivo</option>
+                        <option value="Tarjeta">Tarjeta</option>
+                        <option value="Transferencia">Transferencia</option>
+                        <option value="Nequi">Nequi</option>
+                        <option value="Daviplata">Daviplata</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label for="descuento">Descuento</label>
+                    <input type="number" id="descuento" value="0" min="0" step="0.01" oninput="calcularTotales()">
+                </div>
+
+                <div class="campo">
+                    <label for="impuesto">Impuesto</label>
+                    <input type="number" id="impuesto" value="0" min="0" step="0.01" oninput="calcularTotales()">
+                </div>
+
+                <div class="campo">
+                    <label for="observaciones">Observaciones</label>
+                    <input type="text" id="observaciones" placeholder="Observaciones de la venta">
+                </div>
 
             </div>
 
-            <div class="campo" style="margin-bottom: 0;">
+        </div>
 
-                <label>&nbsp;</label>
+        <!-- AGREGAR PRODUCTOS -->
+        <div class="tarjeta">
 
-                <button
-                    type="button"
-                    class="boton boton-principal"
-                    onclick="agregarProductoSeleccionado()"
-                >
-                    + Agregar
+            <h2>📦 Agregar productos</h2>
+
+            <div class="productos-form">
+
+                <div class="campo" style="margin-bottom: 0;">
+
+                    <label for="busqueda_producto">Buscar producto</label>
+
+                    <div class="buscador">
+
+                        <input
+                            type="text"
+                            id="busqueda_producto"
+                            placeholder="Escriba el nombre o código..."
+                            autocomplete="off"
+                            oninput="buscarProductos()"
+                        >
+
+                        <div id="resultados" class="resultados"></div>
+
+                    </div>
+
+                </div>
+
+                <div class="campo" style="margin-bottom: 0;">
+                    <label for="cantidad_producto">Cantidad</label>
+                    <input type="number" id="cantidad_producto" value="1" min="1">
+                </div>
+
+                <div class="campo" style="margin-bottom: 0;">
+                    <label>&nbsp;</label>
+                    <button type="button" class="boton boton-principal" onclick="agregarProductoSeleccionado()">
+                        + Agregar
+                    </button>
+                </div>
+
+            </div>
+
+            <div id="productoSeleccionado" style="margin-top:15px;color:#198754;font-weight:bold;"></div>
+
+        </div>
+
+        <!-- DETALLE -->
+        <div class="tarjeta">
+
+            <h2>🛒 Productos de la factura</h2>
+
+            <div class="tabla-contenedor">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Precio</th>
+                            <th>Descuento</th>
+                            <th>Subtotal</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaProductos">
+                        <tr id="filaVacia">
+                            <td colspan="6" class="vacio">No hay productos agregados.</td>
+                        </tr>
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div class="totales">
+
+                <div class="fila-total">
+                    <span>Subtotal:</span>
+                    <strong id="subtotal">$0</strong>
+                </div>
+
+                <div class="fila-total">
+                    <span>Descuento:</span>
+                    <strong id="totalDescuento">$0</strong>
+                </div>
+
+                <div class="fila-total">
+                    <span>Impuesto:</span>
+                    <strong id="totalImpuesto">$0</strong>
+                </div>
+
+                <div class="fila-total total-final">
+                    <span>TOTAL:</span>
+                    <strong id="totalFactura">$0</strong>
+                </div>
+
+            </div>
+
+            <div class="acciones-finales">
+
+                <button type="button" class="boton boton-volver" onclick="limpiarFactura()">
+                    Limpiar
+                </button>
+
+                <button type="button" class="boton boton-principal" onclick="generarFactura()">
+                    🧾 Generar factura
                 </button>
 
             </div>
 
         </div>
 
-        <div
-            id="productoSeleccionado"
-            style="margin-top:15px;color:#198754;font-weight:bold;"
-        ></div>
+    </section>
 
-    </div>
+    <!-- =====================================================
+         VISTA: HISTORIAL
+    ====================================================== -->
 
-    <!-- DETALLE -->
-    <div class="tarjeta">
+    <section id="vista-historial" style="display:none;">
 
-        <h2>🛒 Productos de la factura</h2>
+        <div class="tarjeta">
 
-        <div class="tabla-contenedor">
+            <h2>📋 Historial de facturas</h2>
 
-            <table>
+            <div class="filtros-historial">
 
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Cantidad</th>
-                        <th>Precio</th>
-                        <th>Descuento</th>
-                        <th>Subtotal</th>
-                        <th>Acción</th>
-                    </tr>
-                </thead>
+                <input
+                    type="text"
+                    id="busquedaHistorial"
+                    placeholder="🔎 Buscar por N° de factura, cliente o documento..."
+                    oninput="filtrarHistorial()"
+                >
 
-                <tbody id="tablaProductos">
+                <select id="filtroEstado" onchange="filtrarHistorial()">
+                    <option value="todos">Todos los estados</option>
+                    <option value="Pagada">Pagada</option>
+                    <option value="Anulada">Anulada</option>
+                </select>
 
-                    <tr id="filaVacia">
-                        <td
-                            colspan="6"
-                            class="vacio"
-                        >
-                            No hay productos agregados.
-                        </td>
-                    </tr>
+                <button type="button" class="boton boton-secundario" onclick="cargarHistorial()">
+                    🔄 Actualizar
+                </button>
 
-                </tbody>
-
-            </table>
-
-        </div>
-
-        <div class="totales">
-
-            <div class="fila-total">
-                <span>Subtotal:</span>
-                <strong id="subtotal">$0</strong>
             </div>
 
-            <div class="fila-total">
-                <span>Descuento:</span>
-                <strong id="totalDescuento">$0</strong>
-            </div>
+            <div class="tabla-contenedor">
 
-            <div class="fila-total">
-                <span>Impuesto:</span>
-                <strong id="totalImpuesto">$0</strong>
-            </div>
+                <table>
 
-            <div class="fila-total total-final">
-                <span>TOTAL:</span>
-                <strong id="totalFactura">$0</strong>
+                    <thead>
+                        <tr>
+                            <th>N° Factura</th>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Usuario</th>
+                            <th>Método pago</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="tablaHistorial">
+                        <tr>
+                            <td colspan="8" class="vacio">Cargando facturas...</td>
+                        </tr>
+                    </tbody>
+
+                </table>
+
             </div>
 
         </div>
 
-        <div class="acciones-finales">
+    </section>
 
-            <button
-                type="button"
-                class="boton boton-volver"
-                onclick="limpiarFactura()"
-            >
-                Limpiar
-            </button>
+</div>
 
-            <button
-                type="button"
-                class="boton boton-principal"
-                onclick="generarFactura()"
-            >
-                🧾 Generar factura
-            </button>
+<!-- =====================================================
+     MODAL DETALLE / IMPRESIÓN DE FACTURA
+====================================================== -->
 
+<div class="modal-overlay" id="modalFactura">
+
+    <div class="modal-caja">
+
+        <button type="button" class="modal-cerrar no-imprimir" onclick="cerrarModal()">×</button>
+
+        <div id="areaImprimir">
+
+            <div class="factura-cabecera">
+                <div>
+                    <h2 id="modalNumero">Factura #0</h2>
+                    <span id="modalEstado" class="estado-badge estado-pagada">Pagada</span>
+                </div>
+
+                <div style="text-align:right;">
+                    <strong>📦 Sistema de Gestión de Inventario</strong>
+                </div>
+            </div>
+
+            <div class="factura-datos">
+
+                <div>
+                    <strong>Fecha</strong>
+                    <span id="modalFecha">-</span>
+                </div>
+
+                <div>
+                    <strong>Atendido por</strong>
+                    <span id="modalUsuario">-</span>
+                </div>
+
+                <div>
+                    <strong>Cliente</strong>
+                    <span id="modalCliente">-</span>
+                </div>
+
+                <div>
+                    <strong>Documento</strong>
+                    <span id="modalDocumento">-</span>
+                </div>
+
+                <div>
+                    <strong>Teléfono</strong>
+                    <span id="modalTelefono">-</span>
+                </div>
+
+                <div>
+                    <strong>Método de pago</strong>
+                    <span id="modalMetodoPago">-</span>
+                </div>
+
+            </div>
+
+            <div class="tabla-contenedor">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Precio unit.</th>
+                            <th>Descuento</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="modalDetalles">
+                    </tbody>
+                </table>
+
+            </div>
+
+            <div class="totales">
+
+                <div class="fila-total">
+                    <span>Subtotal:</span>
+                    <strong id="modalSubtotal">$0</strong>
+                </div>
+
+                <div class="fila-total">
+                    <span>Descuento:</span>
+                    <strong id="modalDescuento">$0</strong>
+                </div>
+
+                <div class="fila-total">
+                    <span>Impuesto:</span>
+                    <strong id="modalImpuesto">$0</strong>
+                </div>
+
+                <div class="fila-total total-final">
+                    <span>TOTAL:</span>
+                    <strong id="modalTotal">$0</strong>
+                </div>
+
+            </div>
+
+            <p id="modalObservaciones" style="font-size:12px;color:#6c757d;"></p>
+
+        </div>
+
+        <div class="acciones-finales no-imprimir">
+            <button type="button" class="boton boton-volver" onclick="cerrarModal()">Cerrar</button>
+            <button type="button" class="boton boton-principal" onclick="window.print()">🖨️ Imprimir</button>
         </div>
 
     </div>
@@ -519,6 +897,7 @@
 
 let productoSeleccionado = null;
 let productosFactura = [];
+let listaHistorial = [];
 
 
 /* =========================================================
@@ -526,16 +905,11 @@ let productosFactura = [];
    ========================================================= */
 
 function moneda(valor) {
-
-    return new Intl.NumberFormat(
-        "es-CO",
-        {
-            style: "currency",
-            currency: "COP",
-            maximumFractionDigits: 0
-        }
-    ).format(valor || 0);
-
+    return new Intl.NumberFormat("es-CO", {
+        style: "currency",
+        currency: "COP",
+        maximumFractionDigits: 0
+    }).format(valor || 0);
 }
 
 
@@ -544,48 +918,77 @@ function moneda(valor) {
    ========================================================= */
 
 function mostrarMensaje(texto, tipo) {
-
     const mensaje = document.getElementById("mensaje");
-
     mensaje.textContent = texto;
-
     mensaje.className = "mensaje " + tipo;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
+
+/* =========================================================
+   ESCAPAR HTML
+   ========================================================= */
+
+function escapeHtml(texto) {
+    const div = document.createElement("div");
+    div.textContent = texto ?? "";
+    return div.innerHTML;
+}
+
+
+/* =========================================================
+   CAMBIAR ENTRE PESTAÑAS
+   ========================================================= */
+
+function mostrarVista(vista) {
+
+    const nueva = document.getElementById("vista-nueva");
+    const historial = document.getElementById("vista-historial");
+
+    const tabNueva = document.getElementById("tabNueva");
+    const tabHistorial = document.getElementById("tabHistorial");
+
+    if (vista === "historial") {
+
+        nueva.style.display = "none";
+        historial.style.display = "block";
+
+        tabNueva.classList.remove("activo");
+        tabHistorial.classList.add("activo");
+
+        if (listaHistorial.length === 0) {
+            cargarHistorial();
+        }
+
+    } else {
+
+        nueva.style.display = "block";
+        historial.style.display = "none";
+
+        tabHistorial.classList.remove("activo");
+        tabNueva.classList.add("activo");
+    }
 
 }
 
 
 /* =========================================================
-   BUSCAR PRODUCTOS
+   BUSCAR PRODUCTOS (NUEVA FACTURA)
    ========================================================= */
 
 let temporizadorBusqueda = null;
 
 function buscarProductos() {
 
-    const texto = document
-        .getElementById("busqueda_producto")
-        .value
-        .trim();
-
-    const resultados =
-        document.getElementById("resultados");
+    const texto = document.getElementById("busqueda_producto").value.trim();
+    const resultados = document.getElementById("resultados");
 
     productoSeleccionado = null;
-
-    document.getElementById(
-        "productoSeleccionado"
-    ).textContent = "";
+    document.getElementById("productoSeleccionado").textContent = "";
 
     if (!texto) {
-
         resultados.style.display = "none";
         resultados.innerHTML = "";
-
         return;
     }
 
@@ -595,33 +998,20 @@ function buscarProductos() {
 
         try {
 
-            const respuesta = await fetch(
-                "/api/productos?q=" +
-                encodeURIComponent(texto)
-            );
-
+            const respuesta = await fetch("/api/productos?q=" + encodeURIComponent(texto));
             const datos = await respuesta.json();
 
             resultados.innerHTML = "";
 
-            if (
-                !datos.productos ||
-                datos.productos.length === 0
-            ) {
-
-                resultados.innerHTML =
-                    '<div class="resultado">No se encontraron productos.</div>';
-
+            if (!datos.productos || datos.productos.length === 0) {
+                resultados.innerHTML = '<div class="resultado">No se encontraron productos.</div>';
                 resultados.style.display = "block";
-
                 return;
             }
 
             datos.productos.forEach(function(producto) {
 
-                const div =
-                    document.createElement("div");
-
+                const div = document.createElement("div");
                 div.className = "resultado";
 
                 div.innerHTML = `
@@ -634,9 +1024,7 @@ function buscarProductos() {
                 `;
 
                 div.onclick = function() {
-
                     seleccionarProducto(producto);
-
                 };
 
                 resultados.appendChild(div);
@@ -646,12 +1034,7 @@ function buscarProductos() {
             resultados.style.display = "block";
 
         } catch (error) {
-
-            mostrarMensaje(
-                "No fue posible consultar los productos.",
-                "error"
-            );
-
+            mostrarMensaje("No fue posible consultar los productos.", "error");
         }
 
     }, 250);
@@ -659,100 +1042,50 @@ function buscarProductos() {
 }
 
 
-/* =========================================================
-   SELECCIONAR PRODUCTO
-   ========================================================= */
-
 function seleccionarProducto(producto) {
 
     productoSeleccionado = producto;
 
-    document.getElementById(
-        "busqueda_producto"
-    ).value = producto.nombre;
+    document.getElementById("busqueda_producto").value = producto.nombre;
+    document.getElementById("resultados").style.display = "none";
 
-    document.getElementById(
-        "resultados"
-    ).style.display = "none";
-
-    document.getElementById(
-        "productoSeleccionado"
-    ).textContent =
-        "Producto seleccionado: " +
-        producto.nombre +
-        " | Stock disponible: " +
-        producto.existencias;
+    document.getElementById("productoSeleccionado").textContent =
+        "Producto seleccionado: " + producto.nombre +
+        " | Stock disponible: " + producto.existencias;
 
 }
 
 
-/* =========================================================
-   AGREGAR PRODUCTO
-   ========================================================= */
-
 function agregarProductoSeleccionado() {
 
     if (!productoSeleccionado) {
-
-        mostrarMensaje(
-            "Primero seleccione un producto.",
-            "error"
-        );
-
+        mostrarMensaje("Primero seleccione un producto.", "error");
         return;
     }
 
-    const cantidad =
-        parseInt(
-            document.getElementById(
-                "cantidad_producto"
-            ).value
-        );
+    const cantidad = parseInt(document.getElementById("cantidad_producto").value);
 
     if (!cantidad || cantidad <= 0) {
-
-        mostrarMensaje(
-            "La cantidad debe ser mayor que cero.",
-            "error"
-        );
-
+        mostrarMensaje("La cantidad debe ser mayor que cero.", "error");
         return;
     }
 
-    if (
-        cantidad >
-        productoSeleccionado.existencias
-    ) {
-
+    if (cantidad > productoSeleccionado.existencias) {
         mostrarMensaje(
-            "No hay suficiente inventario. Stock disponible: " +
-            productoSeleccionado.existencias,
+            "No hay suficiente inventario. Stock disponible: " + productoSeleccionado.existencias,
             "error"
         );
-
         return;
     }
 
-    const existente =
-        productosFactura.find(
-            p => p.producto_id === productoSeleccionado.id
-        );
+    const existente = productosFactura.find(p => p.producto_id === productoSeleccionado.id);
 
     if (existente) {
 
-        const nuevaCantidad =
-            existente.cantidad + cantidad;
+        const nuevaCantidad = existente.cantidad + cantidad;
 
-        if (
-            nuevaCantidad >
-            productoSeleccionado.existencias
-        ) {
-
-            mostrarMensaje(
-                "La cantidad total supera el stock disponible.",
-                "error"
-            );
-
+        if (nuevaCantidad > productoSeleccionado.existencias) {
+            mostrarMensaje("La cantidad total supera el stock disponible.", "error");
             return;
         }
 
@@ -761,516 +1094,221 @@ function agregarProductoSeleccionado() {
     } else {
 
         productosFactura.push({
-
-            producto_id:
-                productoSeleccionado.id,
-
-            producto_nombre:
-                productoSeleccionado.nombre,
-
+            producto_id: productoSeleccionado.id,
+            producto_nombre: productoSeleccionado.nombre,
             cantidad: cantidad,
-
-            precio_compra:
-                Number(
-                    productoSeleccionado.precio_compra || 0
-                ),
-
-            precio_unitario:
-                Number(
-                    productoSeleccionado.precio || 0
-                ),
-
+            precio_compra: Number(productoSeleccionado.precio_compra || 0),
+            precio_unitario: Number(productoSeleccionado.precio || 0),
             descuento: 0
-
         });
 
     }
 
-    document.getElementById(
-        "cantidad_producto"
-    ).value = 1;
-
+    document.getElementById("cantidad_producto").value = 1;
     productoSeleccionado = null;
-
-    document.getElementById(
-        "busqueda_producto"
-    ).value = "";
-
-    document.getElementById(
-        "productoSeleccionado"
-    ).textContent = "";
+    document.getElementById("busqueda_producto").value = "";
+    document.getElementById("productoSeleccionado").textContent = "";
 
     renderizarProductos();
 
 }
 
 
-/* =========================================================
-   RENDERIZAR PRODUCTOS
-   ========================================================= */
-
 function renderizarProductos() {
 
-    const tbody =
-        document.getElementById(
-            "tablaProductos"
-        );
-
+    const tbody = document.getElementById("tablaProductos");
     tbody.innerHTML = "";
 
     if (productosFactura.length === 0) {
-
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="vacio">
-                    No hay productos agregados.
-                </td>
+                <td colspan="6" class="vacio">No hay productos agregados.</td>
             </tr>
         `;
-
         calcularTotales();
-
         return;
     }
 
-    productosFactura.forEach(
-        function(producto, indice) {
+    productosFactura.forEach(function(producto, indice) {
 
-            const subtotal =
-                (
-                    producto.cantidad *
-                    producto.precio_unitario
-                ) -
-                Number(producto.descuento || 0);
+        const subtotal = (producto.cantidad * producto.precio_unitario) - Number(producto.descuento || 0);
 
-            const fila =
-                document.createElement("tr");
+        const fila = document.createElement("tr");
 
-            fila.innerHTML = `
+        fila.innerHTML = `
+            <td>${escapeHtml(producto.producto_nombre)}</td>
+            <td>
+                <input type="number" min="1" value="${producto.cantidad}"
+                    style="width:80px;padding:7px;"
+                    onchange="cambiarCantidad(${indice}, this.value)">
+            </td>
+            <td>${moneda(producto.precio_unitario)}</td>
+            <td>
+                <input type="number" min="0" step="0.01" value="${producto.descuento}"
+                    style="width:100px;padding:7px;"
+                    onchange="cambiarDescuento(${indice}, this.value)">
+            </td>
+            <td><strong>${moneda(subtotal)}</strong></td>
+            <td>
+                <button type="button" class="boton boton-eliminar" onclick="eliminarProducto(${indice})">
+                    Eliminar
+                </button>
+            </td>
+        `;
 
-                <td>
-                    ${escapeHtml(producto.producto_nombre)}
-                </td>
+        tbody.appendChild(fila);
 
-                <td>
-                    <input
-                        type="number"
-                        min="1"
-                        value="${producto.cantidad}"
-                        style="width:80px;padding:7px;"
-                        onchange="cambiarCantidad(${indice}, this.value)"
-                    >
-                </td>
-
-                <td>
-                    ${moneda(producto.precio_unitario)}
-                </td>
-
-                <td>
-                    <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value="${producto.descuento}"
-                        style="width:100px;padding:7px;"
-                        onchange="cambiarDescuento(${indice}, this.value)"
-                    >
-                </td>
-
-                <td>
-                    <strong>
-                        ${moneda(subtotal)}
-                    </strong>
-                </td>
-
-                <td>
-                    <button
-                        type="button"
-                        class="boton boton-eliminar"
-                        onclick="eliminarProducto(${indice})"
-                    >
-                        Eliminar
-                    </button>
-                </td>
-
-            `;
-
-            tbody.appendChild(fila);
-
-        }
-    );
+    });
 
     calcularTotales();
 
 }
 
 
-/* =========================================================
-   CAMBIAR CANTIDAD
-   ========================================================= */
-
 async function cambiarCantidad(indice, valor) {
 
-    const cantidad =
-        parseInt(valor);
+    const cantidad = parseInt(valor);
 
     if (!cantidad || cantidad <= 0) {
-
         renderizarProductos();
-
         return;
     }
 
-    const producto =
-        productosFactura[indice];
+    const producto = productosFactura[indice];
 
     try {
 
-        const respuesta =
-            await fetch(
-                "/api/productos/" +
-                producto.producto_id
-            );
+        const respuesta = await fetch("/api/productos/" + producto.producto_id);
+        const datos = await respuesta.json();
 
-        const datos =
-            await respuesta.json();
-
-        if (
-            !respuesta.ok ||
-            cantidad > datos.existencias
-        ) {
-
-            mostrarMensaje(
-                "La cantidad supera el stock disponible.",
-                "error"
-            );
-
+        if (!respuesta.ok || cantidad > datos.existencias) {
+            mostrarMensaje("La cantidad supera el stock disponible.", "error");
             renderizarProductos();
-
             return;
         }
 
         producto.cantidad = cantidad;
-
         renderizarProductos();
 
     } catch (error) {
-
-        mostrarMensaje(
-            "No se pudo validar el stock.",
-            "error"
-        );
-
+        mostrarMensaje("No se pudo validar el stock.", "error");
         renderizarProductos();
-
     }
 
 }
 
 
-/* =========================================================
-   CAMBIAR DESCUENTO
-   ========================================================= */
-
 function cambiarDescuento(indice, valor) {
-
-    const descuento =
-        Number(valor);
-
-    productosFactura[indice].descuento =
-        descuento >= 0 ? descuento : 0;
-
+    const descuento = Number(valor);
+    productosFactura[indice].descuento = descuento >= 0 ? descuento : 0;
     renderizarProductos();
-
 }
 
-
-/* =========================================================
-   ELIMINAR PRODUCTO
-   ========================================================= */
 
 function eliminarProducto(indice) {
-
-    productosFactura.splice(
-        indice,
-        1
-    );
-
+    productosFactura.splice(indice, 1);
     renderizarProductos();
-
 }
 
-
-/* =========================================================
-   CALCULAR TOTALES
-   ========================================================= */
 
 function calcularTotales() {
 
     let subtotal = 0;
     let descuentosProductos = 0;
 
-    productosFactura.forEach(
-        function(producto) {
+    productosFactura.forEach(function(producto) {
+        const bruto = producto.cantidad * producto.precio_unitario;
+        subtotal += bruto;
+        descuentosProductos += Number(producto.descuento || 0);
+    });
 
-            const bruto =
-                producto.cantidad *
-                producto.precio_unitario;
+    const descuentoFactura = Number(document.getElementById("descuento").value || 0);
+    const impuesto = Number(document.getElementById("impuesto").value || 0);
 
-            subtotal += bruto;
+    const totalDescuentos = descuentosProductos + descuentoFactura;
+    const total = subtotal - totalDescuentos + impuesto;
 
-            descuentosProductos +=
-                Number(
-                    producto.descuento || 0
-                );
-
-        }
-    );
-
-    const descuentoFactura =
-        Number(
-            document.getElementById(
-                "descuento"
-            ).value || 0
-        );
-
-    const impuesto =
-        Number(
-            document.getElementById(
-                "impuesto"
-            ).value || 0
-        );
-
-    const totalDescuentos =
-        descuentosProductos +
-        descuentoFactura;
-
-    const total =
-        subtotal -
-        totalDescuentos +
-        impuesto;
-
-    document.getElementById(
-        "subtotal"
-    ).textContent = moneda(subtotal);
-
-    document.getElementById(
-        "totalDescuento"
-    ).textContent =
-        moneda(totalDescuentos);
-
-    document.getElementById(
-        "totalImpuesto"
-    ).textContent =
-        moneda(impuesto);
-
-    document.getElementById(
-        "totalFactura"
-    ).textContent =
-        moneda(total);
+    document.getElementById("subtotal").textContent = moneda(subtotal);
+    document.getElementById("totalDescuento").textContent = moneda(totalDescuentos);
+    document.getElementById("totalImpuesto").textContent = moneda(impuesto);
+    document.getElementById("totalFactura").textContent = moneda(total);
 
 }
 
-
-/* =========================================================
-   GENERAR FACTURA
-   ========================================================= */
 
 async function generarFactura() {
 
     if (productosFactura.length === 0) {
-
-        mostrarMensaje(
-            "Debe agregar al menos un producto.",
-            "error"
-        );
-
+        mostrarMensaje("Debe agregar al menos un producto.", "error");
         return;
     }
 
-    const descuento =
-        Number(
-            document.getElementById(
-                "descuento"
-            ).value || 0
-        );
-
-    const impuesto =
-        Number(
-            document.getElementById(
-                "impuesto"
-            ).value || 0
-        );
+    const descuento = Number(document.getElementById("descuento").value || 0);
+    const impuesto = Number(document.getElementById("impuesto").value || 0);
 
     if (descuento < 0 || impuesto < 0) {
-
-        mostrarMensaje(
-            "Descuento e impuesto no pueden ser negativos.",
-            "error"
-        );
-
+        mostrarMensaje("Descuento e impuesto no pueden ser negativos.", "error");
         return;
     }
 
     const datos = {
-
-        cliente_nombre:
-            document.getElementById(
-                "cliente_nombre"
-            ).value.trim(),
-
-        cliente_documento:
-            document.getElementById(
-                "cliente_documento"
-            ).value.trim(),
-
-        cliente_telefono:
-            document.getElementById(
-                "cliente_telefono"
-            ).value.trim(),
-
-        cliente_email:
-            document.getElementById(
-                "cliente_email"
-            ).value.trim(),
-
-        metodo_pago:
-            document.getElementById(
-                "metodo_pago"
-            ).value,
-
-        descuento:
-            descuento,
-
-        impuesto:
-            impuesto,
-
-        observaciones:
-            document.getElementById(
-                "observaciones"
-            ).value.trim(),
-
-        detalles:
-            productosFactura
-
+        cliente_nombre: document.getElementById("cliente_nombre").value.trim(),
+        cliente_documento: document.getElementById("cliente_documento").value.trim(),
+        cliente_telefono: document.getElementById("cliente_telefono").value.trim(),
+        cliente_email: document.getElementById("cliente_email").value.trim(),
+        metodo_pago: document.getElementById("metodo_pago").value,
+        descuento: descuento,
+        impuesto: impuesto,
+        observaciones: document.getElementById("observaciones").value.trim(),
+        detalles: productosFactura
     };
 
     try {
 
-        const respuesta =
-            await fetch(
-                "/api/facturas/crear",
-                {
-                    method: "POST",
+        const respuesta = await fetch("/api/facturas/crear", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(datos)
+        });
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify(datos)
-                }
-            );
-
-        const resultado =
-            await respuesta.json();
+        const resultado = await respuesta.json();
 
         if (!respuesta.ok) {
-
-            mostrarMensaje(
-                resultado.error ||
-                "No fue posible generar la factura.",
-                "error"
-            );
-
+            mostrarMensaje(resultado.error || "No fue posible generar la factura.", "error");
             return;
         }
 
-        mostrarMensaje(
-            "Factura #" +
-            resultado.numero_factura +
-            " creada correctamente.",
-            "exito"
-        );
+        mostrarMensaje("Factura #" + resultado.numero_factura + " creada correctamente.", "exito");
 
-        setTimeout(
-            function() {
-
-                window.location.href =
-                    "/facturacion?factura=" +
-                    resultado.id;
-
-            },
-            1000
-        );
+        setTimeout(function() {
+            window.location.href = "/facturacion?factura=" + resultado.id;
+        }, 1000);
 
     } catch (error) {
-
-        mostrarMensaje(
-            "Error de conexión con el servidor.",
-            "error"
-        );
-
+        mostrarMensaje("Error de conexión con el servidor.", "error");
     }
 
 }
 
 
-/* =========================================================
-   LIMPIAR
-   ========================================================= */
-
 function limpiarFactura() {
 
-    if (
-        productosFactura.length > 0 &&
-        !confirm(
-            "¿Desea borrar todos los productos de la factura?"
-        )
-    ) {
+    if (productosFactura.length > 0 && !confirm("¿Desea borrar todos los productos de la factura?")) {
         return;
     }
 
     productosFactura = [];
-
     productoSeleccionado = null;
 
-    document.getElementById(
-        "cliente_nombre"
-    ).value = "";
-
-    document.getElementById(
-        "cliente_documento"
-    ).value = "";
-
-    document.getElementById(
-        "cliente_telefono"
-    ).value = "";
-
-    document.getElementById(
-        "cliente_email"
-    ).value = "";
-
-    document.getElementById(
-        "descuento"
-    ).value = 0;
-
-    document.getElementById(
-        "impuesto"
-    ).value = 0;
-
-    document.getElementById(
-        "observaciones"
-    ).value = "";
-
-    document.getElementById(
-        "busqueda_producto"
-    ).value = "";
-
-    document.getElementById(
-        "productoSeleccionado"
-    ).textContent = "";
+    document.getElementById("cliente_nombre").value = "";
+    document.getElementById("cliente_documento").value = "";
+    document.getElementById("cliente_telefono").value = "";
+    document.getElementById("cliente_email").value = "";
+    document.getElementById("descuento").value = 0;
+    document.getElementById("impuesto").value = 0;
+    document.getElementById("observaciones").value = "";
+    document.getElementById("busqueda_producto").value = "";
+    document.getElementById("productoSeleccionado").textContent = "";
 
     renderizarProductos();
 
@@ -1278,48 +1316,198 @@ function limpiarFactura() {
 
 
 /* =========================================================
-   SEGURIDAD PARA HTML
+   HISTORIAL DE FACTURAS
    ========================================================= */
 
-function escapeHtml(texto) {
+async function cargarHistorial() {
 
-    const div =
-        document.createElement("div");
+    const tbody = document.getElementById("tablaHistorial");
+    tbody.innerHTML = '<tr><td colspan="8" class="vacio">Cargando facturas...</td></tr>';
 
-    div.textContent =
-        texto ?? "";
+    try {
 
-    return div.innerHTML;
+        const respuesta = await fetch("/api/facturas?limite=300");
+        const datos = await respuesta.json();
+
+        listaHistorial = datos.facturas || [];
+
+        filtrarHistorial();
+
+    } catch (error) {
+        tbody.innerHTML = '<tr><td colspan="8" class="vacio">No fue posible cargar el historial.</td></tr>';
+    }
+
+}
+
+
+function filtrarHistorial() {
+
+    const texto = document.getElementById("busquedaHistorial").value.trim().toLowerCase();
+    const estado = document.getElementById("filtroEstado").value;
+
+    let lista = listaHistorial;
+
+    if (estado !== "todos") {
+        lista = lista.filter(f => f.estado === estado);
+    }
+
+    if (texto) {
+        lista = lista.filter(function(f) {
+            return (
+                String(f.numero_factura).toLowerCase().includes(texto) ||
+                (f.cliente_nombre || "").toLowerCase().includes(texto) ||
+                (f.cliente_documento || "").toLowerCase().includes(texto)
+            );
+        });
+    }
+
+    renderizarHistorial(lista);
+
+}
+
+
+function renderizarHistorial(lista) {
+
+    const tbody = document.getElementById("tablaHistorial");
+    tbody.innerHTML = "";
+
+    if (lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="vacio">No se encontraron facturas.</td></tr>';
+        return;
+    }
+
+    lista.forEach(function(factura) {
+
+        const fecha = factura.fecha ? new Date(factura.fecha) : null;
+
+        const fechaTexto = fecha
+            ? fecha.toLocaleDateString("es-CO") + " " + fecha.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })
+            : "-";
+
+        const claseEstado = factura.estado === "Pagada" ? "estado-pagada" : "estado-otro";
+
+        const fila = document.createElement("tr");
+        fila.className = "fila-clic";
+
+        fila.innerHTML = `
+            <td><strong>#${factura.numero_factura}</strong></td>
+            <td>${fechaTexto}</td>
+            <td>${escapeHtml(factura.cliente_nombre || "Sin nombre")}</td>
+            <td>👤 ${escapeHtml(factura.usuario || "-")}</td>
+            <td>${escapeHtml(factura.metodo_pago || "-")}</td>
+            <td><strong>${moneda(factura.total)}</strong></td>
+            <td><span class="estado-badge ${claseEstado}">${escapeHtml(factura.estado || "-")}</span></td>
+            <td><button type="button" class="btn-ver" onclick="verFactura(${factura.id})">👁️ Ver</button></td>
+        `;
+
+        fila.querySelector("td:last-child button").addEventListener("click", function(evento) {
+            evento.stopPropagation();
+        });
+
+        fila.addEventListener("click", function() {
+            verFactura(factura.id);
+        });
+
+        tbody.appendChild(fila);
+
+    });
 
 }
 
 
 /* =========================================================
-   CERRAR RESULTADOS AL HACER CLICK FUERA
+   VER / IMPRIMIR DETALLE DE FACTURA
    ========================================================= */
 
-document.addEventListener(
-    "click",
-    function(event) {
+async function verFactura(id) {
 
-        const buscador =
-            document.querySelector(
-                ".buscador"
-            );
+    try {
 
-        if (
-            buscador &&
-            !buscador.contains(event.target)
-        ) {
+        const respuesta = await fetch("/api/facturas/" + id);
 
-            document.getElementById(
-                "resultados"
-            ).style.display = "none";
+        if (!respuesta.ok) {
+            mostrarMensaje("No fue posible cargar la factura.", "error");
+            return;
+        }
+
+        const datos = await respuesta.json();
+        const factura = datos.factura;
+        const detalles = datos.detalles || [];
+
+        const fecha = factura.fecha ? new Date(factura.fecha) : null;
+
+        document.getElementById("modalNumero").textContent = "Factura #" + factura.numero_factura;
+
+        const badge = document.getElementById("modalEstado");
+        badge.textContent = factura.estado || "-";
+        badge.className = "estado-badge " + (factura.estado === "Pagada" ? "estado-pagada" : "estado-otro");
+
+        document.getElementById("modalFecha").textContent = fecha
+            ? fecha.toLocaleDateString("es-CO") + " " + fecha.toLocaleTimeString("es-CO")
+            : "-";
+
+        document.getElementById("modalUsuario").textContent = factura.usuario || "-";
+        document.getElementById("modalCliente").textContent = factura.cliente_nombre || "Sin nombre";
+        document.getElementById("modalDocumento").textContent = factura.cliente_documento || "-";
+        document.getElementById("modalTelefono").textContent = factura.cliente_telefono || "-";
+        document.getElementById("modalMetodoPago").textContent = factura.metodo_pago || "-";
+
+        const tbody = document.getElementById("modalDetalles");
+        tbody.innerHTML = "";
+
+        if (detalles.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="vacio">Sin productos.</td></tr>';
+        } else {
+
+            detalles.forEach(function(detalle) {
+                const fila = document.createElement("tr");
+                fila.innerHTML = `
+                    <td>${escapeHtml(detalle.producto_nombre)}</td>
+                    <td>${detalle.cantidad}</td>
+                    <td>${moneda(detalle.precio_unitario)}</td>
+                    <td>${moneda(detalle.descuento)}</td>
+                    <td><strong>${moneda(detalle.subtotal)}</strong></td>
+                `;
+                tbody.appendChild(fila);
+            });
 
         }
 
+        document.getElementById("modalSubtotal").textContent = moneda(factura.subtotal);
+        document.getElementById("modalDescuento").textContent = moneda(factura.descuento);
+        document.getElementById("modalImpuesto").textContent = moneda(factura.impuesto);
+        document.getElementById("modalTotal").textContent = moneda(factura.total);
+
+        document.getElementById("modalObservaciones").textContent =
+            factura.observaciones ? "Observaciones: " + factura.observaciones : "";
+
+        document.getElementById("modalFactura").classList.add("activo");
+
+    } catch (error) {
+        mostrarMensaje("Error al consultar la factura.", "error");
     }
-);
+
+}
+
+
+function cerrarModal() {
+    document.getElementById("modalFactura").classList.remove("activo");
+}
+
+
+document.getElementById("modalFactura").addEventListener("click", function(evento) {
+    if (evento.target === this) {
+        cerrarModal();
+    }
+});
+
+
+document.addEventListener("click", function(event) {
+    const buscador = document.querySelector(".buscador");
+    if (buscador && !buscador.contains(event.target)) {
+        document.getElementById("resultados").style.display = "none";
+    }
+});
 
 
 /* =========================================================
@@ -1327,6 +1515,16 @@ document.addEventListener(
    ========================================================= */
 
 renderizarProductos();
+
+const parametros = new URLSearchParams(window.location.search);
+const facturaParametro = parametros.get("factura");
+
+if (facturaParametro) {
+    mostrarVista("historial");
+    cargarHistorial().then(function() {
+        verFactura(facturaParametro);
+    });
+}
 
 </script>
 
