@@ -20,6 +20,11 @@ from flask import (
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash
+)
+
 
 # =========================================================
 # CONFIGURACIÓN
@@ -47,6 +52,66 @@ def get_db():
         )
 
     return psycopg2.connect(DATABASE_URL)
+
+
+# =========================================================
+# SEGURIDAD DE CONTRASEÑAS
+# =========================================================
+
+def password_is_hashed(password):
+
+    """
+    Verifica si una contraseña ya está almacenada
+    utilizando uno de los formatos de hash de Werkzeug.
+    """
+
+    if not password:
+        return False
+
+    return password.startswith((
+        "scrypt:",
+        "pbkdf2:"
+    ))
+
+
+def migrate_old_passwords(cursor):
+
+    """
+    Convierte automáticamente las contraseñas antiguas
+    almacenadas como texto normal a contraseñas protegidas.
+
+    Esto permite actualizar el sistema sin perder
+    los usuarios existentes.
+    """
+
+    cursor.execute("""
+        SELECT
+            id,
+            password
+        FROM usuarios
+    """)
+
+    usuarios = cursor.fetchall()
+
+    for usuario in usuarios:
+
+        usuario_id = usuario[0]
+        password_actual = usuario[1]
+
+        if not password_is_hashed(password_actual):
+
+            password_protegida = generate_password_hash(
+                password_actual
+            )
+
+            cursor.execute("""
+                UPDATE usuarios
+                SET password = %s
+                WHERE id = %s
+            """, (
+                password_protegida,
+                usuario_id
+            ))
 
 
 # =========================================================
@@ -129,7 +194,9 @@ def init_db():
     # -------------------------
 
     cursor.execute("""
-        SELECT id
+        SELECT
+            id,
+            password
         FROM usuarios
         WHERE usuario = %s
     """, ("admin",))
@@ -137,6 +204,10 @@ def init_db():
     usuario_admin = cursor.fetchone()
 
     if usuario_admin is None:
+
+        password_admin = generate_password_hash(
+            "admin123"
+        )
 
         cursor.execute("""
             INSERT INTO usuarios
@@ -149,10 +220,16 @@ def init_db():
             VALUES (%s, %s, %s, %s)
         """, (
             "admin",
-            "admin123",
+            password_admin,
             "admin",
             "Hombre"
         ))
+
+    # -------------------------
+    # MIGRAR CONTRASEÑAS ANTIGUAS
+    # -------------------------
+
+    migrate_old_passwords(cursor)
 
     conn.commit()
 
@@ -294,10 +371,8 @@ def login():
                 genero
             FROM usuarios
             WHERE usuario = %s
-              AND password = %s
         """, (
             usuario,
-            password
         ))
 
         user = cursor.fetchone()
@@ -305,7 +380,11 @@ def login():
         cursor.close()
         conn.close()
 
-        if user:
+        # Verificar contraseña mediante hash
+        if user and check_password_hash(
+            user["password"],
+            password
+        ):
 
             session["usuario"] = user["usuario"]
             session["rol"] = user["rol"]
@@ -417,6 +496,14 @@ def registro():
             )
 
         # -------------------------
+        # PROTEGER CONTRASEÑA
+        # -------------------------
+
+        password_protegida = generate_password_hash(
+            password
+        )
+
+        # -------------------------
         # CREAR USUARIO
         # -------------------------
 
@@ -431,7 +518,7 @@ def registro():
             VALUES (%s, %s, %s, %s)
         """, (
             usuario,
-            password,
+            password_protegida,
             "admin",
             genero
         ))
