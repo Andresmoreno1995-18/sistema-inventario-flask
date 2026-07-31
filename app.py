@@ -2429,6 +2429,394 @@ def grafico():
 # EJECUTAR APLICACIÓN
 # =========================================================
 
+# =========================================================
+# FACTURACIÓN
+# =========================================================
+
+@app.route("/facturacion", methods=["GET"])
+def facturacion():
+    if not requiere_login():
+        return redirect(url_for("login"))
+
+    return render_template("facturacion.html")
+
+
+# =========================================================
+# CREAR FACTURA
+# =========================================================
+
+@app.route("/api/facturas/crear", methods=["POST"])
+def crear_factura():
+
+    if not requiere_login():
+        return jsonify({
+            "error": "No autorizado"
+        }), 401
+
+    datos = request.get_json(silent=True)
+
+    if not datos:
+        return jsonify({
+            "error": "No se recibieron datos de la factura."
+        }), 400
+
+    detalles = datos.get("detalles", [])
+
+    if not detalles:
+        return jsonify({
+            "error": "La factura debe contener al menos un producto."
+        }), 400
+
+    try:
+
+        descuento_factura = float(
+            datos.get("descuento", 0) or 0
+        )
+
+        impuesto = float(
+            datos.get("impuesto", 0) or 0
+        )
+
+    except (TypeError, ValueError):
+
+        return jsonify({
+            "error": "Descuento o impuesto no válidos."
+        }), 400
+
+    if descuento_factura < 0:
+        return jsonify({
+            "error": "El descuento no puede ser negativo."
+        }), 400
+
+    if impuesto < 0:
+        return jsonify({
+            "error": "El impuesto no puede ser negativo."
+        }), 400
+
+    conn = get_db()
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+    try:
+
+        # -------------------------------------------------
+        # VALIDAR PRODUCTOS Y CALCULAR TOTALES
+        # -------------------------------------------------
+
+        subtotal = 0
+        detalles_validos = []
+
+        for detalle in detalles:
+
+            try:
+                producto_id = int(
+                    detalle.get("producto_id")
+                )
+
+                cantidad = int(
+                    detalle.get("cantidad")
+                )
+
+                precio_unitario = float(
+                    detalle.get("precio_unitario", 0)
+                )
+
+                descuento_producto = float(
+                    detalle.get("descuento", 0) or 0
+                )
+
+            except (TypeError, ValueError):
+
+                raise ValueError(
+                    "Uno de los productos de la factura contiene datos inválidos."
+                )
+
+            if cantidad <= 0:
+
+                raise ValueError(
+                    "La cantidad debe ser mayor que cero."
+                )
+
+            if descuento_producto < 0:
+
+                raise ValueError(
+                    "El descuento de un producto no puede ser negativo."
+                )
+
+            # Bloqueamos el producto para evitar
+            # ventas simultáneas sobre el mismo stock.
+            cursor.execute("""
+                SELECT
+                    id,
+                    nombre,
+                    precio,
+                    precio_compra,
+                    existencias
+                FROM productos
+                WHERE id = %s
+                FOR UPDATE
+            """, (producto_id,))
+
+            producto = cursor.fetchone()
+
+            if producto is None:
+
+                raise ValueError(
+                    f"El producto con ID {producto_id} no existe."
+                )
+
+            if cantidad > producto["existencias"]:
+
+                raise ValueError(
+                    "No hay suficiente stock para el producto: "
+                    + producto["nombre"]
+                    + ". Disponible: "
+                    + str(producto["existencias"])
+                )
+
+            # Usamos el precio almacenado en la BD.
+            # Así evitamos que el navegador pueda
+            # manipular el precio de venta.
+            precio_real = float(
+                producto["precio"] or 0
+            )
+
+            precio_compra_real = float(
+                producto["precio_compra"] or 0
+            )
+
+            subtotal_producto = (
+                cantidad * precio_real
+            ) - descuento_producto
+
+            if subtotal_producto < 0:
+
+                raise ValueError(
+                    "El descuento no puede superar el valor del producto."
+                )
+
+            subtotal += subtotal_producto
+
+            detalles_validos.append({
+                "producto_id": producto["id"],
+                "producto_nombre": producto["nombre"],
+                "cantidad": cantidad,
+                "precio_compra": precio_compra_real,
+                "precio_unitario": precio_real,
+                "descuento": descuento_producto,
+                "subtotal": subtotal_producto,
+                "utilidad": (
+                    subtotal_producto
+                    - (
+                        cantidad
+                        * precio_compra_real
+                    )
+                )
+            })
+
+        # -------------------------------------------------
+        # DESCUENTO GENERAL
+        # -------------------------------------------------
+
+        if descuento_factura > subtotal:
+
+            raise ValueError(
+                "El descuento general no puede superar el subtotal."
+            )
+
+        total = (
+            subtotal
+            - descuento_factura
+            + impuesto
+        )
+
+        if total < 0:
+
+            raise ValueError(
+                "El total de la factura no puede ser negativo."
+            )
+
+        # -------------------------------------------------
+        # CREAR FACTURA
+        # -------------------------------------------------
+
+        cursor.execute("""
+            INSERT INTO facturas (
+                usuario,
+                cliente_nombre,
+                cliente_documento,
+                cliente_telefono,
+                cliente_email,
+                metodo_pago,
+                subtotal,
+                descuento,
+                impuesto,
+                total,
+                estado,
+                observaciones
+            )
+            VALUES (
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                %s,
+                'Pagada',
+                %s
+            )
+            RETURNING
+                id,
+                numero_factura
+        """, (
+            session.get("usuario", "admin"),
+            datos.get("cliente_nombre", "").strip(),
+            datos.get("cliente_documento", "").strip(),
+            datos.get("cliente_telefono", "").strip(),
+            datos.get("cliente_email", "").strip(),
+            datos.get("metodo_pago", "Efectivo"),
+            subtotal,
+            descuento_factura,
+            impuesto,
+            total,
+            datos.get("observaciones", "").strip(),
+        ))
+
+        factura = cursor.fetchone()
+
+        factura_id = factura["id"]
+        numero_factura = factura["numero_factura"]
+
+        # -------------------------------------------------
+        # GUARDAR DETALLES Y DESCONTAR INVENTARIO
+        # -------------------------------------------------
+
+        for detalle in detalles_validos:
+
+            cursor.execute("""
+                INSERT INTO factura_detalles (
+                    factura_id,
+                    producto_id,
+                    producto_nombre,
+                    cantidad,
+                    precio_compra,
+                    precio_unitario,
+                    descuento,
+                    subtotal,
+                    utilidad
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s
+                )
+            """, (
+                factura_id,
+                detalle["producto_id"],
+                detalle["producto_nombre"],
+                detalle["cantidad"],
+                detalle["precio_compra"],
+                detalle["precio_unitario"],
+                detalle["descuento"],
+                detalle["subtotal"],
+                detalle["utilidad"],
+            ))
+
+            # Descontar inventario
+            cursor.execute("""
+                UPDATE productos
+                SET existencias = existencias - %s
+                WHERE id = %s
+            """, (
+                detalle["cantidad"],
+                detalle["producto_id"],
+            ))
+
+            # Registrar movimiento
+            cursor.execute("""
+                INSERT INTO movimientos (
+                    fecha,
+                    producto_id,
+                    tipo,
+                    cantidad,
+                    motivo,
+                    factura,
+                    orden_compra,
+                    comentarios,
+                    usuario
+                )
+                VALUES (
+                    CURRENT_TIMESTAMP,
+                    %s,
+                    'Salida',
+                    %s,
+                    'Venta',
+                    %s,
+                    '',
+                    %s,
+                    %s
+                )
+            """, (
+                detalle["producto_id"],
+                detalle["cantidad"],
+                str(numero_factura),
+                "Venta realizada mediante factura",
+                session.get("usuario", "admin"),
+            ))
+
+        # -------------------------------------------------
+        # CONFIRMAR TODO
+        # -------------------------------------------------
+
+        conn.commit()
+
+        return jsonify({
+            "ok": True,
+            "id": factura_id,
+            "numero_factura": numero_factura,
+            "subtotal": subtotal,
+            "descuento": descuento_factura,
+            "impuesto": impuesto,
+            "total": total,
+        }), 201
+
+    except ValueError as error:
+
+        conn.rollback()
+
+        return jsonify({
+            "error": str(error)
+        }), 400
+
+    except Exception as error:
+
+        conn.rollback()
+
+        print(
+            "ERROR CREANDO FACTURA:",
+            error
+        )
+
+        return jsonify({
+            "error": "No fue posible crear la factura."
+        }), 500
+
+    finally:
+
+        cursor.close()
+        conn.close()
+
 if __name__ == "__main__":
     port = int(
         os.environ.get(
