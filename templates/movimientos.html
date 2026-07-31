@@ -32,6 +32,19 @@
     body {
 
         background:
+
+            radial-gradient(
+                circle at 10% 20%,
+                rgba(13, 110, 253, 0.15),
+                transparent 30%
+            ),
+
+            radial-gradient(
+                circle at 90% 10%,
+                rgba(25, 135, 84, 0.12),
+                transparent 30%
+            ),
+
             linear-gradient(
                 135deg,
                 #eef3f8,
@@ -57,6 +70,8 @@
         box-shadow:
             0 8px 24px
             rgba(15, 23, 42, 0.08);
+
+        overflow: hidden;
 
     }
 
@@ -100,27 +115,23 @@
 
 
     /* =====================================================
-       CONTENEDOR DE TABLA
+       TABLA
     ===================================================== */
 
-    .table-wrapper {
+    .table-box {
 
         width: 100%;
 
         overflow-x: auto;
 
-        overflow-y: visible;
+        overflow-y: auto;
 
-        border-radius: 0 0 16px 16px;
+        max-height: 650px;
 
     }
 
 
-    /* =====================================================
-       TABLA
-    ===================================================== */
-
-    .movimientos-table {
+    .resizable-table {
 
         width: max-content;
 
@@ -132,39 +143,80 @@
 
         border-spacing: 0;
 
-        margin-bottom: 0;
+    }
+
+
+    .resizable-table th,
+    .resizable-table td {
+
+        padding: 13px 14px;
+
+        vertical-align: middle;
+
+        white-space: nowrap;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+
+        border-bottom: 1px solid #e9ecef;
 
         font-size: 14px;
 
     }
 
 
-    /* =====================================================
-       ANCHOS INICIALES DE COLUMNAS
-    ===================================================== */
+    .resizable-table thead th {
 
-    .movimientos-table th:nth-child(1),
-    .movimientos-table td:nth-child(1) {
+        position: sticky;
 
-        width: 145px;
+        top: 0;
 
-        min-width: 145px;
+        z-index: 5;
+
+        background: #f8f9fa;
+
+        font-size: 12px;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.25px;
+
+        color: #374151;
 
     }
 
 
-    .movimientos-table th:nth-child(2),
-    .movimientos-table td:nth-child(2) {
+    .resizable-table tbody tr:hover {
 
-        width: 190px;
+        background-color: #f8fafc;
+
+    }
+
+
+    /* =====================================================
+       ANCHOS INICIALES
+    ===================================================== */
+
+    .col-fecha {
+
+        width: 175px;
 
         min-width: 160px;
 
     }
 
 
-    .movimientos-table th:nth-child(3),
-    .movimientos-table td:nth-child(3) {
+    .col-producto {
+
+        width: 220px;
+
+        min-width: 180px;
+
+    }
+
+
+    .col-tipo {
 
         width: 145px;
 
@@ -173,130 +225,60 @@
     }
 
 
-    .movimientos-table th:nth-child(4),
-    .movimientos-table td:nth-child(4) {
+    .col-cantidad {
 
-        width: 95px;
+        width: 110px;
 
-        min-width: 80px;
+        min-width: 90px;
 
-    }
-
-
-    .movimientos-table th:nth-child(5),
-    .movimientos-table td:nth-child(5) {
-
-        width: 190px;
-
-        min-width: 150px;
+        text-align: center;
 
     }
 
 
-    .movimientos-table th:nth-child(6),
-    .movimientos-table td:nth-child(6) {
+    .col-motivo {
 
-        width: 180px;
+        width: 210px;
+
+        min-width: 170px;
+
+    }
+
+
+    .col-documentos {
+
+        width: 220px;
+
+        min-width: 170px;
+
+    }
+
+
+    .col-comentarios {
+
+        width: 280px;
+
+        min-width: 200px;
+
+    }
+
+
+    .col-usuario {
+
+        width: 170px;
 
         min-width: 140px;
 
     }
 
 
-    .movimientos-table th:nth-child(7),
-    .movimientos-table td:nth-child(7) {
-
-        width: 250px;
-
-        min-width: 180px;
-
-    }
-
-
-    .movimientos-table th:nth-child(8),
-    .movimientos-table td:nth-child(8) {
-
-        width: 140px;
-
-        min-width: 110px;
-
-    }
-
-
     /* =====================================================
-       CELDAS
+       REDIMENSIONAMIENTO
     ===================================================== */
 
-    .movimientos-table th,
-    .movimientos-table td {
-
-        overflow: hidden;
-
-        text-overflow: ellipsis;
-
-        white-space: nowrap;
-
-        vertical-align: middle;
-
-    }
-
-
-    .movimientos-table td.detalle {
-
-        white-space: normal;
-
-        overflow-wrap: anywhere;
-
-        word-break: break-word;
-
-    }
-
-
-    .movimientos-table td.detalle strong {
-
-        overflow-wrap: anywhere;
-
-        word-break: break-word;
-
-    }
-
-
-    /* =====================================================
-       ENCABEZADO FIJO
-    ===================================================== */
-
-    .movimientos-table thead th {
+    .resizable-table th {
 
         position: sticky;
-
-        top: 0;
-
-        z-index: 10;
-
-        background-color: #f8f9fa !important;
-
-        font-size: 13px;
-
-        text-transform: uppercase;
-
-        letter-spacing: 0.3px;
-
-        height: 52px;
-
-        vertical-align: middle;
-
-    }
-
-
-    /* =====================================================
-       CONTROL DE REDIMENSIONADO
-    ===================================================== */
-
-    .resizable-th {
-
-        position: relative;
-
-        padding-right: 18px !important;
 
     }
 
@@ -305,11 +287,11 @@
 
         position: absolute;
 
-        top: 0;
-
         right: 0;
 
-        width: 8px;
+        top: 0;
+
+        width: 7px;
 
         height: 100%;
 
@@ -317,51 +299,19 @@
 
         user-select: none;
 
-        z-index: 20;
+        z-index: 10;
 
     }
 
 
     .resize-handle:hover {
 
-        background:
-            rgba(13, 110, 253, 0.35);
+        background: rgba(13, 110, 253, 0.35);
 
     }
 
 
-    .resize-handle::after {
-
-        content: "";
-
-        position: absolute;
-
-        top: 25%;
-
-        right: 3px;
-
-        width: 2px;
-
-        height: 50%;
-
-        background:
-            rgba(108, 117, 125, 0.45);
-
-        border-radius: 2px;
-
-    }
-
-
-    body.resizing {
-
-        cursor: col-resize !important;
-
-        user-select: none !important;
-
-    }
-
-
-    body.resizing * {
+    .resizing {
 
         cursor: col-resize !important;
 
@@ -371,58 +321,7 @@
 
 
     /* =====================================================
-       TABLA BLOQUEADA
-    ===================================================== */
-
-    .columns-locked .resize-handle {
-
-        display: none;
-
-    }
-
-
-    .columns-locked .movimientos-table th {
-
-        cursor: default;
-
-    }
-
-
-    /* =====================================================
-       BOTONES DE COLUMNAS
-    ===================================================== */
-
-    .column-controls {
-
-        display: flex;
-
-        align-items: center;
-
-        flex-wrap: wrap;
-
-        gap: 8px;
-
-    }
-
-
-    .column-controls .btn {
-
-        font-size: 13px;
-
-    }
-
-
-    .column-status {
-
-        font-size: 12px;
-
-        color: #6c757d;
-
-    }
-
-
-    /* =====================================================
-       FECHA
+       CAMPOS ESPECIALES
     ===================================================== */
 
     .fecha {
@@ -432,51 +331,37 @@
     }
 
 
-    /* =====================================================
-       BADGES
-    ===================================================== */
+    .detalle {
 
-    .badge {
+        white-space: normal !important;
 
-        font-size: 12px;
+        overflow-wrap: anywhere;
+
+    }
+
+
+    .detalle strong {
+
+        word-break: break-word;
 
     }
 
 
     /* =====================================================
-       RESPONSIVE
+       AYUDA
     ===================================================== */
 
-    @media (max-width: 768px) {
+    .table-help {
 
-        .container-fluid.px-4 {
+        font-size: 12px;
 
-            padding-left: 12px !important;
+        color: #6b7280;
 
-            padding-right: 12px !important;
+        background: #f8fafc;
 
-        }
+        border-top: 1px solid #e5e7eb;
 
-
-        .column-controls {
-
-            margin-top: 10px;
-
-        }
-
-
-        .column-controls .btn {
-
-            flex: 1 1 auto;
-
-        }
-
-
-        .card-header {
-
-            padding: 14px;
-
-        }
+        padding: 9px 14px;
 
     }
 
@@ -489,12 +374,13 @@
 
 <!-- =====================================================
      NAVEGACIÓN
-====================================================== -->
+===================================================== -->
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
 
 ```
 <div class="container-fluid px-4">
+
 
     <a
         class="navbar-brand fw-bold"
@@ -508,6 +394,7 @@
 
     <div class="d-flex gap-2">
 
+
         {% if session.get('rol') == 'admin' %}
 
             <a
@@ -520,6 +407,16 @@
             </a>
 
         {% endif %}
+
+
+        <a
+            href="/proveedores"
+            class="btn btn-outline-light btn-sm"
+        >
+
+            🚚 Proveedores
+
+        </a>
 
 
         <a
@@ -544,13 +441,13 @@
 <div class="row g-4">
 
 
-    <!-- =====================================================
+    <!-- =================================================
          FORMULARIO
-    ====================================================== -->
+    ================================================== -->
 
     <div class="col-lg-4">
 
-        <div class="card shadow-sm">
+        <div class="card">
 
 
             <div class="card-header bg-primary text-white">
@@ -662,7 +559,9 @@
                                 Producto:
 
                                 <span id="nombreProducto">
+
                                     -
+
                                 </span>
 
                             </div>
@@ -673,7 +572,9 @@
                                 📦 Stock disponible:
 
                                 <strong id="stockProducto">
+
                                     0
+
                                 </strong>
 
                                 unidades
@@ -787,32 +688,44 @@
 
 
                             <option value="Compra">
+
                                 🛒 Compra
+
                             </option>
 
 
                             <option value="Venta">
+
                                 💰 Venta
+
                             </option>
 
 
                             <option value="Devolución de cliente">
+
                                 🔄 Devolución de cliente
+
                             </option>
 
 
                             <option value="Devolución a proveedor">
+
                                 ↩️ Devolución a proveedor
+
                             </option>
 
 
                             <option value="Ajuste de inventario">
+
                                 🛠️ Ajuste de inventario
+
                             </option>
 
 
                             <option value="Otro">
+
                                 📦 Otro
+
                             </option>
 
                         </select>
@@ -850,7 +763,7 @@
 
 
 
-                    <!-- ORDEN DE COMPRA -->
+                    <!-- ORDEN -->
 
                     <div
                         class="mb-3"
@@ -917,14 +830,16 @@
 
 
 
-                    <!-- RESPONSABLE Y HORA -->
+                    <!-- RESPONSABLE -->
 
                     <div class="alert alert-light border">
 
                         👤 Responsable:
 
                         <strong>
+
                             {{ session.get('usuario', 'admin') }}
+
                         </strong>
 
 
@@ -963,469 +878,399 @@
 
 
 
-    <!-- =====================================================
+    <!-- =================================================
          HISTORIAL
-    ====================================================== -->
+    ================================================== -->
 
     <div class="col-lg-8">
 
-        <div class="card shadow-sm">
+        <div class="card">
 
 
-            <div
-                class="card-header bg-dark text-white d-flex justify-content-between align-items-center flex-wrap"
-            >
+            <div class="card-header bg-dark text-white">
 
-                <div>
+                <h5 class="mb-0">
 
-                    <h5 class="mb-0">
+                    📊 Historial de Movimientos
 
-                        📊 Historial de Movimientos
-
-                    </h5>
-
-                    <small class="opacity-75">
-
-                        Ajusta el ancho de cada columna arrastrando su borde.
-
-                    </small>
-
-                </div>
-
-
-                <!-- CONTROLES -->
-
-                <div class="column-controls mt-2 mt-lg-0">
-
-
-                    <button
-                        type="button"
-                        id="toggleResize"
-                        class="btn btn-warning btn-sm"
-                    >
-
-                        🔓 Ajustar columnas
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        id="resetColumns"
-                        class="btn btn-light btn-sm"
-                    >
-
-                        ↺ Restablecer
-
-                    </button>
-
-
-                    <span
-                        id="columnStatus"
-                        class="column-status text-white"
-                    >
-
-                        Ajustables
-
-                    </span>
-
-
-                </div>
+                </h5>
 
             </div>
 
 
-            <div class="card-body p-0">
+            <div class="table-box">
 
 
-                <div
-                    class="table-wrapper"
-                    id="tableWrapper"
+                <table
+                    class="table table-hover align-middle mb-0 resizable-table"
                 >
 
-                    <table
-                        class="table table-hover align-middle movimientos-table"
-                        id="movimientosTable"
-                    >
 
-                        <thead class="table-light">
+                    <thead>
 
-                            <tr>
+                        <tr>
 
-                                <th
-                                    class="resizable-th"
-                                    data-column="0"
-                                >
 
-                                    Fecha / Hora
+                            <th class="col-fecha">
 
-                                    <span class="resize-handle"></span>
+                                Fecha / Hora
 
-                                </th>
+                                <span class="resize-handle"></span>
 
+                            </th>
 
-                                <th
-                                    class="resizable-th"
-                                    data-column="1"
-                                >
 
-                                    Producto
+                            <th class="col-producto">
 
-                                    <span class="resize-handle"></span>
+                                Producto
 
-                                </th>
+                                <span class="resize-handle"></span>
 
+                            </th>
 
-                                <th
-                                    class="resizable-th"
-                                    data-column="2"
-                                >
 
-                                    Tipo
+                            <th class="col-tipo">
 
-                                    <span class="resize-handle"></span>
+                                Tipo
 
-                                </th>
+                                <span class="resize-handle"></span>
 
+                            </th>
 
-                                <th
-                                    class="resizable-th"
-                                    data-column="3"
-                                >
 
-                                    Cantidad
+                            <th class="col-cantidad">
 
-                                    <span class="resize-handle"></span>
+                                Cantidad
 
-                                </th>
+                                <span class="resize-handle"></span>
 
+                            </th>
 
-                                <th
-                                    class="resizable-th"
-                                    data-column="4"
-                                >
 
-                                    Motivo
+                            <th class="col-motivo">
 
-                                    <span class="resize-handle"></span>
+                                Motivo
 
-                                </th>
+                                <span class="resize-handle"></span>
 
+                            </th>
 
-                                <th
-                                    class="resizable-th"
-                                    data-column="5"
-                                >
 
-                                    Documentos
+                            <th class="col-documentos">
 
-                                    <span class="resize-handle"></span>
+                                Documentos
 
-                                </th>
+                                <span class="resize-handle"></span>
 
+                            </th>
 
-                                <th
-                                    class="resizable-th"
-                                    data-column="6"
-                                >
 
-                                    Comentarios
+                            <th class="col-comentarios">
 
-                                    <span class="resize-handle"></span>
+                                Comentarios
 
-                                </th>
+                                <span class="resize-handle"></span>
 
+                            </th>
 
-                                <th
-                                    class="resizable-th"
-                                    data-column="7"
-                                >
 
-                                    Usuario
+                            <th class="col-usuario">
 
-                                    <span class="resize-handle"></span>
+                                Usuario
 
-                                </th>
+                                <span class="resize-handle"></span>
 
-                            </tr>
+                            </th>
 
-                        </thead>
 
+                        </tr>
 
-                        <tbody>
+                    </thead>
 
 
-                            {% if movimientos %}
+                    <tbody>
 
 
-                                {% for mov in movimientos %}
+                        {% if movimientos %}
 
 
-                                    <tr>
-
-
-                                        <!-- FECHA Y HORA -->
-
-                                        <td class="fecha">
-
-                                            <strong>
-
-                                                {% if mov['fecha'] %}
-
-                                                    {{ mov['fecha'].strftime('%d/%m/%Y') }}
-
-                                                {% else %}
-
-                                                    -
-
-                                                {% endif %}
-
-                                            </strong>
-
-
-                                            <br>
-
-
-                                            <small class="text-primary fw-bold">
-
-                                                {% if mov['fecha'] %}
-
-                                                    {{ mov['fecha'].strftime('%H:%M:%S') }}
-
-                                                {% else %}
-
-                                                    -
-
-                                                {% endif %}
-
-                                            </small>
-
-                                        </td>
-
-
-
-                                        <!-- PRODUCTO -->
-
-                                        <td>
-
-                                            <strong>
-
-                                                {{ mov['nombre'] or 'Producto eliminado' }}
-
-                                            </strong>
-
-                                        </td>
-
-
-
-                                        <!-- TIPO -->
-
-                                        <td>
-
-                                            {% if mov['tipo'] == 'Entrada' %}
-
-                                                <span class="badge bg-success">
-
-                                                    🟢 Entrada
-
-                                                </span>
-
-                                            {% else %}
-
-                                                <span class="badge bg-danger">
-
-                                                    🔴 Salida
-
-                                                </span>
-
-                                            {% endif %}
-
-                                        </td>
-
-
-
-                                        <!-- CANTIDAD -->
-
-                                        <td>
-
-                                            <strong>
-
-                                                {{ mov['cantidad'] }}
-
-                                            </strong>
-
-                                        </td>
-
-
-
-                                        <!-- MOTIVO -->
-
-                                        <td>
-
-                                            {% if mov['motivo'] == 'Compra' %}
-
-                                                <span class="badge bg-primary">
-
-                                                    🛒 Compra
-
-                                                </span>
-
-                                            {% elif mov['motivo'] == 'Venta' %}
-
-                                                <span class="badge bg-success">
-
-                                                    💰 Venta
-
-                                                </span>
-
-                                            {% elif mov['motivo'] == 'Devolución de cliente' %}
-
-                                                <span class="badge bg-warning text-dark">
-
-                                                    🔄 Devolución cliente
-
-                                                </span>
-
-                                            {% elif mov['motivo'] == 'Devolución a proveedor' %}
-
-                                                <span class="badge bg-warning text-dark">
-
-                                                    ↩️ Devolución proveedor
-
-                                                </span>
-
-                                            {% elif mov['motivo'] == 'Ajuste de inventario' %}
-
-                                                <span class="badge bg-secondary">
-
-                                                    🛠️ Ajuste
-
-                                                </span>
-
-                                            {% else %}
-
-                                                <span class="badge bg-dark">
-
-                                                    📦 {{ mov['motivo'] or 'Otro' }}
-
-                                                </span>
-
-                                            {% endif %}
-
-                                        </td>
-
-
-
-                                        <!-- DOCUMENTOS -->
-
-                                        <td class="detalle">
-
-                                            {% if mov['factura'] %}
-
-                                                <div>
-
-                                                    🧾
-
-                                                    <strong>
-
-                                                        {{ mov['factura'] }}
-
-                                                    </strong>
-
-                                                </div>
-
-                                            {% endif %}
-
-
-                                            {% if mov['orden_compra'] %}
-
-                                                <div>
-
-                                                    📋
-
-                                                    <strong>
-
-                                                        {{ mov['orden_compra'] }}
-
-                                                    </strong>
-
-                                                </div>
-
-                                            {% endif %}
-
-
-                                            {% if not mov['factura'] and not mov['orden_compra'] %}
-
-                                                -
-
-                                            {% endif %}
-
-                                        </td>
-
-
-
-                                        <!-- COMENTARIOS -->
-
-                                        <td class="detalle">
-
-                                            {% if mov['comentarios'] %}
-
-                                                {{ mov['comentarios'] }}
-
-                                            {% else %}
-
-                                                -
-
-                                            {% endif %}
-
-                                        </td>
-
-
-
-                                        <!-- USUARIO -->
-
-                                        <td>
-
-                                            👤
-
-                                            {{ mov['usuario'] or 'admin' }}
-
-                                        </td>
-
-
-                                    </tr>
-
-
-                                {% endfor %}
-
-
-                            {% else %}
+                            {% for mov in movimientos %}
 
 
                                 <tr>
 
-                                    <td
-                                        colspan="8"
-                                        class="text-center text-muted py-5"
-                                    >
 
-                                        📭 No se han registrado movimientos todavía.
+                                    <!-- FECHA -->
+
+                                    <td class="fecha">
+
+                                        <strong>
+
+                                            {% if mov['fecha'] %}
+
+                                                {{ mov['fecha'].strftime('%d/%m/%Y') }}
+
+                                            {% else %}
+
+                                                -
+
+                                            {% endif %}
+
+                                        </strong>
+
+
+                                        <br>
+
+
+                                        <small class="text-primary fw-bold">
+
+                                            {% if mov['fecha'] %}
+
+                                                {{ mov['fecha'].strftime('%H:%M:%S') }}
+
+                                            {% else %}
+
+                                                -
+
+                                            {% endif %}
+
+                                        </small>
 
                                     </td>
+
+
+
+                                    <!-- PRODUCTO -->
+
+                                    <td>
+
+                                        <strong>
+
+                                            {{ mov['nombre'] or 'Producto eliminado' }}
+
+                                        </strong>
+
+                                    </td>
+
+
+
+                                    <!-- TIPO -->
+
+                                    <td>
+
+                                        {% if mov['tipo'] == 'Entrada' %}
+
+                                            <span class="badge bg-success">
+
+                                                🟢 Entrada
+
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="badge bg-danger">
+
+                                                🔴 Salida
+
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+
+                                    <!-- CANTIDAD -->
+
+                                    <td class="text-center">
+
+                                        <strong>
+
+                                            {{ mov['cantidad'] }}
+
+                                        </strong>
+
+                                    </td>
+
+
+
+                                    <!-- MOTIVO -->
+
+                                    <td>
+
+                                        {% if mov['motivo'] == 'Compra' %}
+
+                                            <span class="badge bg-primary">
+
+                                                🛒 Compra
+
+                                            </span>
+
+                                        {% elif mov['motivo'] == 'Venta' %}
+
+                                            <span class="badge bg-success">
+
+                                                💰 Venta
+
+                                            </span>
+
+                                        {% elif mov['motivo'] == 'Devolución de cliente' %}
+
+                                            <span class="badge bg-warning text-dark">
+
+                                                🔄 Devolución cliente
+
+                                            </span>
+
+                                        {% elif mov['motivo'] == 'Devolución a proveedor' %}
+
+                                            <span class="badge bg-warning text-dark">
+
+                                                ↩️ Devolución proveedor
+
+                                            </span>
+
+                                        {% elif mov['motivo'] == 'Ajuste de inventario' %}
+
+                                            <span class="badge bg-secondary">
+
+                                                🛠️ Ajuste
+
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="badge bg-dark">
+
+                                                📦 {{ mov['motivo'] or 'Otro' }}
+
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+
+                                    <!-- DOCUMENTOS -->
+
+                                    <td class="detalle">
+
+                                        {% if mov['factura'] %}
+
+                                            <div>
+
+                                                🧾
+
+                                                <strong>
+
+                                                    {{ mov['factura'] }}
+
+                                                </strong>
+
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        {% if mov['orden_compra'] %}
+
+                                            <div>
+
+                                                📋
+
+                                                <strong>
+
+                                                    {{ mov['orden_compra'] }}
+
+                                                </strong>
+
+                                            </div>
+
+                                        {% endif %}
+
+
+                                        {% if not mov['factura'] and not mov['orden_compra'] %}
+
+                                            -
+
+                                        {% endif %}
+
+                                    </td>
+
+
+
+                                    <!-- COMENTARIOS -->
+
+                                    <td class="detalle">
+
+                                        {% if mov['comentarios'] %}
+
+                                            {{ mov['comentarios'] }}
+
+                                        {% else %}
+
+                                            -
+
+                                        {% endif %}
+
+                                    </td>
+
+
+
+                                    <!-- USUARIO -->
+
+                                    <td>
+
+                                        👤
+
+                                        {{ mov['usuario'] or 'admin' }}
+
+                                    </td>
+
 
                                 </tr>
 
 
-                            {% endif %}
+                            {% endfor %}
 
 
-                        </tbody>
+                        {% else %}
 
-                    </table>
 
-                </div>
+                            <tr>
+
+                                <td
+                                    colspan="8"
+                                    class="text-center text-muted py-5"
+                                >
+
+                                    📭 No se han registrado movimientos todavía.
+
+                                </td>
+
+                            </tr>
+
+
+                        {% endif %}
+
+
+                    </tbody>
+
+                </table>
 
             </div>
+
+
+            <div class="table-help">
+
+                ↔️ Arrastra el borde de cualquier columna para
+                aumentar o reducir su tamaño.
+
+                📌 El encabezado queda fijo mientras bajas por el historial.
+
+            </div>
+
 
         </div>
 
@@ -1437,12 +1282,7 @@
 
 </div>
 
-<!-- =====================================================
-     JAVASCRIPT
-====================================================== -->
-
 <script>
-
 
     /* =====================================================
        RELOJ EN TIEMPO REAL - COLOMBIA
@@ -1684,481 +1524,99 @@
 
 
     /* =====================================================
-       SISTEMA DE COLUMNAS
-    ===================================================== */
-
-    const tabla =
-        document.getElementById("movimientosTable");
-
-
-    const tablaWrapper =
-        document.getElementById("tableWrapper");
-
-
-    const toggleResize =
-        document.getElementById("toggleResize");
-
-
-    const resetColumns =
-        document.getElementById("resetColumns");
-
-
-    const columnStatus =
-        document.getElementById("columnStatus");
-
-
-    const STORAGE_KEY =
-        "inventario_movimientos_columnas";
-
-
-    const LOCK_KEY =
-        "inventario_movimientos_columnas_bloqueadas";
-
-
-    const anchosOriginales = [
-
-        145,
-        190,
-        145,
-        95,
-        190,
-        180,
-        250,
-        140
-
-    ];
-
-
-    const minimos = [
-
-        145,
-        160,
-        120,
-        80,
-        150,
-        140,
-        180,
-        110
-
-    ];
-
-
-
-    /* =====================================================
-       OBTENER TODAS LAS CELDAS DE UNA COLUMNA
-    ===================================================== */
-
-    function obtenerCeldasColumna(indice) {
-
-        return tabla.querySelectorAll(
-
-            `tr > *:nth-child(${indice + 1})`
-
-        );
-
-    }
-
-
-
-    /* =====================================================
-       APLICAR ANCHO
-    ===================================================== */
-
-    function aplicarAnchoColumna(indice, ancho) {
-
-        const anchoFinal =
-            Math.max(
-                parseInt(ancho),
-                minimos[indice]
-            );
-
-
-        const celdas =
-            obtenerCeldasColumna(indice);
-
-
-        celdas.forEach(
-            celda => {
-
-                celda.style.width =
-                    anchoFinal + "px";
-
-                celda.style.minWidth =
-                    anchoFinal + "px";
-
-                celda.style.maxWidth =
-                    anchoFinal + "px";
-
-            }
-        );
-
-    }
-
-
-
-    /* =====================================================
-       GUARDAR ANCHOS
-    ===================================================== */
-
-    function guardarAnchos() {
-
-        const anchos = [];
-
-
-        tabla.querySelectorAll(
-            "thead th"
-        ).forEach(
-            (th, indice) => {
-
-                anchos.push(
-                    th.offsetWidth
-                );
-
-            }
-        );
-
-
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(anchos)
-        );
-
-    }
-
-
-
-    /* =====================================================
-       CARGAR ANCHOS
-    ===================================================== */
-
-    function cargarAnchos() {
-
-        const guardados =
-            localStorage.getItem(
-                STORAGE_KEY
-            );
-
-
-        if (guardados) {
-
-            try {
-
-                const anchos =
-                    JSON.parse(guardados);
-
-
-                anchos.forEach(
-                    (ancho, indice) => {
-
-                        if (
-                            typeof ancho === "number"
-                            &&
-                            indice < anchosOriginales.length
-                        ) {
-
-                            aplicarAnchoColumna(
-                                indice,
-                                ancho
-                            );
-
-                        }
-
-                    }
-                );
-
-                return;
-
-            }
-
-            catch (error) {
-
-                console.warn(
-                    "No se pudieron cargar los anchos guardados."
-                );
-
-            }
-
-        }
-
-
-        anchosOriginales.forEach(
-            (ancho, indice) => {
-
-                aplicarAnchoColumna(
-                    indice,
-                    ancho
-                );
-
-            }
-        );
-
-    }
-
-
-
-    /* =====================================================
-       ESTADO BLOQUEADO / DESBLOQUEADO
-    ===================================================== */
-
-    function actualizarEstadoColumnas(bloqueado) {
-
-        if (bloqueado) {
-
-            tablaWrapper.classList.add(
-                "columns-locked"
-            );
-
-
-            toggleResize.innerHTML =
-                "🔓 Ajustar columnas";
-
-
-            toggleResize.classList.remove(
-                "btn-success"
-            );
-
-
-            toggleResize.classList.add(
-                "btn-warning"
-            );
-
-
-            columnStatus.textContent =
-                "🔒 Columnas fijadas";
-
-        }
-
-        else {
-
-            tablaWrapper.classList.remove(
-                "columns-locked"
-            );
-
-
-            toggleResize.innerHTML =
-                "🔒 Fijar columnas";
-
-
-            toggleResize.classList.remove(
-                "btn-warning"
-            );
-
-
-            toggleResize.classList.add(
-                "btn-success"
-            );
-
-
-            columnStatus.textContent =
-                "↔️ Columnas ajustables";
-
-        }
-
-
-        localStorage.setItem(
-            LOCK_KEY,
-            bloqueado
-                ? "true"
-                : "false"
-        );
-
-    }
-
-
-
-    /* =====================================================
-       BOTÓN BLOQUEAR / AJUSTAR
-    ===================================================== */
-
-    toggleResize.addEventListener(
-        "click",
-        function () {
-
-            const bloqueado =
-                tablaWrapper.classList.contains(
-                    "columns-locked"
-                );
-
-
-            actualizarEstadoColumnas(
-                !bloqueado
-            );
-
-        }
-    );
-
-
-
-    /* =====================================================
-       RESTABLECER COLUMNAS
-    ===================================================== */
-
-    resetColumns.addEventListener(
-        "click",
-        function () {
-
-            anchosOriginales.forEach(
-                (ancho, indice) => {
-
-                    aplicarAnchoColumna(
-                        indice,
-                        ancho
-                    );
-
-                }
-            );
-
-
-            localStorage.removeItem(
-                STORAGE_KEY
-            );
-
-
-            actualizarEstadoColumnas(
-                false
-            );
-
-        }
-    );
-
-
-
-    /* =====================================================
        REDIMENSIONAR COLUMNAS
     ===================================================== */
 
-    const handles =
-        document.querySelectorAll(
-            ".resize-handle"
-        );
+    document.querySelectorAll(".resizable-table").forEach(function(table) {
+
+        const headers =
+            table.querySelectorAll("thead th");
 
 
-    handles.forEach(
-        handle => {
+        headers.forEach(function(header) {
 
-            handle.addEventListener(
-                "mousedown",
-                function (event) {
-
-                    if (
-                        tablaWrapper.classList.contains(
-                            "columns-locked"
-                        )
-                    ) {
-
-                        return;
-
-                    }
+            const handle =
+                header.querySelector(".resize-handle");
 
 
-                    event.preventDefault();
+            if (!handle) return;
 
 
-                    const th =
-                        handle.parentElement;
+            handle.addEventListener("mousedown", function(event) {
+
+                event.preventDefault();
 
 
-                    const indice =
-                        parseInt(
-                            th.dataset.column
-                        );
+                const startX =
+                    event.pageX;
 
 
-                    const inicioX =
-                        event.clientX;
+                const startWidth =
+                    header.offsetWidth;
 
 
-                    const anchoInicial =
-                        th.offsetWidth;
+                document.body.classList.add("resizing");
 
 
-                    document.body.classList.add(
-                        "resizing"
-                    );
+                function resize(event) {
+
+                    const newWidth =
+                        startWidth +
+                        (event.pageX - startX);
 
 
-                    function mover(evento) {
-
-                        const diferencia =
-                            evento.clientX -
-                            inicioX;
+                    const minimumWidth = 90;
 
 
-                        const nuevoAncho =
-                            Math.max(
-                                anchoInicial +
-                                diferencia,
-                                minimos[indice]
-                            );
+                    if (newWidth >= minimumWidth) {
+
+                        header.style.width =
+                            newWidth + "px";
 
 
-                        aplicarAnchoColumna(
-                            indice,
-                            nuevoAncho
-                        );
+                        header.style.minWidth =
+                            newWidth + "px";
 
                     }
 
-
-                    function terminar() {
-
-                        document.body.classList.remove(
-                            "resizing"
-                        );
+                }
 
 
-                        document.removeEventListener(
-                            "mousemove",
-                            mover
-                        );
+                function stopResize() {
+
+                    document.body.classList.remove("resizing");
 
 
-                        document.removeEventListener(
-                            "mouseup",
-                            terminar
-                        );
-
-
-                        guardarAnchos();
-
-                    }
-
-
-                    document.addEventListener(
+                    document.removeEventListener(
                         "mousemove",
-                        mover
+                        resize
                     );
 
 
-                    document.addEventListener(
+                    document.removeEventListener(
                         "mouseup",
-                        terminar
+                        stopResize
                     );
 
                 }
-            );
-
-        }
-    );
 
 
-
-    /* =====================================================
-       INICIALIZACIÓN
-    ===================================================== */
-
-    cargarAnchos();
+                document.addEventListener(
+                    "mousemove",
+                    resize
+                );
 
 
-    const estadoGuardado =
-        localStorage.getItem(
-            LOCK_KEY
-        );
+                document.addEventListener(
+                    "mouseup",
+                    stopResize
+                );
 
+            });
 
-    actualizarEstadoColumnas(
-        estadoGuardado === "true"
-    );
+        });
+
+    });
 
 </script>
 
