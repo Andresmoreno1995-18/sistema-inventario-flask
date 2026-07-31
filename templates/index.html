@@ -549,6 +549,7 @@
                     {{ session.get('usuario', 'admin') }}
                 </strong>
 
+
                 <span class="ms-1">
 
                     {% if session.get('rol') == 'admin' %}
@@ -590,7 +591,9 @@
 <div class="container-fluid px-4 main-container">
 
 
-    <!-- TITULO -->
+    <!-- =================================================
+         TITULO
+    ================================================= -->
 
     <div class="mb-4">
 
@@ -673,14 +676,15 @@
                         id="q"
                         name="q"
                         class="form-control search-input"
-                        placeholder="Buscar por nombre o categoría..."
+                        placeholder="Nombre, categoría o ID..."
                         value="{{ busqueda }}"
                     >
 
                 </div>
 
 
-                <!-- FILTRO -->
+
+                <!-- FILTRO STOCK -->
 
                 <div class="col-lg-4">
 
@@ -699,6 +703,7 @@
                         name="stock"
                         class="form-select search-input"
                     >
+
 
                         <option
                             value="todos"
@@ -747,12 +752,14 @@
 
                         </option>
 
+
                     </select>
 
                 </div>
 
 
-                <!-- BOTONES -->
+
+                <!-- BOTÓN -->
 
                 <div class="col-lg-2 d-grid">
 
@@ -771,7 +778,10 @@
             </div>
 
 
-            <!-- FILTROS RÁPIDOS -->
+
+            <!-- =================================================
+                 FILTROS RÁPIDOS
+            ================================================= -->
 
             <div class="mt-3 filter-buttons d-flex flex-wrap gap-2">
 
@@ -791,6 +801,7 @@
                 </a>
 
 
+
                 <a
                     href="/?stock=stock"
                     class="btn btn-sm
@@ -804,6 +815,7 @@
                     🟢 Con stock
 
                 </a>
+
 
 
                 <a
@@ -821,6 +833,7 @@
                 </a>
 
 
+
                 <a
                     href="/?stock=agotado"
                     class="btn btn-sm
@@ -834,6 +847,7 @@
                     🔴 Agotados
 
                 </a>
+
 
 
                 {% if busqueda or filtro_stock != 'todos' %}
@@ -853,17 +867,57 @@
             </div>
 
 
-            <!-- RESULTADOS -->
+
+            <!-- =================================================
+                 RESULTADOS
+            ================================================= -->
 
             <div class="mt-3 result-count">
+
 
                 {% if busqueda %}
 
                     Resultados para:
 
                     <strong>
+
                         "{{ busqueda }}"
+
                     </strong>
+
+                    —
+
+
+                {% endif %}
+
+
+                {% if filtro_stock == 'stock' %}
+
+                    <span class="text-success">
+
+                        🟢 Con stock
+
+                    </span>
+
+                    —
+
+                {% elif filtro_stock == 'bajo' %}
+
+                    <span class="text-warning">
+
+                        🟡 Stock bajo
+
+                    </span>
+
+                    —
+
+                {% elif filtro_stock == 'agotado' %}
+
+                    <span class="text-danger">
+
+                        🔴 Agotados
+
+                    </span>
 
                     —
 
@@ -871,10 +925,13 @@
 
 
                 <strong>
+
                     {{ total_productos }}
+
                 </strong>
 
                 producto(s) encontrado(s).
+
 
             </div>
 
@@ -1041,6 +1098,7 @@
         {% endif %}
 
 
+
         <a
             href="/movimientos"
             class="btn btn-success"
@@ -1051,6 +1109,7 @@
         </a>
 
 
+
         <a
             href="/proveedores"
             class="btn btn-secondary"
@@ -1059,6 +1118,7 @@
             🚚 Proveedores
 
         </a>
+
 
 
         {% if session.get('rol') == 'admin' %}
@@ -1073,6 +1133,7 @@
             </a>
 
         {% endif %}
+
 
 
         <a
@@ -1108,11 +1169,14 @@
             </h5>
 
 
+
             {% if productos %}
 
                 <span class="badge bg-primary">
 
-                    {{ productos|length }} resultado(s)
+                    {{ productos|length }}
+
+                    resultado(s)
 
                 </span>
 
@@ -1120,6 +1184,7 @@
 
 
         </div>
+
 
 
         <div class="table-responsive">
@@ -1142,6 +1207,7 @@
 
                         <th>Existencias</th>
 
+
                         {% if session.get('rol') == 'admin' %}
 
                             <th class="text-center">
@@ -1155,6 +1221,7 @@
                     </tr>
 
                 </thead>
+
 
 
                 <tbody>
@@ -1176,6 +1243,7 @@
                                 </td>
 
 
+
                                 <td>
 
                                     <strong>
@@ -1185,6 +1253,7 @@
                                     </strong>
 
                                 </td>
+
 
 
                                 <td>
@@ -1198,11 +1267,13 @@
                                 </td>
 
 
+
                                 <td>
 
                                     ${{ "%.2f"|format(producto["precio"]) }}
 
                                 </td>
+
 
 
                                 <td>
@@ -1249,6 +1320,7 @@
                                 </td>
 
 
+
                                 {% if session.get('rol') == 'admin' %}
 
                                     <td class="text-center">
@@ -1267,6 +1339,7 @@
                                             </a>
 
 
+
                                             <a
                                                 href="/eliminar/{{ producto['id'] }}"
                                                 class="btn btn-danger"
@@ -1276,6 +1349,7 @@
                                                 🗑️ Eliminar
 
                                             </a>
+
 
                                         </div>
 
@@ -1301,6 +1375,7 @@
                                 class="text-center text-muted py-5"
                             >
 
+
                                 <div class="fs-1 mb-2">
 
                                     🔎
@@ -1317,8 +1392,9 @@
 
                                 <div class="mt-1">
 
-                                    Prueba con otro nombre, categoría
-                                    o filtro de stock.
+                                    Prueba con otro nombre,
+                                    categoría,
+                                    ID o filtro de stock.
 
                                 </div>
 
@@ -1331,6 +1407,7 @@
                                     🧹 Limpiar búsqueda
 
                                 </a>
+
 
                             </td>
 
@@ -1371,6 +1448,7 @@
             </h5>
 
 
+
             <a
                 href="/movimientos"
                 class="btn btn-sm btn-outline-primary"
@@ -1381,6 +1459,7 @@
             </a>
 
         </div>
+
 
 
         <div class="table-responsive">
@@ -1408,6 +1487,7 @@
                 </thead>
 
 
+
                 <tbody>
 
 
@@ -1427,6 +1507,7 @@
                                 </td>
 
 
+
                                 <td>
 
                                     <strong>
@@ -1436,6 +1517,7 @@
                                     </strong>
 
                                 </td>
+
 
 
                                 <td>
@@ -1448,6 +1530,7 @@
                                             Entrada
 
                                         </span>
+
 
                                     {% else %}
 
@@ -1463,11 +1546,13 @@
                                 </td>
 
 
+
                                 <td>
 
                                     {{ mov["cantidad"] }}
 
                                 </td>
+
 
 
                                 <td>
