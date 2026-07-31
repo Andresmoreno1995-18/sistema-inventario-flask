@@ -40,13 +40,13 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 # =========================================================
 
 def get_db():
+
     if not DATABASE_URL:
         raise RuntimeError(
             "No se encontró la variable DATABASE_URL."
         )
 
-    conn = psycopg2.connect(DATABASE_URL)
-    return conn
+    return psycopg2.connect(DATABASE_URL)
 
 
 # =========================================================
@@ -67,8 +67,15 @@ def init_db():
             id SERIAL PRIMARY KEY,
             usuario TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
-            rol TEXT NOT NULL DEFAULT 'admin'
+            rol TEXT NOT NULL DEFAULT 'admin',
+            genero TEXT NOT NULL DEFAULT 'Hombre'
         )
+    """)
+
+    # Si la tabla ya existía, agrega genero sin borrar usuarios
+    cursor.execute("""
+        ALTER TABLE usuarios
+        ADD COLUMN IF NOT EXISTS genero TEXT NOT NULL DEFAULT 'Hombre'
     """)
 
     # -------------------------
@@ -133,15 +140,22 @@ def init_db():
 
         cursor.execute("""
             INSERT INTO usuarios
-            (usuario, password, rol)
-            VALUES (%s, %s, %s)
+            (
+                usuario,
+                password,
+                rol,
+                genero
+            )
+            VALUES (%s, %s, %s, %s)
         """, (
             "admin",
             "admin123",
-            "admin"
+            "admin",
+            "Hombre"
         ))
 
     conn.commit()
+
     cursor.close()
     conn.close()
 
@@ -162,7 +176,9 @@ def index():
 
     conn = get_db()
 
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
 
     cursor.execute("""
         SELECT
@@ -274,7 +290,8 @@ def login():
                 id,
                 usuario,
                 password,
-                rol
+                rol,
+                genero
             FROM usuarios
             WHERE usuario = %s
               AND password = %s
@@ -292,6 +309,7 @@ def login():
 
             session["usuario"] = user["usuario"]
             session["rol"] = user["rol"]
+            session["genero"] = user["genero"]
 
             flash(
                 "¡Inicio de sesión exitoso!",
@@ -309,6 +327,131 @@ def login():
 
     return render_template(
         "login.html"
+    )
+
+
+# =========================================================
+# REGISTRO DE USUARIOS
+# =========================================================
+
+@app.route(
+    "/registro",
+    methods=["GET", "POST"]
+)
+def registro():
+
+    if request.method == "POST":
+
+        usuario = request.form.get(
+            "usuario",
+            ""
+        ).strip()
+
+        password = request.form.get(
+            "password",
+            ""
+        )
+
+        genero = request.form.get(
+            "genero",
+            ""
+        ).strip()
+
+        # -------------------------
+        # VALIDACIONES
+        # -------------------------
+
+        if not usuario or not password:
+
+            flash(
+                "Debe ingresar usuario y contraseña.",
+                "danger"
+            )
+
+            return render_template(
+                "registro.html"
+            )
+
+        if genero not in (
+            "Hombre",
+            "Mujer"
+        ):
+
+            flash(
+                "Debe seleccionar Hombre o Mujer.",
+                "danger"
+            )
+
+            return render_template(
+                "registro.html"
+            )
+
+        conn = get_db()
+
+        cursor = conn.cursor()
+
+        # -------------------------
+        # VERIFICAR USUARIO
+        # -------------------------
+
+        cursor.execute("""
+            SELECT id
+            FROM usuarios
+            WHERE usuario = %s
+        """, (usuario,))
+
+        usuario_existente = cursor.fetchone()
+
+        if usuario_existente:
+
+            cursor.close()
+            conn.close()
+
+            flash(
+                "Ese nombre de usuario ya existe.",
+                "danger"
+            )
+
+            return render_template(
+                "registro.html"
+            )
+
+        # -------------------------
+        # CREAR USUARIO
+        # -------------------------
+
+        cursor.execute("""
+            INSERT INTO usuarios
+            (
+                usuario,
+                password,
+                rol,
+                genero
+            )
+            VALUES (%s, %s, %s, %s)
+        """, (
+            usuario,
+            password,
+            "admin",
+            genero
+        ))
+
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        flash(
+            "Usuario registrado correctamente. Ya puede iniciar sesión.",
+            "success"
+        )
+
+        return redirect(
+            url_for("login")
+        )
+
+    return render_template(
+        "registro.html"
     )
 
 
@@ -335,7 +478,10 @@ def logout():
 # AGREGAR PRODUCTO
 # =========================================================
 
-@app.route("/agregar", methods=["GET", "POST"])
+@app.route(
+    "/agregar",
+    methods=["GET", "POST"]
+)
 def agregar():
 
     if "usuario" not in session:
@@ -549,7 +695,9 @@ def editar(id):
 # ELIMINAR PRODUCTO
 # =========================================================
 
-@app.route("/eliminar/<int:id>")
+@app.route(
+    "/eliminar/<int:id>"
+)
 def eliminar(id):
 
     if "usuario" not in session:
