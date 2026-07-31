@@ -11,31 +11,48 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Sistema de Gestión de Inventario</title>
+    <title>
+        Sistema de Gestión de Inventario
+    </title>
+
 
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
         rel="stylesheet"
     >
 
+
     <style>
 
+        /* =====================================================
+           FONDO PRINCIPAL
+        ===================================================== */
+
         body {
+
             margin: 0;
+
             min-height: 100vh;
-            font-family: Arial, Helvetica, sans-serif;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
 
             background:
+
                 radial-gradient(
                     circle at 10% 20%,
                     rgba(13, 110, 253, 0.15),
                     transparent 30%
                 ),
+
                 radial-gradient(
                     circle at 90% 10%,
                     rgba(25, 135, 84, 0.12),
                     transparent 30%
                 ),
+
                 linear-gradient(
                     135deg,
                     #eef3f8 0%,
@@ -44,10 +61,18 @@
                 );
 
             background-attachment: fixed;
+
         }
 
+
+        /* =====================================================
+           NAVBAR
+        ===================================================== */
+
         .main-navbar {
+
             background:
+
                 linear-gradient(
                     135deg,
                     #111827,
@@ -57,147 +82,416 @@
 
             box-shadow:
                 0 4px 18px rgba(0, 0, 0, 0.18);
+
         }
+
 
         .navbar-brand {
-            letter-spacing: 0.3px;
+
+            letter-spacing:
+                0.3px;
+
         }
+
+
+        /* =====================================================
+           PERFIL
+        ===================================================== */
 
         .user-profile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            gap:
+                10px;
+
         }
+
 
         .user-icon {
-            width: 42px;
-            height: 42px;
 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width:
+                42px;
 
-            border-radius: 50%;
+            height:
+                42px;
 
-            background: rgba(255, 255, 255, 0.12);
+            display:
+                flex;
 
-            font-size: 22px;
+            align-items:
+                center;
 
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            justify-content:
+                center;
+
+            border-radius:
+                50%;
+
+            background:
+                rgba(255, 255, 255, 0.12);
+
+            font-size:
+                22px;
+
+            border:
+                1px solid
+                rgba(255, 255, 255, 0.2);
+
         }
+
 
         .user-name {
-            color: white;
-            font-size: 14px;
+
+            color:
+                white;
+
+            font-size:
+                14px;
+
         }
+
+
+        /* =====================================================
+           CONTENEDOR
+        ===================================================== */
 
         .main-container {
-            padding-top: 10px;
-            padding-bottom: 40px;
+
+            padding-top:
+                10px;
+
+            padding-bottom:
+                40px;
+
         }
+
+
+        /* =====================================================
+           TARJETAS
+        ===================================================== */
 
         .card-summary {
-            border: none;
-            border-radius: 16px;
 
-            background: rgba(255, 255, 255, 0.92);
+            border:
+                none;
+
+            border-radius:
+                16px;
+
+            background:
+                rgba(255, 255, 255, 0.92);
 
             box-shadow:
-                0 8px 24px rgba(15, 23, 42, 0.08);
+                0 8px 24px
+                rgba(15, 23, 42, 0.08);
 
             transition:
                 transform 0.2s ease,
                 box-shadow 0.2s ease;
+
         }
+
 
         .card-summary:hover {
-            transform: translateY(-4px);
+
+            transform:
+                translateY(-4px);
 
             box-shadow:
-                0 12px 28px rgba(15, 23, 42, 0.13);
+                0 12px 28px
+                rgba(15, 23, 42, 0.13);
+
         }
+
 
         .summary-number {
-            font-size: 28px;
-            font-weight: 700;
+
+            font-size:
+                28px;
+
+            font-weight:
+                700;
+
         }
 
+
+        /* =====================================================
+           BOTONES
+        ===================================================== */
+
         .main-buttons .btn {
-            border-radius: 10px;
-            padding: 9px 15px;
-            font-weight: 600;
+
+            border-radius:
+                10px;
+
+            padding:
+                9px 15px;
+
+            font-weight:
+                600;
 
             transition:
                 transform 0.2s ease,
                 box-shadow 0.2s ease;
+
         }
+
 
         .main-buttons .btn:hover {
-            transform: translateY(-2px);
+
+            transform:
+                translateY(-2px);
 
             box-shadow:
-                0 5px 12px rgba(0, 0, 0, 0.12);
+                0 5px 12px
+                rgba(0, 0, 0, 0.12);
+
         }
+
+
+        /* =====================================================
+           BUSCADOR
+        ===================================================== */
+
+        .search-container {
+
+            background:
+                rgba(255, 255, 255, 0.95);
+
+            border-radius:
+                16px;
+
+            padding:
+                20px;
+
+            box-shadow:
+                0 8px 24px
+                rgba(15, 23, 42, 0.08);
+
+            border:
+                1px solid
+                rgba(255, 255, 255, 0.7);
+
+        }
+
+
+        .search-container label {
+
+            font-size:
+                13px;
+
+            font-weight:
+                700;
+
+            color:
+                #374151;
+
+        }
+
+
+        .search-input {
+
+            border-radius:
+                10px;
+
+            min-height:
+                44px;
+
+        }
+
+
+        .filter-buttons .btn {
+
+            border-radius:
+                10px;
+
+            font-weight:
+                600;
+
+        }
+
+
+        .result-count {
+
+            font-size:
+                13px;
+
+            color:
+                #6b7280;
+
+        }
+
+
+        /* =====================================================
+           TABLAS
+        ===================================================== */
 
         .table-container {
-            background: rgba(255, 255, 255, 0.95);
 
-            border-radius: 16px;
+            background:
+                rgba(255, 255, 255, 0.95);
 
-            padding: 22px;
+            border-radius:
+                16px;
+
+            padding:
+                22px;
 
             box-shadow:
-                0 8px 24px rgba(15, 23, 42, 0.08);
+                0 8px 24px
+                rgba(15, 23, 42, 0.08);
 
-            border: 1px solid rgba(255, 255, 255, 0.7);
+            border:
+                1px solid
+                rgba(255, 255, 255, 0.7);
+
         }
+
 
         .table-container h5 {
-            color: #1f2937;
+
+            color:
+                #1f2937;
+
         }
+
 
         .table {
-            margin-bottom: 0;
+
+            margin-bottom:
+                0;
+
         }
+
 
         .table thead th {
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
+
+            font-size:
+                13px;
+
+            text-transform:
+                uppercase;
+
+            letter-spacing:
+                0.3px;
+
         }
+
+
+        /* =====================================================
+           TITULOS
+        ===================================================== */
 
         .dashboard-title {
-            color: #1f2937;
-            font-weight: 700;
+
+            color:
+                #1f2937;
+
+            font-weight:
+                700;
+
         }
+
 
         .dashboard-subtitle {
-            color: #6b7280;
-            font-size: 14px;
+
+            color:
+                #6b7280;
+
+            font-size:
+                14px;
+
         }
 
+
+        /* =====================================================
+           ALERTAS
+        ===================================================== */
+
         .alert {
-            border-radius: 12px;
-            border: none;
+
+            border-radius:
+                12px;
+
+            border:
+                none;
+
         }
+
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
 
         @media (max-width: 768px) {
 
             .navbar-brand {
-                font-size: 15px;
+
+                font-size:
+                    15px;
+
             }
+
 
             .user-name {
-                display: none;
+
+                display:
+                    none;
+
             }
+
 
             .user-icon {
-                width: 38px;
-                height: 38px;
+
+                width:
+                    38px;
+
+                height:
+                    38px;
+
             }
 
+
             .table-container {
-                padding: 15px;
+
+                padding:
+                    15px;
+
+            }
+
+
+            .search-container {
+
+                padding:
+                    15px;
+
+            }
+
+
+            .filter-buttons {
+
+                display:
+                    grid;
+
+                grid-template-columns:
+                    1fr 1fr;
+
+                gap:
+                    8px;
+
+            }
+
+
+            .filter-buttons .btn {
+
+                width:
+                    100%;
+
             }
 
         }
@@ -205,6 +499,7 @@
     </style>
 
 </head>
+
 
 <body>
 
@@ -217,25 +512,29 @@
 
     <div class="container-fluid px-4">
 
+
         <a
             class="navbar-brand fw-bold"
             href="/"
         >
+
             📦 Sistema de Gestión de Inventario
+
         </a>
 
 
         <div class="user-profile">
 
+
             <div class="user-icon">
 
-                {% if session.get('rol') == 'admin' %}
+                {% if session.get('genero') == 'Mujer' %}
 
-                    👑
+                    👩
 
                 {% else %}
 
-                    👤
+                    👨
 
                 {% endif %}
 
@@ -250,19 +549,19 @@
                     {{ session.get('usuario', 'admin') }}
                 </strong>
 
-                <small class="ms-1">
+                <span class="ms-1">
 
                     {% if session.get('rol') == 'admin' %}
 
-                        (Administrador)
+                        👑 Administrador
 
                     {% else %}
 
-                        (Usuario)
+                        👤 Usuario
 
                     {% endif %}
 
-                </small>
+                </span>
 
             </div>
 
@@ -271,7 +570,9 @@
                 href="/logout"
                 class="btn btn-danger btn-sm"
             >
+
                 Cerrar Sesión
+
             </a>
 
         </div>
@@ -283,29 +584,26 @@
 
 
 <!-- =====================================================
-     CONTENIDO PRINCIPAL
+     CONTENIDO
 ===================================================== -->
 
 <div class="container-fluid px-4 main-container">
 
 
+    <!-- TITULO -->
+
     <div class="mb-4">
 
         <h2 class="dashboard-title">
+
             Panel principal
+
         </h2>
+
 
         <p class="dashboard-subtitle mb-0">
 
-            {% if session.get('rol') == 'admin' %}
-
-                Administración y control general del inventario
-
-            {% else %}
-
-                Consulta y gestión de movimientos del inventario
-
-            {% endif %}
+            Administración y control general del inventario
 
         </p>
 
@@ -327,7 +625,9 @@
                     class="alert alert-{{ 'danger' if category == 'error' else category }}"
                     role="alert"
                 >
+
                     {{ message }}
+
                 </div>
 
             {% endfor %}
@@ -339,56 +639,326 @@
 
 
     <!-- =================================================
+         BUSCADOR
+    ================================================= -->
+
+    <div class="search-container mb-4">
+
+
+        <form
+            method="GET"
+            action="/"
+        >
+
+
+            <div class="row g-3 align-items-end">
+
+
+                <!-- BUSCAR -->
+
+                <div class="col-lg-6">
+
+                    <label
+                        for="q"
+                        class="form-label"
+                    >
+
+                        🔎 Buscar producto
+
+                    </label>
+
+
+                    <input
+                        type="text"
+                        id="q"
+                        name="q"
+                        class="form-control search-input"
+                        placeholder="Buscar por nombre o categoría..."
+                        value="{{ busqueda }}"
+                    >
+
+                </div>
+
+
+                <!-- FILTRO -->
+
+                <div class="col-lg-4">
+
+                    <label
+                        for="stock"
+                        class="form-label"
+                    >
+
+                        📦 Filtrar por stock
+
+                    </label>
+
+
+                    <select
+                        id="stock"
+                        name="stock"
+                        class="form-select search-input"
+                    >
+
+                        <option
+                            value="todos"
+                            {% if filtro_stock == 'todos' %}
+                                selected
+                            {% endif %}
+                        >
+
+                            Todos los productos
+
+                        </option>
+
+
+                        <option
+                            value="stock"
+                            {% if filtro_stock == 'stock' %}
+                                selected
+                            {% endif %}
+                        >
+
+                            🟢 Con stock
+
+                        </option>
+
+
+                        <option
+                            value="bajo"
+                            {% if filtro_stock == 'bajo' %}
+                                selected
+                            {% endif %}
+                        >
+
+                            🟡 Stock bajo (1 - 5)
+
+                        </option>
+
+
+                        <option
+                            value="agotado"
+                            {% if filtro_stock == 'agotado' %}
+                                selected
+                            {% endif %}
+                        >
+
+                            🔴 Agotados
+
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- BOTONES -->
+
+                <div class="col-lg-2 d-grid">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+
+                        🔎 Buscar
+
+                    </button>
+
+                </div>
+
+
+            </div>
+
+
+            <!-- FILTROS RÁPIDOS -->
+
+            <div class="mt-3 filter-buttons d-flex flex-wrap gap-2">
+
+
+                <a
+                    href="/"
+                    class="btn btn-sm
+                    {% if not busqueda and filtro_stock == 'todos' %}
+                        btn-dark
+                    {% else %}
+                        btn-outline-dark
+                    {% endif %}"
+                >
+
+                    📋 Todos
+
+                </a>
+
+
+                <a
+                    href="/?stock=stock"
+                    class="btn btn-sm
+                    {% if filtro_stock == 'stock' and not busqueda %}
+                        btn-success
+                    {% else %}
+                        btn-outline-success
+                    {% endif %}"
+                >
+
+                    🟢 Con stock
+
+                </a>
+
+
+                <a
+                    href="/?stock=bajo"
+                    class="btn btn-sm
+                    {% if filtro_stock == 'bajo' and not busqueda %}
+                        btn-warning
+                    {% else %}
+                        btn-outline-warning
+                    {% endif %}"
+                >
+
+                    🟡 Stock bajo
+
+                </a>
+
+
+                <a
+                    href="/?stock=agotado"
+                    class="btn btn-sm
+                    {% if filtro_stock == 'agotado' and not busqueda %}
+                        btn-danger
+                    {% else %}
+                        btn-outline-danger
+                    {% endif %}"
+                >
+
+                    🔴 Agotados
+
+                </a>
+
+
+                {% if busqueda or filtro_stock != 'todos' %}
+
+                    <a
+                        href="/"
+                        class="btn btn-sm btn-outline-secondary"
+                    >
+
+                        🧹 Limpiar filtros
+
+                    </a>
+
+                {% endif %}
+
+
+            </div>
+
+
+            <!-- RESULTADOS -->
+
+            <div class="mt-3 result-count">
+
+                {% if busqueda %}
+
+                    Resultados para:
+
+                    <strong>
+                        "{{ busqueda }}"
+                    </strong>
+
+                    —
+
+                {% endif %}
+
+
+                <strong>
+                    {{ total_productos }}
+                </strong>
+
+                producto(s) encontrado(s).
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+
+
+    <!-- =================================================
          RESUMEN
     ================================================= -->
 
     <div class="row g-3 mb-4">
 
 
+        <!-- PRODUCTOS -->
+
         <div class="col-md-2">
 
             <div class="card card-summary p-3">
 
                 <small class="text-muted fw-bold">
+
                     PRODUCTOS TOTALES
+
                 </small>
 
+
                 <div class="summary-number mt-1">
+
                     {{ total_productos }}
+
                 </div>
 
             </div>
 
         </div>
 
+
+
+        <!-- UNIDADES -->
 
         <div class="col-md-2">
 
             <div class="card card-summary p-3">
 
                 <small class="text-muted fw-bold">
+
                     UNIDADES TOTALES
+
                 </small>
 
+
                 <div class="summary-number mt-1">
+
                     {{ unidades_totales }}
+
                 </div>
 
             </div>
 
         </div>
 
+
+
+        <!-- VALOR -->
 
         <div class="col-md-3">
 
             <div class="card card-summary p-3">
 
                 <small class="text-muted fw-bold">
+
                     VALOR DEL INVENTARIO
+
                 </small>
 
+
                 <div class="summary-number mt-1">
+
                     ${{ "%.2f"|format(valor_inventario) }}
+
                 </div>
 
             </div>
@@ -396,16 +966,24 @@
         </div>
 
 
+
+        <!-- STOCK BAJO -->
+
         <div class="col-md-2">
 
             <div class="card card-summary p-3">
 
                 <small class="text-muted fw-bold">
+
                     STOCK BAJO
+
                 </small>
+
 
                 <div class="summary-number mt-1 text-warning">
+
                     {{ stock_bajo }}
+
                 </div>
 
             </div>
@@ -413,16 +991,24 @@
         </div>
 
 
+
+        <!-- AGOTADOS -->
+
         <div class="col-md-3">
 
             <div class="card card-summary p-3">
 
                 <small class="text-muted fw-bold">
+
                     AGOTADOS
+
                 </small>
 
+
                 <div class="summary-number mt-1 text-danger">
+
                     {{ agotados }}
+
                 </div>
 
             </div>
@@ -447,7 +1033,9 @@
                 href="/agregar"
                 class="btn btn-primary"
             >
+
                 ➕ Agregar Producto
+
             </a>
 
         {% endif %}
@@ -457,7 +1045,9 @@
             href="/movimientos"
             class="btn btn-success"
         >
+
             📦 Movimientos
+
         </a>
 
 
@@ -465,7 +1055,9 @@
             href="/proveedores"
             class="btn btn-secondary"
         >
+
             🚚 Proveedores
+
         </a>
 
 
@@ -475,7 +1067,9 @@
                 href="/exportar"
                 class="btn btn-light border"
             >
+
                 📥 Exportar CSV
+
             </a>
 
         {% endif %}
@@ -485,20 +1079,10 @@
             href="/grafico"
             class="btn btn-light border"
         >
+
             📊 Ver Gráfico
+
         </a>
-
-
-        {% if session.get('rol') == 'admin' %}
-
-            <a
-                href="/registro"
-                class="btn btn-dark"
-            >
-                👥 Crear Usuario
-            </a>
-
-        {% endif %}
 
 
     </div>
@@ -512,9 +1096,30 @@
     <div class="table-container mb-4">
 
 
-        <h5 class="fw-bold mb-3">
-            📋 Listado de Productos
-        </h5>
+        <div
+            class="d-flex justify-content-between align-items-center mb-3"
+        >
+
+
+            <h5 class="fw-bold mb-0">
+
+                📋 Listado de Productos
+
+            </h5>
+
+
+            {% if productos %}
+
+                <span class="badge bg-primary">
+
+                    {{ productos|length }} resultado(s)
+
+                </span>
+
+            {% endif %}
+
+
+        </div>
 
 
         <div class="table-responsive">
@@ -540,7 +1145,9 @@
                         {% if session.get('rol') == 'admin' %}
 
                             <th class="text-center">
+
                                 Acciones
+
                             </th>
 
                         {% endif %}
@@ -563,14 +1170,18 @@
 
 
                                 <td>
+
                                     #{{ producto["id"] }}
+
                                 </td>
 
 
                                 <td>
 
                                     <strong>
+
                                         {{ producto["nombre"] }}
+
                                     </strong>
 
                                 </td>
@@ -597,22 +1208,39 @@
                                 <td>
 
 
-                                    {% if producto["existencias"] <= 2 %}
+                                    {% if producto["existencias"] == 0 %}
 
                                         <span class="badge bg-danger">
-                                            {{ producto["existencias"] }}
+
+                                            0 — Agotado
+
                                         </span>
+
+
+                                    {% elif producto["existencias"] <= 2 %}
+
+                                        <span class="badge bg-danger">
+
+                                            {{ producto["existencias"] }}
+
+                                        </span>
+
 
                                     {% elif producto["existencias"] <= 5 %}
 
                                         <span class="badge bg-warning text-dark">
+
                                             {{ producto["existencias"] }}
+
                                         </span>
+
 
                                     {% else %}
 
                                         <span class="badge bg-success">
+
                                             {{ producto["existencias"] }}
+
                                         </span>
 
                                     {% endif %}
@@ -633,7 +1261,9 @@
                                                 href="/editar/{{ producto['id'] }}"
                                                 class="btn btn-warning"
                                             >
+
                                                 ✏️ Editar
+
                                             </a>
 
 
@@ -642,9 +1272,10 @@
                                                 class="btn btn-danger"
                                                 onclick="return confirm('¿Seguro de eliminar este producto?');"
                                             >
-                                                🗑️ Eliminar
-                                            </a>
 
+                                                🗑️ Eliminar
+
+                                            </a>
 
                                         </div>
 
@@ -667,9 +1298,40 @@
 
                             <td
                                 colspan="6"
-                                class="text-center text-muted py-4"
+                                class="text-center text-muted py-5"
                             >
-                                No hay productos registrados.
+
+                                <div class="fs-1 mb-2">
+
+                                    🔎
+
+                                </div>
+
+
+                                <strong>
+
+                                    No se encontraron productos.
+
+                                </strong>
+
+
+                                <div class="mt-1">
+
+                                    Prueba con otro nombre, categoría
+                                    o filtro de stock.
+
+                                </div>
+
+
+                                <a
+                                    href="/"
+                                    class="btn btn-sm btn-outline-primary mt-3"
+                                >
+
+                                    🧹 Limpiar búsqueda
+
+                                </a>
+
                             </td>
 
                         </tr>
@@ -685,7 +1347,6 @@
 
 
         </div>
-
 
     </div>
 
@@ -704,7 +1365,9 @@
 
 
             <h5 class="fw-bold mb-0">
+
                 📊 Últimos Movimientos
+
             </h5>
 
 
@@ -712,9 +1375,10 @@
                 href="/movimientos"
                 class="btn btn-sm btn-outline-primary"
             >
-                Ver Movimientos
-            </a>
 
+                Ver Movimientos
+
+            </a>
 
         </div>
 
@@ -757,14 +1421,18 @@
 
 
                                 <td>
+
                                     {{ mov["fecha"] }}
+
                                 </td>
 
 
                                 <td>
 
                                     <strong>
+
                                         {{ mov["nombre"] or "Producto eliminado" }}
+
                                     </strong>
 
                                 </td>
@@ -776,13 +1444,17 @@
                                     {% if mov["tipo"] == "Entrada" %}
 
                                         <span class="badge bg-success">
+
                                             Entrada
+
                                         </span>
 
                                     {% else %}
 
                                         <span class="badge bg-danger">
+
                                             Salida
+
                                         </span>
 
                                     {% endif %}
@@ -792,12 +1464,16 @@
 
 
                                 <td>
+
                                     {{ mov["cantidad"] }}
+
                                 </td>
 
 
                                 <td>
+
                                     {{ mov["usuario"] or "admin" }}
+
                                 </td>
 
 
@@ -816,7 +1492,9 @@
                                 colspan="5"
                                 class="text-center text-muted py-3"
                             >
+
                                 No hay movimientos registrados.
+
                             </td>
 
                         </tr>
@@ -833,7 +1511,6 @@
 
         </div>
 
-
     </div>
 
 
@@ -841,9 +1518,14 @@
 
 
 
+<!-- =====================================================
+     BOOTSTRAP
+===================================================== -->
+
 <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
 ></script>
+
 
 </body>
 
