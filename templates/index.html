@@ -21,10 +21,6 @@
 
     <style>
 
-        /* =====================================================
-           FONDO PRINCIPAL
-        ===================================================== */
-
         body {
 
             margin: 0;
@@ -61,10 +57,6 @@
         }
 
 
-        /* =====================================================
-           NAVBAR
-        ===================================================== */
-
         .main-navbar {
 
             background:
@@ -88,10 +80,6 @@
 
         }
 
-
-        /* =====================================================
-           PERFIL
-        ===================================================== */
 
         .user-profile {
 
@@ -139,10 +127,6 @@
         }
 
 
-        /* =====================================================
-           CONTENEDOR
-        ===================================================== */
-
         .main-container {
 
             padding-top: 10px;
@@ -151,10 +135,6 @@
 
         }
 
-
-        /* =====================================================
-           TARJETAS
-        ===================================================== */
 
         .card-summary {
 
@@ -196,10 +176,6 @@
         }
 
 
-        /* =====================================================
-           BOTONES
-        ===================================================== */
-
         .main-buttons .btn {
 
             border-radius: 10px;
@@ -225,10 +201,6 @@
 
         }
 
-
-        /* =====================================================
-           BUSCADOR
-        ===================================================== */
 
         .search-container {
 
@@ -288,10 +260,6 @@
         }
 
 
-        /* =====================================================
-           CONTENEDOR DE TABLAS
-        ===================================================== */
-
         .table-container {
 
             background:
@@ -321,10 +289,6 @@
         }
 
 
-        /* =====================================================
-           CONTENEDOR HORIZONTAL
-        ===================================================== */
-
         .table-scroll {
 
             width: 100%;
@@ -343,10 +307,6 @@
         }
 
 
-        /* =====================================================
-           TABLAS
-        ===================================================== */
-
         .structured-table {
 
             margin: 0;
@@ -363,10 +323,6 @@
 
         }
 
-
-        /* =====================================================
-           ENCABEZADOS
-        ===================================================== */
 
         .structured-table thead th {
 
@@ -396,10 +352,6 @@
         }
 
 
-        /* =====================================================
-           CELDAS
-        ===================================================== */
-
         .structured-table tbody td {
 
             padding: 13px 14px;
@@ -418,20 +370,12 @@
         }
 
 
-        /* =====================================================
-           FILAS
-        ===================================================== */
-
         .structured-table tbody tr:hover td {
 
             background: #f1f5f9;
 
         }
 
-
-        /* =====================================================
-           ANCHOS PRODUCTOS
-        ===================================================== */
 
         .productos-table th:nth-child(1),
         .productos-table td:nth-child(1) {
@@ -481,9 +425,12 @@
         }
 
 
-        /* =====================================================
-           ANCHOS MOVIMIENTOS
-        ===================================================== */
+        .movimientos-table {
+
+            min-width: 1050px;
+
+        }
+
 
         .movimientos-table th:nth-child(1),
         .movimientos-table td:nth-child(1) {
@@ -520,14 +467,18 @@
         .movimientos-table th:nth-child(5),
         .movimientos-table td:nth-child(5) {
 
-            width: 170px;
+            width: 200px;
 
         }
 
 
-        /* =====================================================
-           REDIMENSIONAMIENTO
-        ===================================================== */
+        .movimientos-table th:nth-child(6),
+        .movimientos-table td:nth-child(6) {
+
+            width: 150px;
+
+        }
+
 
         .resize-handle {
 
@@ -565,10 +516,6 @@
         }
 
 
-        /* =====================================================
-           BADGES
-        ===================================================== */
-
         .badge {
 
             font-size: 12px;
@@ -577,10 +524,6 @@
 
         }
 
-
-        /* =====================================================
-           ACCIONES
-        ===================================================== */
 
         .actions-cell {
 
@@ -600,10 +543,6 @@
         }
 
 
-        /* =====================================================
-           TITULOS
-        ===================================================== */
-
         .dashboard-title {
 
             color: #1f2937;
@@ -622,10 +561,6 @@
         }
 
 
-        /* =====================================================
-           ALERTAS
-        ===================================================== */
-
         .alert {
 
             border-radius: 12px;
@@ -634,10 +569,6 @@
 
         }
 
-
-        /* =====================================================
-           RESPONSIVE
-        ===================================================== */
 
         @media (max-width: 768px) {
 
@@ -712,10 +643,6 @@
 <body>
 
 
-<!-- =====================================================
-     NAVBAR
-===================================================== -->
-
 <nav class="navbar navbar-dark main-navbar mb-4">
 
     <div class="container-fluid px-4">
@@ -788,15 +715,8 @@
 </nav>
 
 
-
-<!-- =====================================================
-     CONTENIDO
-===================================================== -->
-
 <div class="container-fluid px-4 main-container">
 
-
-    <!-- TITULO -->
 
     <div class="mb-4">
 
@@ -815,11 +735,6 @@
 
     </div>
 
-
-
-    <!-- =================================================
-         MENSAJES
-    ================================================= -->
 
     {% with messages = get_flashed_messages(with_categories=true) %}
 
@@ -843,11 +758,6 @@
     {% endwith %}
 
 
-
-    <!-- =================================================
-         BUSCADOR
-    ================================================= -->
-
     <div class="search-container mb-4">
 
         <form
@@ -856,7 +766,6 @@
         >
 
             <div class="row g-3 align-items-end">
-
 
                 <div class="col-lg-6">
 
@@ -880,7 +789,6 @@
                     >
 
                 </div>
-
 
 
                 <div class="col-lg-4">
@@ -953,7 +861,6 @@
                 </div>
 
 
-
                 <div class="col-lg-2 d-grid">
 
                     <button
@@ -970,11 +877,7 @@
             </div>
 
 
-
-            <!-- FILTROS -->
-
             <div class="mt-3 filter-buttons d-flex flex-wrap gap-2">
-
 
                 <a
                     href="/"
@@ -1049,12 +952,8 @@
 
                 {% endif %}
 
-
             </div>
 
-
-
-            <!-- RESULTADOS -->
 
             <div class="mt-3 result-count">
 
@@ -1084,13 +983,7 @@
     </div>
 
 
-
-    <!-- =================================================
-         RESUMEN
-    ================================================= -->
-
     <div class="row g-3 mb-4">
-
 
         <div class="col-md-2">
 
@@ -1199,13 +1092,7 @@
     </div>
 
 
-
-    <!-- =================================================
-         BOTONES PRINCIPALES
-    ================================================= -->
-
     <div class="mb-4 d-flex flex-wrap gap-2 main-buttons">
-
 
         {% if session.get('rol') == 'admin' %}
 
@@ -1277,13 +1164,7 @@
     </div>
 
 
-
-    <!-- =================================================
-         TABLA DE PRODUCTOS
-    ================================================= -->
-
     <div class="table-container mb-4">
-
 
         <div
             class="d-flex justify-content-between align-items-center mb-3"
@@ -1309,15 +1190,12 @@
         </div>
 
 
-
         <div class="table-scroll">
-
 
             <table
                 class="table structured-table productos-table"
                 id="productosTable"
             >
-
 
                 <thead>
 
@@ -1385,17 +1263,13 @@
                 </thead>
 
 
-
                 <tbody>
 
-
                     {% if productos %}
-
 
                         {% for producto in productos %}
 
                             <tr>
-
 
                                 <td>
 
@@ -1443,7 +1317,6 @@
 
                                 <td>
 
-
                                     {% if producto["existencias"] == 0 %}
 
                                         <span class="badge bg-danger">
@@ -1451,7 +1324,6 @@
                                             0 — Agotado
 
                                         </span>
-
 
                                     {% elif producto["existencias"] <= 2 %}
 
@@ -1461,7 +1333,6 @@
 
                                         </span>
 
-
                                     {% elif producto["existencias"] <= 5 %}
 
                                         <span class="badge bg-warning text-dark">
@@ -1469,7 +1340,6 @@
                                             {{ producto["existencias"] }}
 
                                         </span>
-
 
                                     {% else %}
 
@@ -1516,14 +1386,11 @@
 
                                 {% endif %}
 
-
                             </tr>
 
                         {% endfor %}
 
-
                     {% else %}
-
 
                         <tr>
 
@@ -1569,7 +1436,6 @@
 
                     {% endif %}
 
-
                 </tbody>
 
             </table>
@@ -1587,13 +1453,11 @@
     </div>
 
 
-
     <!-- =================================================
          ÚLTIMOS MOVIMIENTOS
     ================================================= -->
 
     <div class="table-container mb-4">
-
 
         <div
             class="d-flex justify-content-between align-items-center mb-3"
@@ -1605,9 +1469,9 @@
 
                     📊
 
-                    {% if busqueda %}
+                    {% if busqueda or filtro_stock != 'todos' %}
 
-                        Movimientos del producto consultado
+                        Movimientos de los productos consultados
 
                     {% else %}
 
@@ -1618,12 +1482,12 @@
                 </h5>
 
 
-                {% if busqueda %}
+                {% if busqueda or filtro_stock != 'todos' %}
 
                     <small class="text-muted">
 
-                        Solo se muestran movimientos relacionados
-                        con la consulta actual.
+                        Movimientos relacionados con los productos
+                        que aparecen actualmente en el listado.
 
                     </small>
 
@@ -1637,22 +1501,19 @@
                 class="btn btn-sm btn-outline-primary"
             >
 
-                Ver Movimientos
+                Ver todos los movimientos
 
             </a>
 
         </div>
 
 
-
         <div class="table-scroll">
-
 
             <table
                 class="table structured-table movimientos-table"
                 id="movimientosTable"
             >
-
 
                 <thead>
 
@@ -1696,6 +1557,15 @@
 
                         <th>
 
+                            Motivo
+
+                            <span class="resize-handle"></span>
+
+                        </th>
+
+
+                        <th>
+
                             Usuario
 
                             <span class="resize-handle"></span>
@@ -1707,182 +1577,144 @@
                 </thead>
 
 
-
                 <tbody>
-
-
-                    {% set movimientos_mostrados = namespace(total=0) %}
-
 
                     {% if movimientos %}
 
-
                         {% for mov in movimientos %}
 
+                            <tr>
 
-                            {% set mostrar_movimiento = true %}
+                                <td>
 
+                                    {% if mov["fecha"] %}
 
-                            {% if busqueda %}
+                                        <strong>
 
-                                {% set mostrar_movimiento = false %}
+                                            {{ mov["fecha"] }}
 
+                                        </strong>
 
-                                {% for producto in productos %}
+                                    {% else %}
 
-                                    {% if
-                                        producto["nombre"]|lower
-                                        ==
-                                        (mov["nombre"] or "")|lower
-                                    %}
-
-                                        {% set mostrar_movimiento = true %}
+                                        -
 
                                     {% endif %}
 
-                                {% endfor %}
-
-                            {% endif %}
+                                </td>
 
 
-                            {% if mostrar_movimiento %}
+                                <td>
 
-                                {% set movimientos_mostrados.total =
-                                    movimientos_mostrados.total + 1 %}
+                                    <strong>
 
+                                        {{ mov["nombre"] or "Producto eliminado" }}
 
-                                <tr>
+                                    </strong>
 
-
-                                    <td>
-
-                                        {% if mov["fecha"] %}
-
-                                            <strong>
-
-                                                {% if mov["fecha"] is string %}
-
-                                                    {{ mov["fecha"] }}
-
-                                                {% else %}
-
-                                                    {{ mov["fecha"].strftime('%d/%m/%Y') }}
-
-                                                    <br>
-
-                                                    <small class="text-primary">
-
-                                                        {{ mov["fecha"].strftime('%H:%M:%S') }}
-
-                                                    </small>
-
-                                                {% endif %}
-
-                                            </strong>
-
-                                        {% else %}
-
-                                            -
-
-                                        {% endif %}
-
-                                    </td>
+                                </td>
 
 
-                                    <td>
+                                <td>
 
-                                        <strong>
+                                    {% if mov["tipo"] == "Entrada" %}
 
-                                            {{ mov["nombre"] or "Producto eliminado" }}
+                                        <span class="badge bg-success">
 
-                                        </strong>
+                                            🟢 Entrada
 
-                                    </td>
+                                        </span>
 
+                                    {% else %}
 
-                                    <td>
+                                        <span class="badge bg-danger">
 
+                                            🔴 Salida
 
-                                        {% if mov["tipo"] == "Entrada" %}
+                                        </span>
 
-                                            <span class="badge bg-success">
+                                    {% endif %}
 
-                                                🟢 Entrada
-
-                                            </span>
-
-                                        {% else %}
-
-                                            <span class="badge bg-danger">
-
-                                                🔴 Salida
-
-                                            </span>
-
-                                        {% endif %}
-
-                                    </td>
+                                </td>
 
 
-                                    <td>
+                                <td>
 
-                                        <strong>
+                                    <strong>
 
-                                            {{ mov["cantidad"] }}
+                                        {{ mov["cantidad"] }}
 
-                                        </strong>
+                                    </strong>
 
-                                    </td>
-
-
-                                    <td>
-
-                                        👤
-
-                                        {{ mov["usuario"] or "admin" }}
-
-                                    </td>
+                                </td>
 
 
-                                </tr>
+                                <td>
 
-                            {% endif %}
+                                    {% if mov["motivo"] %}
 
+                                        <span class="badge bg-secondary">
+
+                                            {{ mov["motivo"] }}
+
+                                        </span>
+
+                                    {% else %}
+
+                                        -
+
+                                    {% endif %}
+
+                                </td>
+
+
+                                <td>
+
+                                    👤
+
+                                    {{ mov["usuario"] or "admin" }}
+
+                                </td>
+
+                            </tr>
 
                         {% endfor %}
 
-
-                    {% endif %}
-
-
-                    {% if movimientos_mostrados.total == 0 %}
+                    {% else %}
 
                         <tr>
 
                             <td
-                                colspan="5"
+                                colspan="6"
                                 class="text-center text-muted py-5"
                             >
 
+                                <div class="fs-1 mb-2">
 
-                                {% if busqueda %}
+                                    📭
 
-                                    📭 No hay movimientos registrados
-                                    para el producto consultado.
+                                </div>
 
-                                {% else %}
 
-                                    📭 No hay movimientos registrados.
+                                <strong>
 
-                                {% endif %}
+                                    No hay movimientos registrados.
 
+                                </strong>
+
+
+                                <div class="mt-1">
+
+                                    Los movimientos de entrada y salida
+                                    aparecerán aquí automáticamente.
+
+                                </div>
 
                             </td>
 
                         </tr>
 
                     {% endif %}
-
 
                 </tbody>
 
@@ -1904,17 +1736,11 @@
 </div>
 
 
-
-<!-- =====================================================
-     REDIMENSIONAR COLUMNAS
-===================================================== -->
-
 <script>
 
 document.addEventListener(
     "DOMContentLoaded",
     function () {
-
 
         const tables =
             document.querySelectorAll(
@@ -1925,7 +1751,6 @@ document.addEventListener(
         tables.forEach(
             function (table) {
 
-
                 const headers =
                     table.querySelectorAll(
                         "thead th"
@@ -1934,7 +1759,6 @@ document.addEventListener(
 
                 headers.forEach(
                     function (header) {
-
 
                         const handle =
                             header.querySelector(
@@ -1958,7 +1782,6 @@ document.addEventListener(
                             "mousedown",
                             function (event) {
 
-
                                 event.preventDefault();
 
                                 event.stopPropagation();
@@ -1979,7 +1802,6 @@ document.addEventListener(
 
                                 function resize(event) {
 
-
                                     const newWidth =
                                         startWidth
                                         +
@@ -1991,7 +1813,6 @@ document.addEventListener(
 
 
                                     if (newWidth >= 70) {
-
 
                                         const columnIndex =
                                             Array.from(
@@ -2009,7 +1830,6 @@ document.addEventListener(
                                             "tr"
                                         ).forEach(
                                             function (row) {
-
 
                                                 const cell =
                                                     row.children[
@@ -2033,7 +1853,6 @@ document.addEventListener(
 
 
                                 function stopResize() {
-
 
                                     document.removeEventListener(
                                         "mousemove",
@@ -2079,11 +1898,6 @@ document.addEventListener(
 
 </script>
 
-
-
-<!-- =====================================================
-     BOOTSTRAP
-===================================================== -->
 
 <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
