@@ -47,6 +47,7 @@ DATABASE_URL = os.environ.get("DATABASE_URL")
 def get_db():
 
     if not DATABASE_URL:
+
         raise RuntimeError(
             "No se encontró la variable DATABASE_URL."
         )
@@ -162,11 +163,13 @@ def requiere_admin():
 def init_db():
 
     conn = get_db()
+
     cursor = conn.cursor()
 
-    # -------------------------
+
+    # =====================================================
     # USUARIOS
-    # -------------------------
+    # =====================================================
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS usuarios (
@@ -178,14 +181,16 @@ def init_db():
         )
     """)
 
+
     cursor.execute("""
         ALTER TABLE usuarios
         ADD COLUMN IF NOT EXISTS genero TEXT NOT NULL DEFAULT 'Hombre'
     """)
 
-    # -------------------------
+
+    # =====================================================
     # PRODUCTOS
-    # -------------------------
+    # =====================================================
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS productos (
@@ -197,9 +202,10 @@ def init_db():
         )
     """)
 
-    # -------------------------
+
+    # =====================================================
     # PROVEEDORES
-    # -------------------------
+    # =====================================================
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS proveedores (
@@ -210,9 +216,10 @@ def init_db():
         )
     """)
 
-    # -------------------------
+
+    # =====================================================
     # MOVIMIENTOS
-    # -------------------------
+    # =====================================================
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS movimientos (
@@ -229,9 +236,10 @@ def init_db():
         )
     """)
 
-    # -------------------------
+
+    # =====================================================
     # USUARIO ADMINISTRADOR
-    # -------------------------
+    # =====================================================
 
     cursor.execute("""
         SELECT
@@ -242,7 +250,9 @@ def init_db():
         WHERE usuario = %s
     """, ("admin",))
 
+
     usuario_admin = cursor.fetchone()
+
 
     if usuario_admin is None:
 
@@ -274,19 +284,25 @@ def init_db():
             WHERE usuario = 'admin'
         """)
 
-    # -------------------------
+
+    # =====================================================
     # MIGRAR CONTRASEÑAS ANTIGUAS
-    # -------------------------
+    # =====================================================
 
     migrate_old_passwords(cursor)
+
 
     conn.commit()
 
     cursor.close()
+
     conn.close()
 
 
-# Crear tablas automáticamente
+# =========================================================
+# CREAR TABLAS AUTOMÁTICAMENTE
+# =========================================================
+
 init_db()
 
 
@@ -298,33 +314,45 @@ init_db()
 def index():
 
     if not requiere_login():
-        return redirect(url_for("login"))
+
+        return redirect(
+            url_for("login")
+        )
+
 
     # =====================================================
-    # DATOS DEL BUSCADOR
+    # DATOS DE BÚSQUEDA
     # =====================================================
 
     busqueda = request.args.get(
-        "buscar",
+        "q",
         ""
     ).strip()
+
 
     filtro_stock = request.args.get(
         "stock",
         "todos"
     ).strip().lower()
 
-    # Solo aceptamos filtros válidos
-    filtros_validos = (
-        "todos",
-        "agotados",
-        "bajo",
-        "normal"
-    )
 
-    if filtro_stock not in filtros_validos:
+    # =====================================================
+    # VALIDAR FILTRO
+    # =====================================================
+
+    if filtro_stock not in (
+        "todos",
+        "stock",
+        "bajo",
+        "agotado"
+    ):
 
         filtro_stock = "todos"
+
+
+    # =====================================================
+    # CONEXIÓN
+    # =====================================================
 
     conn = get_db()
 
@@ -332,11 +360,86 @@ def index():
         cursor_factory=RealDictCursor
     )
 
+
     # =====================================================
-    # PRODUCTOS
+    # CONDICIONES DE BÚSQUEDA
     # =====================================================
 
-    consulta_productos = """
+    condiciones = []
+
+    parametros = []
+
+
+    # =====================================================
+    # BUSCAR POR ID, NOMBRE O CATEGORÍA
+    # =====================================================
+
+    if busqueda:
+
+        condiciones.append("""
+            (
+                CAST(id AS TEXT) ILIKE %s
+                OR nombre ILIKE %s
+                OR COALESCE(categoria, '') ILIKE %s
+            )
+        """)
+
+
+        texto_busqueda = f"%{busqueda}%"
+
+
+        parametros.extend([
+            texto_busqueda,
+            texto_busqueda,
+            texto_busqueda
+        ])
+
+
+    # =====================================================
+    # FILTROS DE STOCK
+    # =====================================================
+
+    if filtro_stock == "stock":
+
+        condiciones.append("""
+            existencias > 0
+        """)
+
+
+    elif filtro_stock == "bajo":
+
+        condiciones.append("""
+            existencias BETWEEN 1 AND 5
+        """)
+
+
+    elif filtro_stock == "agotado":
+
+        condiciones.append("""
+            existencias = 0
+        """)
+
+
+    # =====================================================
+    # CREAR WHERE
+    # =====================================================
+
+    where_sql = ""
+
+
+    if condiciones:
+
+        where_sql = (
+            "WHERE "
+            + " AND ".join(condiciones)
+        )
+
+
+    # =====================================================
+    # CONSULTAR PRODUCTOS
+    # =====================================================
+
+    consulta_productos = f"""
         SELECT
             id,
             nombre,
@@ -344,82 +447,21 @@ def index():
             precio,
             existencias
         FROM productos
-        WHERE 1 = 1
-    """
 
-    parametros = []
+        {where_sql}
 
-    # -----------------------------------------------------
-    # BUSCAR POR ID, NOMBRE O CATEGORÍA
-    # -----------------------------------------------------
-
-    if busqueda:
-
-        try:
-
-            id_busqueda = int(busqueda)
-
-            consulta_productos += """
-                AND (
-                    id = %s
-                    OR nombre ILIKE %s
-                    OR COALESCE(categoria, '') ILIKE %s
-                )
-            """
-
-            parametros.extend([
-                id_busqueda,
-                f"%{busqueda}%",
-                f"%{busqueda}%"
-            ])
-
-        except ValueError:
-
-            consulta_productos += """
-                AND (
-                    nombre ILIKE %s
-                    OR COALESCE(categoria, '') ILIKE %s
-                )
-            """
-
-            parametros.extend([
-                f"%{busqueda}%",
-                f"%{busqueda}%"
-            ])
-
-    # -----------------------------------------------------
-    # FILTROS DE STOCK
-    # -----------------------------------------------------
-
-    if filtro_stock == "agotados":
-
-        consulta_productos += """
-            AND existencias = 0
-        """
-
-    elif filtro_stock == "bajo":
-
-        consulta_productos += """
-            AND existencias > 0
-            AND existencias <= 5
-        """
-
-    elif filtro_stock == "normal":
-
-        consulta_productos += """
-            AND existencias > 5
-        """
-
-    consulta_productos += """
         ORDER BY id DESC
     """
+
 
     cursor.execute(
         consulta_productos,
         parametros
     )
 
+
     productos = cursor.fetchall()
+
 
     # =====================================================
     # ÚLTIMOS MOVIMIENTOS
@@ -439,115 +481,80 @@ def index():
         LIMIT 5
     """)
 
+
     movimientos = cursor.fetchall()
 
-    # =====================================================
-    # CONTADORES GENERALES DEL INVENTARIO
-    # =====================================================
-
-    cursor.execute("""
-        SELECT
-            COUNT(*) AS total_productos,
-            COALESCE(SUM(existencias), 0) AS unidades_totales,
-            COALESCE(
-                SUM(precio * existencias),
-                0
-            ) AS valor_inventario,
-
-            COUNT(
-                CASE
-                    WHEN existencias > 0
-                    AND existencias <= 5
-                    THEN 1
-                END
-            ) AS stock_bajo,
-
-            COUNT(
-                CASE
-                    WHEN existencias = 0
-                    THEN 1
-                END
-            ) AS agotados
-
-        FROM productos
-    """)
-
-    resumen = cursor.fetchone()
-
-    total_productos = resumen["total_productos"]
-    unidades_totales = resumen["unidades_totales"]
-    valor_inventario = resumen["valor_inventario"]
-    stock_bajo = resumen["stock_bajo"]
-    agotados = resumen["agotados"]
 
     # =====================================================
-    # CONTADORES DE FILTROS
+    # RESUMEN DE LOS RESULTADOS
     # =====================================================
 
-    cursor.execute("""
-        SELECT
-            COUNT(*) AS total,
-            COUNT(
-                CASE
-                    WHEN existencias = 0
-                    THEN 1
-                END
-            ) AS agotados,
-            COUNT(
-                CASE
-                    WHEN existencias > 0
-                    AND existencias <= 5
-                    THEN 1
-                END
-            ) AS bajo,
-            COUNT(
-                CASE
-                    WHEN existencias > 5
-                    THEN 1
-                END
-            ) AS normal
-        FROM productos
-    """)
+    total_productos = len(
+        productos
+    )
 
-    conteo_stock = cursor.fetchone()
+
+    unidades_totales = sum(
+        producto["existencias"]
+        for producto in productos
+    )
+
+
+    valor_inventario = sum(
+        float(producto["precio"])
+        * producto["existencias"]
+        for producto in productos
+    )
+
+
+    stock_bajo = sum(
+        1
+        for producto in productos
+        if 0 < producto["existencias"] <= 5
+    )
+
+
+    agotados = sum(
+        1
+        for producto in productos
+        if producto["existencias"] == 0
+    )
+
 
     # =====================================================
-    # CONTAR RESULTADOS ACTUALES
+    # CERRAR CONEXIÓN
     # =====================================================
-
-    total_resultados = len(productos)
 
     cursor.close()
+
     conn.close()
 
+
+    # =====================================================
+    # ENVIAR INFORMACIÓN A INDEX.HTML
+    # =====================================================
+
     return render_template(
+
         "index.html",
 
         productos=productos,
+
         movimientos=movimientos,
 
         total_productos=total_productos,
+
         unidades_totales=unidades_totales,
+
         valor_inventario=valor_inventario,
+
         stock_bajo=stock_bajo,
+
         agotados=agotados,
 
-        # -----------------------------------------------
-        # VARIABLES DEL BUSCADOR
-        # -----------------------------------------------
-
         busqueda=busqueda,
-        filtro_stock=filtro_stock,
-        total_resultados=total_resultados,
 
-        # -----------------------------------------------
-        # CONTADORES DE STOCK
-        # -----------------------------------------------
-
-        total_stock=conteo_stock["total"],
-        total_agotados=conteo_stock["agotados"],
-        total_bajo=conteo_stock["bajo"],
-        total_normal=conteo_stock["normal"]
+        filtro_stock=filtro_stock
     )
 
 
@@ -555,7 +562,10 @@ def index():
 # LOGIN
 # =========================================================
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route(
+    "/login",
+    methods=["GET", "POST"]
+)
 def login():
 
     if request.method == "POST":
@@ -565,10 +575,12 @@ def login():
             ""
         ).strip()
 
+
         password = request.form.get(
             "password",
             ""
         )
+
 
         if not usuario or not password:
 
@@ -581,11 +593,13 @@ def login():
                 "login.html"
             )
 
+
         conn = get_db()
 
         cursor = conn.cursor(
             cursor_factory=RealDictCursor
         )
+
 
         cursor.execute("""
             SELECT
@@ -600,10 +614,14 @@ def login():
             usuario,
         ))
 
+
         user = cursor.fetchone()
 
+
         cursor.close()
+
         conn.close()
+
 
         if user and check_password_hash(
             user["password"],
@@ -611,22 +629,28 @@ def login():
         ):
 
             session["usuario"] = user["usuario"]
+
             session["rol"] = user["rol"]
+
             session["genero"] = user["genero"]
+
 
             flash(
                 "¡Inicio de sesión exitoso!",
                 "success"
             )
 
+
             return redirect(
                 url_for("index")
             )
+
 
         flash(
             "Usuario o contraseña incorrectos.",
             "danger"
         )
+
 
     return render_template(
         "login.html"
@@ -649,6 +673,7 @@ def registro():
             url_for("index")
         )
 
+
     if request.method == "POST":
 
         usuario = request.form.get(
@@ -656,20 +681,24 @@ def registro():
             ""
         ).strip()
 
+
         password = request.form.get(
             "password",
             ""
         )
+
 
         genero = request.form.get(
             "genero",
             ""
         ).strip()
 
+
         rol = request.form.get(
             "rol",
             ""
         ).strip()
+
 
         if not usuario or not password:
 
@@ -681,6 +710,7 @@ def registro():
             return render_template(
                 "registro.html"
             )
+
 
         if genero not in (
             "Hombre",
@@ -696,6 +726,7 @@ def registro():
                 "registro.html"
             )
 
+
         if rol not in (
             "admin",
             "usuario"
@@ -710,35 +741,46 @@ def registro():
                 "registro.html"
             )
 
+
         conn = get_db()
 
         cursor = conn.cursor()
+
 
         cursor.execute("""
             SELECT id
             FROM usuarios
             WHERE usuario = %s
-        """, (usuario,))
+        """, (
+            usuario,
+        ))
+
 
         usuario_existente = cursor.fetchone()
+
 
         if usuario_existente:
 
             cursor.close()
+
             conn.close()
+
 
             flash(
                 "Ese nombre de usuario ya existe.",
                 "danger"
             )
 
+
             return render_template(
                 "registro.html"
             )
 
+
         password_protegida = generate_password_hash(
             password
         )
+
 
         cursor.execute("""
             INSERT INTO usuarios
@@ -756,19 +798,24 @@ def registro():
             genero
         ))
 
+
         conn.commit()
 
         cursor.close()
+
         conn.close()
+
 
         flash(
             "Usuario registrado correctamente. Ya puede iniciar sesión.",
             "success"
         )
 
+
         return redirect(
             url_for("index")
         )
+
 
     return render_template(
         "registro.html"
@@ -784,10 +831,12 @@ def logout():
 
     session.clear()
 
+
     flash(
         "Sesión cerrada correctamente.",
         "info"
     )
+
 
     return redirect(
         url_for("login")
@@ -805,7 +854,11 @@ def logout():
 def agregar():
 
     if not requiere_admin():
-        return redirect(url_for("index"))
+
+        return redirect(
+            url_for("index")
+        )
+
 
     if request.method == "POST":
 
@@ -814,10 +867,12 @@ def agregar():
             ""
         ).strip()
 
+
         categoria = request.form.get(
             "categoria",
             ""
         ).strip()
+
 
         try:
 
@@ -828,12 +883,14 @@ def agregar():
                 )
             )
 
+
             existencias = int(
                 request.form.get(
                     "existencias",
                     0
                 )
             )
+
 
         except ValueError:
 
@@ -842,13 +899,16 @@ def agregar():
                 "danger"
             )
 
+
             return render_template(
                 "producto_form.html"
             )
 
+
         conn = get_db()
 
         cursor = conn.cursor()
+
 
         cursor.execute("""
             INSERT INTO productos
@@ -866,19 +926,24 @@ def agregar():
             existencias
         ))
 
+
         conn.commit()
 
         cursor.close()
+
         conn.close()
+
 
         flash(
             "Producto agregado con éxito.",
             "success"
         )
 
+
         return redirect(
             url_for("index")
         )
+
 
     return render_template(
         "producto_form.html"
@@ -896,13 +961,18 @@ def agregar():
 def editar(id):
 
     if not requiere_admin():
-        return redirect(url_for("index"))
+
+        return redirect(
+            url_for("index")
+        )
+
 
     conn = get_db()
 
     cursor = conn.cursor(
         cursor_factory=RealDictCursor
     )
+
 
     if request.method == "POST":
 
@@ -911,10 +981,12 @@ def editar(id):
             ""
         ).strip()
 
+
         categoria = request.form.get(
             "categoria",
             ""
         ).strip()
+
 
         try:
 
@@ -925,6 +997,7 @@ def editar(id):
                 )
             )
 
+
             existencias = int(
                 request.form.get(
                     "existencias",
@@ -932,15 +1005,19 @@ def editar(id):
                 )
             )
 
+
         except ValueError:
 
             cursor.close()
+
             conn.close()
+
 
             flash(
                 "Precio o existencias no válidos.",
                 "danger"
             )
+
 
             return redirect(
                 url_for(
@@ -948,6 +1025,7 @@ def editar(id):
                     id=id
                 )
             )
+
 
         cursor.execute("""
             UPDATE productos
@@ -965,30 +1043,41 @@ def editar(id):
             id
         ))
 
+
         conn.commit()
 
         cursor.close()
+
         conn.close()
+
 
         flash(
             "Producto actualizado.",
             "success"
         )
 
+
         return redirect(
             url_for("index")
         )
+
 
     cursor.execute("""
         SELECT *
         FROM productos
         WHERE id = %s
-    """, (id,))
+    """, (
+        id,
+    ))
+
 
     producto = cursor.fetchone()
 
+
     cursor.close()
+
     conn.close()
+
 
     if producto is None:
 
@@ -997,9 +1086,11 @@ def editar(id):
             "danger"
         )
 
+
         return redirect(
             url_for("index")
         )
+
 
     return render_template(
         "producto_form.html",
@@ -1017,37 +1108,45 @@ def editar(id):
 def eliminar(id):
 
     if not requiere_admin():
-        return redirect(url_for("index"))
+
+        return redirect(
+            url_for("index")
+        )
+
 
     conn = get_db()
 
     cursor = conn.cursor()
 
-    cursor.execute(
-        """
+
+    cursor.execute("""
         DELETE FROM movimientos
         WHERE producto_id = %s
-        """,
-        (id,)
-    )
+    """, (
+        id,
+    ))
 
-    cursor.execute(
-        """
+
+    cursor.execute("""
         DELETE FROM productos
         WHERE id = %s
-        """,
-        (id,)
-    )
+    """, (
+        id,
+    ))
+
 
     conn.commit()
 
     cursor.close()
+
     conn.close()
+
 
     flash(
         "Producto eliminado.",
         "warning"
     )
+
 
     return redirect(
         url_for("index")
@@ -1065,13 +1164,18 @@ def eliminar(id):
 def movimientos():
 
     if not requiere_login():
-        return redirect(url_for("login"))
+
+        return redirect(
+            url_for("login")
+        )
+
 
     conn = get_db()
 
     cursor = conn.cursor(
         cursor_factory=RealDictCursor
     )
+
 
     if request.method == "POST":
 
@@ -1083,48 +1187,64 @@ def movimientos():
                 )
             )
 
+
             cantidad = int(
                 request.form.get(
                     "cantidad"
                 )
             )
 
-        except (TypeError, ValueError):
+
+        except (
+            TypeError,
+            ValueError
+        ):
 
             cursor.close()
+
             conn.close()
+
 
             flash(
                 "Cantidad o producto no válidos.",
                 "danger"
             )
 
+
             return redirect(
                 url_for("movimientos")
             )
+
 
         tipo = request.form.get(
             "tipo",
             ""
         ).strip()
 
+
         motivo = request.form.get(
             "motivo",
             ""
         ).strip()
+
 
         usuario = session.get(
             "usuario",
             "admin"
         )
 
+
         cursor.execute("""
             SELECT existencias
             FROM productos
             WHERE id = %s
-        """, (producto_id,))
+        """, (
+            producto_id,
+        ))
+
 
         producto = cursor.fetchone()
+
 
         if producto is None:
 
@@ -1133,12 +1253,14 @@ def movimientos():
                 "danger"
             )
 
+
         elif cantidad <= 0:
 
             flash(
                 "La cantidad debe ser mayor que cero.",
                 "danger"
             )
+
 
         elif (
             tipo == "Salida"
@@ -1150,6 +1272,7 @@ def movimientos():
                 "danger"
             )
 
+
         elif tipo not in (
             "Entrada",
             "Salida"
@@ -1160,11 +1283,13 @@ def movimientos():
                 "danger"
             )
 
+
         else:
 
             stock_actual = producto[
                 "existencias"
             ]
+
 
             if tipo == "Entrada":
 
@@ -1172,11 +1297,13 @@ def movimientos():
                     stock_actual + cantidad
                 )
 
+
             else:
 
                 nuevo_stock = (
                     stock_actual - cantidad
                 )
+
 
             cursor.execute("""
                 UPDATE productos
@@ -1186,6 +1313,7 @@ def movimientos():
                 nuevo_stock,
                 producto_id
             ))
+
 
             cursor.execute("""
                 INSERT INTO movimientos
@@ -1205,12 +1333,15 @@ def movimientos():
                 usuario
             ))
 
+
             conn.commit()
+
 
             flash(
                 "Movimiento registrado correctamente.",
                 "success"
             )
+
 
     cursor.execute("""
         SELECT
@@ -1223,7 +1354,9 @@ def movimientos():
         ORDER BY nombre
     """)
 
+
     productos = cursor.fetchall()
+
 
     cursor.execute("""
         SELECT
@@ -1239,10 +1372,14 @@ def movimientos():
         ORDER BY m.id DESC
     """)
 
+
     lista_movimientos = cursor.fetchall()
 
+
     cursor.close()
+
     conn.close()
+
 
     return render_template(
         "movimientos.html",
@@ -1264,7 +1401,11 @@ def movimientos():
 def proveedores():
 
     if not requiere_login():
-        return redirect(url_for("login"))
+
+        return redirect(
+            url_for("login")
+        )
+
 
     conn = get_db()
 
@@ -1272,36 +1413,44 @@ def proveedores():
         cursor_factory=RealDictCursor
     )
 
+
     if request.method == "POST":
 
         if not es_admin():
 
             cursor.close()
+
             conn.close()
+
 
             flash(
                 "No tienes permisos para agregar proveedores.",
                 "danger"
             )
 
+
             return redirect(
                 url_for("proveedores")
             )
+
 
         nombre = request.form.get(
             "nombre",
             ""
         ).strip()
 
+
         contacto = request.form.get(
             "contacto",
             ""
         ).strip()
 
+
         telefono = request.form.get(
             "telefono",
             ""
         ).strip()
+
 
         cursor.execute("""
             INSERT INTO proveedores
@@ -1317,12 +1466,15 @@ def proveedores():
             telefono
         ))
 
+
         conn.commit()
+
 
         flash(
             "Proveedor agregado.",
             "success"
         )
+
 
     cursor.execute("""
         SELECT *
@@ -1330,10 +1482,14 @@ def proveedores():
         ORDER BY id DESC
     """)
 
+
     provs = cursor.fetchall()
 
+
     cursor.close()
+
     conn.close()
+
 
     return render_template(
         "proveedores.html",
@@ -1349,9 +1505,14 @@ def proveedores():
 def exportar():
 
     if not requiere_admin():
-        return redirect(url_for("index"))
+
+        return redirect(
+            url_for("index")
+        )
+
 
     conn = get_db()
+
 
     df = pd.read_sql_query(
         """
@@ -1366,15 +1527,19 @@ def exportar():
         conn
     )
 
+
     conn.close()
 
+
     csv_path = "inventario_export.csv"
+
 
     df.to_csv(
         csv_path,
         index=False,
         encoding="utf-8-sig"
     )
+
 
     return send_file(
         csv_path,
@@ -1392,18 +1557,28 @@ def exportar():
 def grafico():
 
     if not requiere_login():
-        return redirect(url_for("login"))
+
+        return redirect(
+            url_for("login")
+        )
+
 
     conn = get_db()
 
-    df = pd.read_sql_query("""
+
+    df = pd.read_sql_query(
+        """
         SELECT
             nombre,
             existencias
         FROM productos
-    """, conn)
+        """,
+        conn
+    )
+
 
     conn.close()
+
 
     if df.empty:
 
@@ -1412,50 +1587,63 @@ def grafico():
             "warning"
         )
 
+
         return redirect(
             url_for("index")
         )
 
+
     plt.figure(
         figsize=(8, 4)
     )
+
 
     plt.bar(
         df["nombre"],
         df["existencias"]
     )
 
+
     plt.xlabel(
         "Productos"
     )
+
 
     plt.ylabel(
         "Existencias"
     )
 
+
     plt.title(
         "Stock Actual por Producto"
     )
+
 
     plt.xticks(
         rotation=45,
         ha="right"
     )
 
+
     plt.tight_layout()
+
 
     os.makedirs(
         "static",
         exist_ok=True
     )
 
+
     img_path = "static/grafico.png"
+
 
     plt.savefig(
         img_path
     )
 
+
     plt.close()
+
 
     return send_file(
         img_path,
@@ -1475,6 +1663,7 @@ if __name__ == "__main__":
             5000
         )
     )
+
 
     app.run(
         host="0.0.0.0",
