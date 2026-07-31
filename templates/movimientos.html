@@ -117,7 +117,6 @@
 
     <div class="container-fluid px-4">
 
-
         <a
             class="navbar-brand fw-bold"
             href="/"
@@ -189,8 +188,6 @@
 
                 <div class="card-body">
 
-
-                    <!-- MENSAJES -->
 
                     {% with messages = get_flashed_messages(with_categories=true) %}
 
@@ -412,44 +409,32 @@
 
 
                                 <option value="Compra">
-
                                     🛒 Compra
-
                                 </option>
 
 
                                 <option value="Venta">
-
                                     💰 Venta
-
                                 </option>
 
 
                                 <option value="Devolución de cliente">
-
                                     🔄 Devolución de cliente
-
                                 </option>
 
 
                                 <option value="Devolución a proveedor">
-
                                     ↩️ Devolución a proveedor
-
                                 </option>
 
 
                                 <option value="Ajuste de inventario">
-
                                     🛠️ Ajuste de inventario
-
                                 </option>
 
 
                                 <option value="Otro">
-
                                     📦 Otro
-
                                 </option>
 
                             </select>
@@ -554,16 +539,14 @@
 
 
 
-                        <!-- USUARIO ACTUAL -->
+                        <!-- RESPONSABLE Y HORA -->
 
                         <div class="alert alert-light border">
 
                             👤 Responsable:
 
                             <strong>
-
                                 {{ session.get('usuario', 'admin') }}
-
                             </strong>
 
 
@@ -572,7 +555,7 @@
 
                             🕐 Fecha y hora:
 
-                            <strong>
+                            <strong id="reloj">
 
                                 Se registrará automáticamente
 
@@ -581,8 +564,6 @@
                         </div>
 
 
-
-                        <!-- BOTÓN -->
 
                         <button
                             type="submit"
@@ -692,7 +673,7 @@
                                                 <br>
 
 
-                                                <small class="text-primary">
+                                                <small class="text-primary fw-bold">
 
                                                     {% if mov['fecha'] %}
 
@@ -946,14 +927,76 @@
 
 <script>
 
+    // =====================================================
+    // RELOJ EN TIEMPO REAL - COLOMBIA
+    // =====================================================
+
+    function actualizarReloj() {
+
+        const ahora =
+            new Date();
+
+
+        const opciones = {
+
+            timeZone: "America/Bogota",
+
+            day: "2-digit",
+
+            month: "2-digit",
+
+            year: "numeric",
+
+            hour: "2-digit",
+
+            minute: "2-digit",
+
+            second: "2-digit",
+
+            hour12: false
+
+        };
+
+
+        const fechaHora =
+            new Intl.DateTimeFormat(
+                "es-CO",
+                opciones
+            ).format(ahora);
+
+
+        document.getElementById(
+            "reloj"
+        ).textContent = fechaHora;
+
+    }
+
+
+    actualizarReloj();
+
+
+    setInterval(
+        actualizarReloj,
+        1000
+    );
+
+
+
+    // =====================================================
+    // STOCK DEL PRODUCTO
+    // =====================================================
+
     const productoSelect =
         document.getElementById("producto_id");
+
 
     const stockInfo =
         document.getElementById("stockInfo");
 
+
     const nombreProducto =
         document.getElementById("nombreProducto");
+
 
     const stockProducto =
         document.getElementById("stockProducto");
@@ -1056,10 +1099,6 @@
                 this.value;
 
 
-            // ------------------------------
-            // DEVOLUCIÓN
-            // ------------------------------
-
             if (
                 valor === "Devolución de cliente"
                 ||
@@ -1068,6 +1107,7 @@
 
                 devolucionAviso.style.display =
                     "block";
+
 
                 comentarios.required =
                     true;
@@ -1079,20 +1119,18 @@
                 devolucionAviso.style.display =
                     "none";
 
+
                 comentarios.required =
                     false;
 
             }
 
 
-            // ------------------------------
-            // COMPRA
-            // ------------------------------
-
             if (valor === "Compra") {
 
                 factura.placeholder =
                     "Ej: FAC-00125";
+
 
                 ordenCompra.placeholder =
                     "Ej: OC-0045";
@@ -1100,14 +1138,11 @@
             }
 
 
-            // ------------------------------
-            // VENTA
-            // ------------------------------
-
             else if (valor === "Venta") {
 
                 factura.placeholder =
                     "Ej: FAC-00126";
+
 
                 ordenCompra.placeholder =
                     "No aplica para una venta";
@@ -1115,14 +1150,11 @@
             }
 
 
-            // ------------------------------
-            // OTROS
-            // ------------------------------
-
             else {
 
                 factura.placeholder =
                     "Número de factura (opcional)";
+
 
                 ordenCompra.placeholder =
                     "Orden de compra (opcional)";
