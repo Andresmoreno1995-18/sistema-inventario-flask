@@ -255,7 +255,6 @@ def init_db():
         )
     """)
 
-
     cursor.execute("""
         ALTER TABLE movimientos
         ADD COLUMN IF NOT EXISTS factura TEXT
@@ -273,7 +272,7 @@ def init_db():
 
 
     # =====================================================
-    # USUARIO ADMINISTRADOR
+    # USUARIO ADMINISTRADOR PRINCIPAL
     # =====================================================
 
     cursor.execute("""
@@ -762,26 +761,78 @@ def registro():
         cursor = conn.cursor()
 
 
-        cursor.execute("""
-            SELECT id
-            FROM usuarios
-            WHERE usuario = %s
-        """, (
-            usuario,
-        ))
+        try:
+
+            cursor.execute("""
+                SELECT id
+                FROM usuarios
+                WHERE usuario = %s
+            """, (
+                usuario,
+            ))
 
 
-        usuario_existente = cursor.fetchone()
+            usuario_existente = cursor.fetchone()
 
 
-        if usuario_existente:
+            if usuario_existente:
+
+                cursor.close()
+
+                conn.close()
+
+                flash(
+                    "Ese nombre de usuario ya existe.",
+                    "danger"
+                )
+
+                return render_template(
+                    "registro.html"
+                )
+
+
+            password_protegida = generate_password_hash(
+                password
+            )
+
+
+            cursor.execute("""
+                INSERT INTO usuarios
+                (
+                    usuario,
+                    password,
+                    rol,
+                    genero,
+                    fecha_registro
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    CURRENT_TIMESTAMP
+                )
+            """, (
+                usuario,
+                password_protegida,
+                rol,
+                genero
+            ))
+
+
+            conn.commit()
+
+
+        except Exception:
+
+            conn.rollback()
 
             cursor.close()
 
             conn.close()
 
             flash(
-                "Ese nombre de usuario ya existe.",
+                "No fue posible registrar el usuario.",
                 "danger"
             )
 
@@ -789,37 +840,6 @@ def registro():
                 "registro.html"
             )
 
-
-        password_protegida = generate_password_hash(
-            password
-        )
-
-
-        cursor.execute("""
-            INSERT INTO usuarios
-            (
-                usuario,
-                password,
-                rol,
-                genero,
-                fecha_registro
-            )
-            VALUES (
-                %s,
-                %s,
-                %s,
-                %s,
-                CURRENT_TIMESTAMP
-            )
-        """, (
-            usuario,
-            password_protegida,
-            rol,
-            genero
-        ))
-
-
-        conn.commit()
 
         cursor.close()
 
@@ -833,12 +853,525 @@ def registro():
 
 
         return redirect(
-            url_for("index")
+            url_for("usuarios")
         )
 
 
     return render_template(
         "registro.html"
+    )
+
+
+# =========================================================
+# GESTIÓN DE USUARIOS
+# =========================================================
+
+@app.route("/usuarios")
+def usuarios():
+
+    if not requiere_admin():
+
+        return redirect(
+            url_for("index")
+        )
+
+
+    conn = get_db()
+
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+
+    cursor.execute("""
+        SELECT
+            id,
+            usuario,
+            rol,
+            genero,
+            fecha_registro AS fecha_creacion
+        FROM usuarios
+        ORDER BY id ASC
+    """)
+
+
+    lista_usuarios = cursor.fetchall()
+
+
+    cursor.close()
+
+    conn.close()
+
+
+    return render_template(
+        "usuarios.html",
+        usuarios=lista_usuarios
+    )
+
+
+# =========================================================
+# EDITAR USUARIO
+# =========================================================
+
+@app.route(
+    "/usuarios/editar/<int:id>",
+    methods=["GET", "POST"]
+)
+def editar_usuario(id):
+
+    if not requiere_admin():
+
+        return redirect(
+            url_for("index")
+        )
+
+
+    conn = get_db()
+
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+
+    cursor.execute("""
+        SELECT
+            id,
+            usuario,
+            rol,
+            genero,
+            fecha_registro
+        FROM usuarios
+        WHERE id = %s
+    """, (
+        id,
+    ))
+
+
+    usuario = cursor.fetchone()
+
+
+    if usuario is None:
+
+        cursor.close()
+
+        conn.close()
+
+        flash(
+            "El usuario no existe.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("usuarios")
+        )
+
+
+    if request.method == "POST":
+
+        nuevo_usuario = request.form.get(
+            "usuario",
+            ""
+        ).strip()
+
+        genero = request.form.get(
+            "genero",
+            ""
+        ).strip()
+
+        rol = request.form.get(
+            "rol",
+            ""
+        ).strip()
+
+        nueva_password = request.form.get(
+            "password",
+            ""
+        )
+
+
+        if not nuevo_usuario:
+
+            cursor.close()
+
+            conn.close()
+
+            flash(
+                "El nombre de usuario es obligatorio.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "editar_usuario",
+                    id=id
+                )
+            )
+
+
+        if genero not in (
+            "Hombre",
+            "Mujer"
+        ):
+
+            cursor.close()
+
+            conn.close()
+
+            flash(
+                "Debe seleccionar Hombre o Mujer.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "editar_usuario",
+                    id=id
+                )
+            )
+
+
+        if rol not in (
+            "admin",
+            "usuario"
+        ):
+
+            cursor.close()
+
+            conn.close()
+
+            flash(
+                "El rol seleccionado no es válido.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "editar_usuario",
+                    id=id
+                )
+            )
+
+
+        # =================================================
+        # PROTEGER AL ADMINISTRADOR PRINCIPAL
+        # =================================================
+
+        if usuario["usuario"] == "admin":
+
+            rol = "admin"
+
+
+        cursor.execute("""
+            SELECT id
+            FROM usuarios
+            WHERE usuario = %s
+            AND id <> %s
+        """, (
+            nuevo_usuario,
+            id
+        ))
+
+
+        usuario_existente = cursor.fetchone()
+
+
+        if usuario_existente:
+
+            cursor.close()
+
+            conn.close()
+
+            flash(
+                "Ese nombre de usuario ya está en uso.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "editar_usuario",
+                    id=id
+                )
+            )
+
+
+        try:
+
+            if nueva_password.strip():
+
+                password_protegida = generate_password_hash(
+                    nueva_password
+                )
+
+                cursor.execute("""
+                    UPDATE usuarios
+                    SET
+                        usuario = %s,
+                        password = %s,
+                        rol = %s,
+                        genero = %s
+                    WHERE id = %s
+                """, (
+                    nuevo_usuario,
+                    password_protegida,
+                    rol,
+                    genero,
+                    id
+                ))
+
+            else:
+
+                cursor.execute("""
+                    UPDATE usuarios
+                    SET
+                        usuario = %s,
+                        rol = %s,
+                        genero = %s
+                    WHERE id = %s
+                """, (
+                    nuevo_usuario,
+                    rol,
+                    genero,
+                    id
+                ))
+
+
+            conn.commit()
+
+
+        except Exception:
+
+            conn.rollback()
+
+            cursor.close()
+
+            conn.close()
+
+            flash(
+                "No fue posible actualizar el usuario.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "editar_usuario",
+                    id=id
+                )
+            )
+
+
+        # =================================================
+        # ACTUALIZAR SESIÓN SI EDITAMOS AL USUARIO ACTUAL
+        # =================================================
+
+        if id == get_usuario_id_actual():
+
+            session["usuario"] = nuevo_usuario
+            session["rol"] = rol
+            session["genero"] = genero
+
+
+        cursor.close()
+
+        conn.close()
+
+
+        flash(
+            "Usuario actualizado correctamente.",
+            "success"
+        )
+
+
+        return redirect(
+            url_for("usuarios")
+        )
+
+
+    cursor.close()
+
+    conn.close()
+
+
+    return render_template(
+        "registro.html",
+        usuario_edicion=usuario,
+        modo_edicion=True
+    )
+
+
+# =========================================================
+# OBTENER ID DEL USUARIO ACTUAL
+# =========================================================
+
+def get_usuario_id_actual():
+
+    if not usuario_logueado():
+
+        return None
+
+
+    conn = get_db()
+
+    cursor = conn.cursor()
+
+
+    cursor.execute("""
+        SELECT id
+        FROM usuarios
+        WHERE usuario = %s
+    """, (
+        session.get("usuario"),
+    ))
+
+
+    resultado = cursor.fetchone()
+
+
+    cursor.close()
+
+    conn.close()
+
+
+    if resultado:
+
+        return resultado[0]
+
+
+    return None
+
+
+# =========================================================
+# ELIMINAR USUARIO
+# =========================================================
+
+@app.route(
+    "/usuarios/eliminar/<int:id>",
+    methods=["POST", "GET"]
+)
+def eliminar_usuario(id):
+
+    if not requiere_admin():
+
+        return redirect(
+            url_for("index")
+        )
+
+
+    usuario_actual_id = get_usuario_id_actual()
+
+
+    if id == usuario_actual_id:
+
+        flash(
+            "No puedes eliminar el usuario con el que estás conectado.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("usuarios")
+        )
+
+
+    conn = get_db()
+
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+
+    cursor.execute("""
+        SELECT
+            id,
+            usuario,
+            rol
+        FROM usuarios
+        WHERE id = %s
+    """, (
+        id,
+    ))
+
+
+    usuario = cursor.fetchone()
+
+
+    if usuario is None:
+
+        cursor.close()
+
+        conn.close()
+
+        flash(
+            "El usuario no existe.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("usuarios")
+        )
+
+
+    # =================================================
+    # PROTEGER ADMIN PRINCIPAL
+    # =================================================
+
+    if usuario["usuario"] == "admin":
+
+        cursor.close()
+
+        conn.close()
+
+        flash(
+            "El administrador principal no puede ser eliminado.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("usuarios")
+        )
+
+
+    try:
+
+        cursor.execute("""
+            DELETE FROM usuarios
+            WHERE id = %s
+        """, (
+            id,
+        ))
+
+        conn.commit()
+
+
+    except Exception:
+
+        conn.rollback()
+
+        cursor.close()
+
+        conn.close()
+
+        flash(
+            "No fue posible eliminar el usuario.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("usuarios")
+        )
+
+
+    cursor.close()
+
+    conn.close()
+
+
+    flash(
+        "Usuario eliminado correctamente.",
+        "success"
+    )
+
+
+    return redirect(
+        url_for("usuarios")
     )
 
 
@@ -982,10 +1515,6 @@ def agregar():
 
             producto_id = cursor.fetchone()[0]
 
-
-            # =================================================
-            # REGISTRAR STOCK INICIAL
-            # =================================================
 
             if existencias > 0:
 
@@ -1132,6 +1661,25 @@ def editar(id):
 
             flash(
                 "Precio o existencias no válidos.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "editar",
+                    id=id
+                )
+            )
+
+
+        if precio < 0 or existencias < 0:
+
+            cursor.close()
+
+            conn.close()
+
+            flash(
+                "El precio y las existencias no pueden ser negativos.",
                 "danger"
             )
 
@@ -1629,22 +2177,58 @@ def proveedores():
         ).strip()
 
 
-        cursor.execute("""
-            INSERT INTO proveedores
-            (
+        if not nombre:
+
+            cursor.close()
+
+            conn.close()
+
+            flash(
+                "El nombre del proveedor es obligatorio.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("proveedores")
+            )
+
+
+        try:
+
+            cursor.execute("""
+                INSERT INTO proveedores
+                (
+                    nombre,
+                    contacto,
+                    telefono
+                )
+                VALUES (%s, %s, %s)
+            """, (
                 nombre,
                 contacto,
                 telefono
+            ))
+
+
+            conn.commit()
+
+
+        except Exception:
+
+            conn.rollback()
+
+            cursor.close()
+
+            conn.close()
+
+            flash(
+                "No fue posible agregar el proveedor.",
+                "danger"
             )
-            VALUES (%s, %s, %s)
-        """, (
-            nombre,
-            contacto,
-            telefono
-        ))
 
-
-        conn.commit()
+            return redirect(
+                url_for("proveedores")
+            )
 
 
         flash(
