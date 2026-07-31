@@ -1,113 +1,491 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
 
-    <meta charset="UTF-8">
+```
+<meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <title>
-        Gestión de Movimientos - Inventario
-    </title>
-
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
+<title>
+    Gestión de Movimientos - Inventario
+</title>
 
 
-    <style>
+<link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+>
 
-        body {
 
-            background:
-                linear-gradient(
-                    135deg,
-                    #eef3f8,
-                    #f8fafc,
-                    #e9f0f7
-                );
+<style>
 
-            min-height: 100vh;
+    /* =====================================================
+       FONDO
+    ===================================================== */
+
+    body {
+
+        background:
+            linear-gradient(
+                135deg,
+                #eef3f8,
+                #f8fafc,
+                #e9f0f7
+            );
+
+        min-height: 100vh;
+
+    }
+
+
+    /* =====================================================
+       TARJETAS
+    ===================================================== */
+
+    .card {
+
+        border: none;
+
+        border-radius: 16px;
+
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.08);
+
+    }
+
+
+    .card-header {
+
+        border-radius:
+            16px 16px 0 0 !important;
+
+    }
+
+
+    /* =====================================================
+       FORMULARIOS
+    ===================================================== */
+
+    .form-control,
+    .form-select {
+
+        border-radius: 10px;
+
+        min-height: 44px;
+
+    }
+
+
+    .btn {
+
+        border-radius: 10px;
+
+        font-weight: 600;
+
+    }
+
+
+    .stock-box {
+
+        border-radius: 12px;
+
+    }
+
+
+    /* =====================================================
+       CONTENEDOR DE TABLA
+    ===================================================== */
+
+    .table-wrapper {
+
+        width: 100%;
+
+        overflow-x: auto;
+
+        overflow-y: visible;
+
+        border-radius: 0 0 16px 16px;
+
+    }
+
+
+    /* =====================================================
+       TABLA
+    ===================================================== */
+
+    .movimientos-table {
+
+        width: max-content;
+
+        min-width: 100%;
+
+        table-layout: fixed;
+
+        border-collapse: separate;
+
+        border-spacing: 0;
+
+        margin-bottom: 0;
+
+        font-size: 14px;
+
+    }
+
+
+    /* =====================================================
+       ANCHOS INICIALES DE COLUMNAS
+    ===================================================== */
+
+    .movimientos-table th:nth-child(1),
+    .movimientos-table td:nth-child(1) {
+
+        width: 145px;
+
+        min-width: 145px;
+
+    }
+
+
+    .movimientos-table th:nth-child(2),
+    .movimientos-table td:nth-child(2) {
+
+        width: 190px;
+
+        min-width: 160px;
+
+    }
+
+
+    .movimientos-table th:nth-child(3),
+    .movimientos-table td:nth-child(3) {
+
+        width: 145px;
+
+        min-width: 120px;
+
+    }
+
+
+    .movimientos-table th:nth-child(4),
+    .movimientos-table td:nth-child(4) {
+
+        width: 95px;
+
+        min-width: 80px;
+
+    }
+
+
+    .movimientos-table th:nth-child(5),
+    .movimientos-table td:nth-child(5) {
+
+        width: 190px;
+
+        min-width: 150px;
+
+    }
+
+
+    .movimientos-table th:nth-child(6),
+    .movimientos-table td:nth-child(6) {
+
+        width: 180px;
+
+        min-width: 140px;
+
+    }
+
+
+    .movimientos-table th:nth-child(7),
+    .movimientos-table td:nth-child(7) {
+
+        width: 250px;
+
+        min-width: 180px;
+
+    }
+
+
+    .movimientos-table th:nth-child(8),
+    .movimientos-table td:nth-child(8) {
+
+        width: 140px;
+
+        min-width: 110px;
+
+    }
+
+
+    /* =====================================================
+       CELDAS
+    ===================================================== */
+
+    .movimientos-table th,
+    .movimientos-table td {
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+
+        vertical-align: middle;
+
+    }
+
+
+    .movimientos-table td.detalle {
+
+        white-space: normal;
+
+        overflow-wrap: anywhere;
+
+        word-break: break-word;
+
+    }
+
+
+    .movimientos-table td.detalle strong {
+
+        overflow-wrap: anywhere;
+
+        word-break: break-word;
+
+    }
+
+
+    /* =====================================================
+       ENCABEZADO FIJO
+    ===================================================== */
+
+    .movimientos-table thead th {
+
+        position: sticky;
+
+        top: 0;
+
+        z-index: 10;
+
+        background-color: #f8f9fa !important;
+
+        font-size: 13px;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.3px;
+
+        height: 52px;
+
+        vertical-align: middle;
+
+    }
+
+
+    /* =====================================================
+       CONTROL DE REDIMENSIONADO
+    ===================================================== */
+
+    .resizable-th {
+
+        position: relative;
+
+        padding-right: 18px !important;
+
+    }
+
+
+    .resize-handle {
+
+        position: absolute;
+
+        top: 0;
+
+        right: 0;
+
+        width: 8px;
+
+        height: 100%;
+
+        cursor: col-resize;
+
+        user-select: none;
+
+        z-index: 20;
+
+    }
+
+
+    .resize-handle:hover {
+
+        background:
+            rgba(13, 110, 253, 0.35);
+
+    }
+
+
+    .resize-handle::after {
+
+        content: "";
+
+        position: absolute;
+
+        top: 25%;
+
+        right: 3px;
+
+        width: 2px;
+
+        height: 50%;
+
+        background:
+            rgba(108, 117, 125, 0.45);
+
+        border-radius: 2px;
+
+    }
+
+
+    body.resizing {
+
+        cursor: col-resize !important;
+
+        user-select: none !important;
+
+    }
+
+
+    body.resizing * {
+
+        cursor: col-resize !important;
+
+        user-select: none !important;
+
+    }
+
+
+    /* =====================================================
+       TABLA BLOQUEADA
+    ===================================================== */
+
+    .columns-locked .resize-handle {
+
+        display: none;
+
+    }
+
+
+    .columns-locked .movimientos-table th {
+
+        cursor: default;
+
+    }
+
+
+    /* =====================================================
+       BOTONES DE COLUMNAS
+    ===================================================== */
+
+    .column-controls {
+
+        display: flex;
+
+        align-items: center;
+
+        flex-wrap: wrap;
+
+        gap: 8px;
+
+    }
+
+
+    .column-controls .btn {
+
+        font-size: 13px;
+
+    }
+
+
+    .column-status {
+
+        font-size: 12px;
+
+        color: #6c757d;
+
+    }
+
+
+    /* =====================================================
+       FECHA
+    ===================================================== */
+
+    .fecha {
+
+        white-space: nowrap !important;
+
+    }
+
+
+    /* =====================================================
+       BADGES
+    ===================================================== */
+
+    .badge {
+
+        font-size: 12px;
+
+    }
+
+
+    /* =====================================================
+       RESPONSIVE
+    ===================================================== */
+
+    @media (max-width: 768px) {
+
+        .container-fluid.px-4 {
+
+            padding-left: 12px !important;
+
+            padding-right: 12px !important;
 
         }
 
 
-        .card {
+        .column-controls {
 
-            border: none;
+            margin-top: 10px;
 
-            border-radius: 16px;
+        }
+
+
+        .column-controls .btn {
+
+            flex: 1 1 auto;
 
         }
 
 
         .card-header {
 
-            border-radius:
-                16px 16px 0 0 !important;
+            padding: 14px;
 
         }
 
+    }
 
-        .form-control,
-        .form-select {
-
-            border-radius: 10px;
-
-            min-height: 44px;
-
-        }
-
-
-        .btn {
-
-            border-radius: 10px;
-
-            font-weight: 600;
-
-        }
-
-
-        .stock-box {
-
-            border-radius: 12px;
-
-        }
-
-
-        .table {
-
-            font-size: 14px;
-
-        }
-
-
-        .fecha {
-
-            white-space: nowrap;
-
-        }
-
-
-        .detalle {
-
-            min-width: 180px;
-
-        }
-
-    </style>
+</style>
+```
 
 </head>
 
-
 <body>
-
 
 <!-- =====================================================
      NAVEGACIÓN
@@ -115,486 +493,490 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
 
-    <div class="container-fluid px-4">
+```
+<div class="container-fluid px-4">
 
-        <a
-            class="navbar-brand fw-bold"
-            href="/"
-        >
+    <a
+        class="navbar-brand fw-bold"
+        href="/"
+    >
 
-            📦 Sistema de Gestión de Inventario
+        📦 Sistema de Gestión de Inventario
 
-        </a>
+    </a>
 
 
-        <div class="d-flex gap-2">
+    <div class="d-flex gap-2">
 
-            {% if session.get('rol') == 'admin' %}
-
-                <a
-                    href="/usuarios"
-                    class="btn btn-outline-light btn-sm"
-                >
-
-                    👥 Usuarios
-
-                </a>
-
-            {% endif %}
-
+        {% if session.get('rol') == 'admin' %}
 
             <a
-                href="/"
+                href="/usuarios"
                 class="btn btn-outline-light btn-sm"
             >
 
-                Volver al Panel
+                👥 Usuarios
 
             </a>
 
-        </div>
+        {% endif %}
+
+
+        <a
+            href="/"
+            class="btn btn-outline-light btn-sm"
+        >
+
+            Volver al Panel
+
+        </a>
 
     </div>
 
+</div>
+```
+
 </nav>
-
-
 
 <div class="container-fluid px-4 pb-5">
 
-
-    <div class="row g-4">
-
-
-        <!-- =====================================================
-             FORMULARIO
-        ====================================================== -->
-
-        <div class="col-lg-4">
-
-            <div class="card shadow-sm">
+```
+<div class="row g-4">
 
 
-                <div class="card-header bg-primary text-white">
+    <!-- =====================================================
+         FORMULARIO
+    ====================================================== -->
 
-                    <h5 class="mb-0">
+    <div class="col-lg-4">
 
-                        📦 Registrar Movimiento
-
-                    </h5>
-
-                </div>
+        <div class="card shadow-sm">
 
 
-                <div class="card-body">
+            <div class="card-header bg-primary text-white">
+
+                <h5 class="mb-0">
+
+                    📦 Registrar Movimiento
+
+                </h5>
+
+            </div>
 
 
-                    {% with messages = get_flashed_messages(with_categories=true) %}
+            <div class="card-body">
 
-                        {% if messages %}
 
-                            {% for category, message in messages %}
+                {% with messages = get_flashed_messages(with_categories=true) %}
 
-                                <div
-                                    class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show"
-                                    role="alert"
+                    {% if messages %}
+
+                        {% for category, message in messages %}
+
+                            <div
+                                class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show"
+                                role="alert"
+                            >
+
+                                {{ message }}
+
+                                <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"
+                                ></button>
+
+                            </div>
+
+                        {% endfor %}
+
+                    {% endif %}
+
+                {% endwith %}
+
+
+
+                <form
+                    action="/movimientos"
+                    method="POST"
+                >
+
+
+                    <!-- PRODUCTO -->
+
+                    <div class="mb-3">
+
+                        <label
+                            for="producto_id"
+                            class="form-label fw-bold"
+                        >
+
+                            Producto
+
+                        </label>
+
+
+                        <select
+                            class="form-select"
+                            id="producto_id"
+                            name="producto_id"
+                            required
+                        >
+
+                            <option
+                                value=""
+                                selected
+                                disabled
+                            >
+
+                                Seleccione un producto...
+
+                            </option>
+
+
+                            {% for prod in productos %}
+
+                                <option
+                                    value="{{ prod['id'] }}"
+                                    data-nombre="{{ prod['nombre'] }}"
+                                    data-stock="{{ prod['existencias'] }}"
                                 >
 
-                                    {{ message }}
+                                    {{ prod['nombre'] }}
 
-                                    <button
-                                        type="button"
-                                        class="btn-close"
-                                        data-bs-dismiss="alert"
-                                    ></button>
-
-                                </div>
+                                </option>
 
                             {% endfor %}
 
-                        {% endif %}
-
-                    {% endwith %}
+                        </select>
 
 
+                        <div
+                            id="stockInfo"
+                            class="alert alert-secondary stock-box mt-3 mb-0"
+                            style="display:none;"
+                        >
 
-                    <form
-                        action="/movimientos"
-                        method="POST"
+                            <div class="fw-bold">
+
+                                Producto:
+
+                                <span id="nombreProducto">
+                                    -
+                                </span>
+
+                            </div>
+
+
+                            <div class="mt-1">
+
+                                📦 Stock disponible:
+
+                                <strong id="stockProducto">
+                                    0
+                                </strong>
+
+                                unidades
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- TIPO -->
+
+                    <div class="mb-3">
+
+                        <label
+                            for="tipo"
+                            class="form-label fw-bold"
+                        >
+
+                            Tipo de movimiento
+
+                        </label>
+
+
+                        <select
+                            class="form-select"
+                            id="tipo"
+                            name="tipo"
+                            required
+                        >
+
+                            <option value="Entrada">
+
+                                🟢 Entrada (+)
+
+                            </option>
+
+
+                            <option value="Salida">
+
+                                🔴 Salida (-)
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    <!-- CANTIDAD -->
+
+                    <div class="mb-3">
+
+                        <label
+                            for="cantidad"
+                            class="form-label fw-bold"
+                        >
+
+                            Cantidad
+
+                        </label>
+
+
+                        <input
+                            type="number"
+                            class="form-control"
+                            id="cantidad"
+                            name="cantidad"
+                            min="1"
+                            required
+                            placeholder="Ejemplo: 10"
+                        >
+
+                    </div>
+
+
+
+                    <!-- MOTIVO -->
+
+                    <div class="mb-3">
+
+                        <label
+                            for="motivo"
+                            class="form-label fw-bold"
+                        >
+
+                            Motivo
+
+                        </label>
+
+
+                        <select
+                            class="form-select"
+                            id="motivo"
+                            name="motivo"
+                            required
+                        >
+
+                            <option
+                                value=""
+                                selected
+                                disabled
+                            >
+
+                                Seleccione un motivo...
+
+                            </option>
+
+
+                            <option value="Compra">
+                                🛒 Compra
+                            </option>
+
+
+                            <option value="Venta">
+                                💰 Venta
+                            </option>
+
+
+                            <option value="Devolución de cliente">
+                                🔄 Devolución de cliente
+                            </option>
+
+
+                            <option value="Devolución a proveedor">
+                                ↩️ Devolución a proveedor
+                            </option>
+
+
+                            <option value="Ajuste de inventario">
+                                🛠️ Ajuste de inventario
+                            </option>
+
+
+                            <option value="Otro">
+                                📦 Otro
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    <!-- FACTURA -->
+
+                    <div
+                        class="mb-3"
+                        id="facturaContainer"
                     >
 
+                        <label
+                            for="factura"
+                            class="form-label fw-bold"
+                        >
 
-                        <!-- PRODUCTO -->
+                            🧾 Número de factura
 
-                        <div class="mb-3">
+                        </label>
 
-                            <label
-                                for="producto_id"
-                                class="form-label fw-bold"
-                            >
 
-                                Producto
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="factura"
+                            name="factura"
+                            placeholder="Ej: FAC-00125"
+                        >
 
-                            </label>
+                    </div>
 
 
-                            <select
-                                class="form-select"
-                                id="producto_id"
-                                name="producto_id"
-                                required
-                            >
 
-                                <option
-                                    value=""
-                                    selected
-                                    disabled
-                                >
+                    <!-- ORDEN DE COMPRA -->
 
-                                    Seleccione un producto...
+                    <div
+                        class="mb-3"
+                        id="ordenContainer"
+                    >
 
-                                </option>
+                        <label
+                            for="orden_compra"
+                            class="form-label fw-bold"
+                        >
 
+                            📋 Orden de compra
 
-                                {% for prod in productos %}
+                        </label>
 
-                                    <option
-                                        value="{{ prod['id'] }}"
-                                        data-nombre="{{ prod['nombre'] }}"
-                                        data-stock="{{ prod['existencias'] }}"
-                                    >
 
-                                        {{ prod['nombre'] }}
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="orden_compra"
+                            name="orden_compra"
+                            placeholder="Ej: OC-0045"
+                        >
 
-                                    </option>
+                    </div>
 
-                                {% endfor %}
 
-                            </select>
 
+                    <!-- COMENTARIOS -->
 
-                            <div
-                                id="stockInfo"
-                                class="alert alert-secondary stock-box mt-3 mb-0"
-                                style="display:none;"
-                            >
+                    <div class="mb-3">
 
-                                <div class="fw-bold">
+                        <label
+                            for="comentarios"
+                            class="form-label fw-bold"
+                        >
 
-                                    Producto:
+                            💬 Comentarios / Observaciones
 
-                                    <span id="nombreProducto">
-                                        -
-                                    </span>
+                        </label>
 
-                                </div>
 
+                        <textarea
+                            class="form-control"
+                            id="comentarios"
+                            name="comentarios"
+                            rows="3"
+                            placeholder="Escriba aquí información adicional..."
+                        ></textarea>
 
-                                <div class="mt-1">
-
-                                    📦 Stock disponible:
-
-                                    <strong id="stockProducto">
-                                        0
-                                    </strong>
-
-                                    unidades
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-
-
-                        <!-- TIPO -->
-
-                        <div class="mb-3">
-
-                            <label
-                                for="tipo"
-                                class="form-label fw-bold"
-                            >
-
-                                Tipo de movimiento
-
-                            </label>
-
-
-                            <select
-                                class="form-select"
-                                id="tipo"
-                                name="tipo"
-                                required
-                            >
-
-                                <option value="Entrada">
-
-                                    🟢 Entrada (+)
-
-                                </option>
-
-
-                                <option value="Salida">
-
-                                    🔴 Salida (-)
-
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-
-                        <!-- CANTIDAD -->
-
-                        <div class="mb-3">
-
-                            <label
-                                for="cantidad"
-                                class="form-label fw-bold"
-                            >
-
-                                Cantidad
-
-                            </label>
-
-
-                            <input
-                                type="number"
-                                class="form-control"
-                                id="cantidad"
-                                name="cantidad"
-                                min="1"
-                                required
-                                placeholder="Ejemplo: 10"
-                            >
-
-                        </div>
-
-
-
-                        <!-- MOTIVO -->
-
-                        <div class="mb-3">
-
-                            <label
-                                for="motivo"
-                                class="form-label fw-bold"
-                            >
-
-                                Motivo
-
-                            </label>
-
-
-                            <select
-                                class="form-select"
-                                id="motivo"
-                                name="motivo"
-                                required
-                            >
-
-                                <option
-                                    value=""
-                                    selected
-                                    disabled
-                                >
-
-                                    Seleccione un motivo...
-
-                                </option>
-
-
-                                <option value="Compra">
-                                    🛒 Compra
-                                </option>
-
-
-                                <option value="Venta">
-                                    💰 Venta
-                                </option>
-
-
-                                <option value="Devolución de cliente">
-                                    🔄 Devolución de cliente
-                                </option>
-
-
-                                <option value="Devolución a proveedor">
-                                    ↩️ Devolución a proveedor
-                                </option>
-
-
-                                <option value="Ajuste de inventario">
-                                    🛠️ Ajuste de inventario
-                                </option>
-
-
-                                <option value="Otro">
-                                    📦 Otro
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-
-                        <!-- FACTURA -->
 
                         <div
-                            class="mb-3"
-                            id="facturaContainer"
+                            id="devolucionAviso"
+                            class="form-text text-danger"
+                            style="display:none;"
                         >
 
-                            <label
-                                for="factura"
-                                class="form-label fw-bold"
-                            >
-
-                                🧾 Número de factura
-
-                            </label>
-
-
-                            <input
-                                type="text"
-                                class="form-control"
-                                id="factura"
-                                name="factura"
-                                placeholder="Ej: FAC-00125"
-                            >
+                            ⚠️ Para una devolución debe indicar
+                            el motivo o explicación.
 
                         </div>
 
-
-
-                        <!-- ORDEN DE COMPRA -->
-
-                        <div
-                            class="mb-3"
-                            id="ordenContainer"
-                        >
-
-                            <label
-                                for="orden_compra"
-                                class="form-label fw-bold"
-                            >
-
-                                📋 Orden de compra
-
-                            </label>
-
-
-                            <input
-                                type="text"
-                                class="form-control"
-                                id="orden_compra"
-                                name="orden_compra"
-                                placeholder="Ej: OC-0045"
-                            >
-
-                        </div>
+                    </div>
 
 
 
-                        <!-- COMENTARIOS -->
+                    <!-- RESPONSABLE Y HORA -->
 
-                        <div class="mb-3">
+                    <div class="alert alert-light border">
 
-                            <label
-                                for="comentarios"
-                                class="form-label fw-bold"
-                            >
+                        👤 Responsable:
 
-                                💬 Comentarios / Observaciones
-
-                            </label>
+                        <strong>
+                            {{ session.get('usuario', 'admin') }}
+                        </strong>
 
 
-                            <textarea
-                                class="form-control"
-                                id="comentarios"
-                                name="comentarios"
-                                rows="3"
-                                placeholder="Escriba aquí información adicional..."
-                            ></textarea>
+                        <br>
 
 
-                            <div
-                                id="devolucionAviso"
-                                class="form-text text-danger"
-                                style="display:none;"
-                            >
+                        🕐 Fecha y hora:
 
-                                ⚠️ Para una devolución debe indicar
-                                el motivo o explicación.
+                        <strong id="reloj">
 
-                            </div>
+                            Se registrará automáticamente
 
-                        </div>
+                        </strong>
+
+                    </div>
 
 
 
-                        <!-- RESPONSABLE Y HORA -->
+                    <button
+                        type="submit"
+                        class="btn btn-success w-100"
+                    >
 
-                        <div class="alert alert-light border">
+                        💾 Guardar Movimiento
 
-                            👤 Responsable:
-
-                            <strong>
-                                {{ session.get('usuario', 'admin') }}
-                            </strong>
-
-
-                            <br>
+                    </button>
 
 
-                            🕐 Fecha y hora:
-
-                            <strong id="reloj">
-
-                                Se registrará automáticamente
-
-                            </strong>
-
-                        </div>
-
-
-
-                        <button
-                            type="submit"
-                            class="btn btn-success w-100"
-                        >
-
-                            💾 Guardar Movimiento
-
-                        </button>
-
-
-                    </form>
-
-                </div>
+                </form>
 
             </div>
 
         </div>
 
+    </div>
 
 
-        <!-- =====================================================
-             HISTORIAL
-        ====================================================== -->
 
-        <div class="col-lg-8">
+    <!-- =====================================================
+         HISTORIAL
+    ====================================================== -->
 
-            <div class="card shadow-sm">
+    <div class="col-lg-8">
+
+        <div class="card shadow-sm">
 
 
-                <div class="card-header bg-dark text-white">
+            <div
+                class="card-header bg-dark text-white d-flex justify-content-between align-items-center flex-wrap"
+            >
+
+                <div>
 
                     <h5 class="mb-0">
 
@@ -602,315 +984,444 @@
 
                     </h5>
 
+                    <small class="opacity-75">
+
+                        Ajusta el ancho de cada columna arrastrando su borde.
+
+                    </small>
+
                 </div>
 
 
-                <div class="card-body p-0">
+                <!-- CONTROLES -->
 
+                <div class="column-controls mt-2 mt-lg-0">
 
-                    <div class="table-responsive">
 
-                        <table
-                            class="table table-hover align-middle mb-0"
-                        >
+                    <button
+                        type="button"
+                        id="toggleResize"
+                        class="btn btn-warning btn-sm"
+                    >
 
-                            <thead class="table-light">
+                        🔓 Ajustar columnas
 
-                                <tr>
+                    </button>
 
-                                    <th>Fecha / Hora</th>
 
-                                    <th>Producto</th>
+                    <button
+                        type="button"
+                        id="resetColumns"
+                        class="btn btn-light btn-sm"
+                    >
 
-                                    <th>Tipo</th>
+                        ↺ Restablecer
 
-                                    <th>Cantidad</th>
+                    </button>
 
-                                    <th>Motivo</th>
 
-                                    <th>Documentos</th>
+                    <span
+                        id="columnStatus"
+                        class="column-status text-white"
+                    >
 
-                                    <th>Comentarios</th>
+                        Ajustables
 
-                                    <th>Usuario</th>
+                    </span>
 
-                                </tr>
 
-                            </thead>
+                </div>
 
+            </div>
 
-                            <tbody>
 
+            <div class="card-body p-0">
 
-                                {% if movimientos %}
 
+                <div
+                    class="table-wrapper"
+                    id="tableWrapper"
+                >
 
-                                    {% for mov in movimientos %}
+                    <table
+                        class="table table-hover align-middle movimientos-table"
+                        id="movimientosTable"
+                    >
 
+                        <thead class="table-light">
 
-                                        <tr>
+                            <tr>
 
+                                <th
+                                    class="resizable-th"
+                                    data-column="0"
+                                >
 
-                                            <!-- FECHA Y HORA -->
+                                    Fecha / Hora
 
-                                            <td class="fecha">
+                                    <span class="resize-handle"></span>
 
-                                                <strong>
+                                </th>
 
-                                                    {% if mov['fecha'] %}
 
-                                                        {{ mov['fecha'].strftime('%d/%m/%Y') }}
+                                <th
+                                    class="resizable-th"
+                                    data-column="1"
+                                >
 
-                                                    {% else %}
+                                    Producto
 
-                                                        -
+                                    <span class="resize-handle"></span>
 
-                                                    {% endif %}
+                                </th>
 
-                                                </strong>
 
+                                <th
+                                    class="resizable-th"
+                                    data-column="2"
+                                >
 
-                                                <br>
+                                    Tipo
 
+                                    <span class="resize-handle"></span>
 
-                                                <small class="text-primary fw-bold">
+                                </th>
 
-                                                    {% if mov['fecha'] %}
 
-                                                        {{ mov['fecha'].strftime('%H:%M:%S') }}
+                                <th
+                                    class="resizable-th"
+                                    data-column="3"
+                                >
 
-                                                    {% else %}
+                                    Cantidad
 
-                                                        -
+                                    <span class="resize-handle"></span>
 
-                                                    {% endif %}
+                                </th>
 
-                                                </small>
 
-                                            </td>
+                                <th
+                                    class="resizable-th"
+                                    data-column="4"
+                                >
 
+                                    Motivo
 
+                                    <span class="resize-handle"></span>
 
-                                            <!-- PRODUCTO -->
+                                </th>
 
-                                            <td>
 
-                                                <strong>
+                                <th
+                                    class="resizable-th"
+                                    data-column="5"
+                                >
 
-                                                    {{ mov['nombre'] or 'Producto eliminado' }}
+                                    Documentos
 
-                                                </strong>
+                                    <span class="resize-handle"></span>
 
-                                            </td>
+                                </th>
 
 
+                                <th
+                                    class="resizable-th"
+                                    data-column="6"
+                                >
 
-                                            <!-- TIPO -->
+                                    Comentarios
 
-                                            <td>
+                                    <span class="resize-handle"></span>
 
-                                                {% if mov['tipo'] == 'Entrada' %}
+                                </th>
 
-                                                    <span class="badge bg-success">
 
-                                                        🟢 Entrada
+                                <th
+                                    class="resizable-th"
+                                    data-column="7"
+                                >
 
-                                                    </span>
+                                    Usuario
 
-                                                {% else %}
+                                    <span class="resize-handle"></span>
 
-                                                    <span class="badge bg-danger">
+                                </th>
 
-                                                        🔴 Salida
+                            </tr>
 
-                                                    </span>
+                        </thead>
 
-                                                {% endif %}
 
-                                            </td>
+                        <tbody>
 
 
+                            {% if movimientos %}
 
-                                            <!-- CANTIDAD -->
 
-                                            <td>
-
-                                                <strong>
-
-                                                    {{ mov['cantidad'] }}
-
-                                                </strong>
-
-                                            </td>
-
-
-
-                                            <!-- MOTIVO -->
-
-                                            <td>
-
-                                                {% if mov['motivo'] == 'Compra' %}
-
-                                                    <span class="badge bg-primary">
-
-                                                        🛒 Compra
-
-                                                    </span>
-
-                                                {% elif mov['motivo'] == 'Venta' %}
-
-                                                    <span class="badge bg-success">
-
-                                                        💰 Venta
-
-                                                    </span>
-
-                                                {% elif mov['motivo'] == 'Devolución de cliente' %}
-
-                                                    <span class="badge bg-warning text-dark">
-
-                                                        🔄 Devolución cliente
-
-                                                    </span>
-
-                                                {% elif mov['motivo'] == 'Devolución a proveedor' %}
-
-                                                    <span class="badge bg-warning text-dark">
-
-                                                        ↩️ Devolución proveedor
-
-                                                    </span>
-
-                                                {% elif mov['motivo'] == 'Ajuste de inventario' %}
-
-                                                    <span class="badge bg-secondary">
-
-                                                        🛠️ Ajuste
-
-                                                    </span>
-
-                                                {% else %}
-
-                                                    <span class="badge bg-dark">
-
-                                                        📦 {{ mov['motivo'] or 'Otro' }}
-
-                                                    </span>
-
-                                                {% endif %}
-
-                                            </td>
-
-
-
-                                            <!-- DOCUMENTOS -->
-
-                                            <td class="detalle">
-
-                                                {% if mov['factura'] %}
-
-                                                    <div>
-
-                                                        🧾
-
-                                                        <strong>
-
-                                                            {{ mov['factura'] }}
-
-                                                        </strong>
-
-                                                    </div>
-
-                                                {% endif %}
-
-
-                                                {% if mov['orden_compra'] %}
-
-                                                    <div>
-
-                                                        📋
-
-                                                        <strong>
-
-                                                            {{ mov['orden_compra'] }}
-
-                                                        </strong>
-
-                                                    </div>
-
-                                                {% endif %}
-
-
-                                                {% if not mov['factura'] and not mov['orden_compra'] %}
-
-                                                    -
-
-                                                {% endif %}
-
-                                            </td>
-
-
-
-                                            <!-- COMENTARIOS -->
-
-                                            <td class="detalle">
-
-                                                {% if mov['comentarios'] %}
-
-                                                    {{ mov['comentarios'] }}
-
-                                                {% else %}
-
-                                                    -
-
-                                                {% endif %}
-
-                                            </td>
-
-
-
-                                            <!-- USUARIO -->
-
-                                            <td>
-
-                                                👤
-
-                                                {{ mov['usuario'] or 'admin' }}
-
-                                            </td>
-
-
-                                        </tr>
-
-
-                                    {% endfor %}
-
-
-                                {% else %}
+                                {% for mov in movimientos %}
 
 
                                     <tr>
 
-                                        <td
-                                            colspan="8"
-                                            class="text-center text-muted py-5"
-                                        >
 
-                                            📭 No se han registrado movimientos todavía.
+                                        <!-- FECHA Y HORA -->
+
+                                        <td class="fecha">
+
+                                            <strong>
+
+                                                {% if mov['fecha'] %}
+
+                                                    {{ mov['fecha'].strftime('%d/%m/%Y') }}
+
+                                                {% else %}
+
+                                                    -
+
+                                                {% endif %}
+
+                                            </strong>
+
+
+                                            <br>
+
+
+                                            <small class="text-primary fw-bold">
+
+                                                {% if mov['fecha'] %}
+
+                                                    {{ mov['fecha'].strftime('%H:%M:%S') }}
+
+                                                {% else %}
+
+                                                    -
+
+                                                {% endif %}
+
+                                            </small>
 
                                         </td>
+
+
+
+                                        <!-- PRODUCTO -->
+
+                                        <td>
+
+                                            <strong>
+
+                                                {{ mov['nombre'] or 'Producto eliminado' }}
+
+                                            </strong>
+
+                                        </td>
+
+
+
+                                        <!-- TIPO -->
+
+                                        <td>
+
+                                            {% if mov['tipo'] == 'Entrada' %}
+
+                                                <span class="badge bg-success">
+
+                                                    🟢 Entrada
+
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="badge bg-danger">
+
+                                                    🔴 Salida
+
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+
+
+                                        <!-- CANTIDAD -->
+
+                                        <td>
+
+                                            <strong>
+
+                                                {{ mov['cantidad'] }}
+
+                                            </strong>
+
+                                        </td>
+
+
+
+                                        <!-- MOTIVO -->
+
+                                        <td>
+
+                                            {% if mov['motivo'] == 'Compra' %}
+
+                                                <span class="badge bg-primary">
+
+                                                    🛒 Compra
+
+                                                </span>
+
+                                            {% elif mov['motivo'] == 'Venta' %}
+
+                                                <span class="badge bg-success">
+
+                                                    💰 Venta
+
+                                                </span>
+
+                                            {% elif mov['motivo'] == 'Devolución de cliente' %}
+
+                                                <span class="badge bg-warning text-dark">
+
+                                                    🔄 Devolución cliente
+
+                                                </span>
+
+                                            {% elif mov['motivo'] == 'Devolución a proveedor' %}
+
+                                                <span class="badge bg-warning text-dark">
+
+                                                    ↩️ Devolución proveedor
+
+                                                </span>
+
+                                            {% elif mov['motivo'] == 'Ajuste de inventario' %}
+
+                                                <span class="badge bg-secondary">
+
+                                                    🛠️ Ajuste
+
+                                                </span>
+
+                                            {% else %}
+
+                                                <span class="badge bg-dark">
+
+                                                    📦 {{ mov['motivo'] or 'Otro' }}
+
+                                                </span>
+
+                                            {% endif %}
+
+                                        </td>
+
+
+
+                                        <!-- DOCUMENTOS -->
+
+                                        <td class="detalle">
+
+                                            {% if mov['factura'] %}
+
+                                                <div>
+
+                                                    🧾
+
+                                                    <strong>
+
+                                                        {{ mov['factura'] }}
+
+                                                    </strong>
+
+                                                </div>
+
+                                            {% endif %}
+
+
+                                            {% if mov['orden_compra'] %}
+
+                                                <div>
+
+                                                    📋
+
+                                                    <strong>
+
+                                                        {{ mov['orden_compra'] }}
+
+                                                    </strong>
+
+                                                </div>
+
+                                            {% endif %}
+
+
+                                            {% if not mov['factura'] and not mov['orden_compra'] %}
+
+                                                -
+
+                                            {% endif %}
+
+                                        </td>
+
+
+
+                                        <!-- COMENTARIOS -->
+
+                                        <td class="detalle">
+
+                                            {% if mov['comentarios'] %}
+
+                                                {{ mov['comentarios'] }}
+
+                                            {% else %}
+
+                                                -
+
+                                            {% endif %}
+
+                                        </td>
+
+
+
+                                        <!-- USUARIO -->
+
+                                        <td>
+
+                                            👤
+
+                                            {{ mov['usuario'] or 'admin' }}
+
+                                        </td>
+
 
                                     </tr>
 
 
-                                {% endif %}
+                                {% endfor %}
 
 
-                            </tbody>
+                            {% else %}
 
-                        </table>
 
-                    </div>
+                                <tr>
+
+                                    <td
+                                        colspan="8"
+                                        class="text-center text-muted py-5"
+                                    >
+
+                                        📭 No se han registrado movimientos todavía.
+
+                                    </td>
+
+                                </tr>
+
+
+                            {% endif %}
+
+
+                        </tbody>
+
+                    </table>
 
                 </div>
 
@@ -918,18 +1429,24 @@
 
         </div>
 
-
     </div>
+
+
+</div>
+```
 
 </div>
 
-
+<!-- =====================================================
+     JAVASCRIPT
+====================================================== -->
 
 <script>
 
-    // =====================================================
-    // RELOJ EN TIEMPO REAL - COLOMBIA
-    // =====================================================
+
+    /* =====================================================
+       RELOJ EN TIEMPO REAL - COLOMBIA
+    ===================================================== */
 
     function actualizarReloj() {
 
@@ -982,9 +1499,9 @@
 
 
 
-    // =====================================================
-    // STOCK DEL PRODUCTO
-    // =====================================================
+    /* =====================================================
+       STOCK DEL PRODUCTO
+    ===================================================== */
 
     const productoSelect =
         document.getElementById("producto_id");
@@ -1067,9 +1584,9 @@
 
 
 
-    // =====================================================
-    // CONTROL DEL MOTIVO
-    // =====================================================
+    /* =====================================================
+       CONTROL DEL MOTIVO
+    ===================================================== */
 
     const motivo =
         document.getElementById("motivo");
@@ -1164,9 +1681,486 @@
         }
     );
 
+
+
+    /* =====================================================
+       SISTEMA DE COLUMNAS
+    ===================================================== */
+
+    const tabla =
+        document.getElementById("movimientosTable");
+
+
+    const tablaWrapper =
+        document.getElementById("tableWrapper");
+
+
+    const toggleResize =
+        document.getElementById("toggleResize");
+
+
+    const resetColumns =
+        document.getElementById("resetColumns");
+
+
+    const columnStatus =
+        document.getElementById("columnStatus");
+
+
+    const STORAGE_KEY =
+        "inventario_movimientos_columnas";
+
+
+    const LOCK_KEY =
+        "inventario_movimientos_columnas_bloqueadas";
+
+
+    const anchosOriginales = [
+
+        145,
+        190,
+        145,
+        95,
+        190,
+        180,
+        250,
+        140
+
+    ];
+
+
+    const minimos = [
+
+        145,
+        160,
+        120,
+        80,
+        150,
+        140,
+        180,
+        110
+
+    ];
+
+
+
+    /* =====================================================
+       OBTENER TODAS LAS CELDAS DE UNA COLUMNA
+    ===================================================== */
+
+    function obtenerCeldasColumna(indice) {
+
+        return tabla.querySelectorAll(
+
+            `tr > *:nth-child(${indice + 1})`
+
+        );
+
+    }
+
+
+
+    /* =====================================================
+       APLICAR ANCHO
+    ===================================================== */
+
+    function aplicarAnchoColumna(indice, ancho) {
+
+        const anchoFinal =
+            Math.max(
+                parseInt(ancho),
+                minimos[indice]
+            );
+
+
+        const celdas =
+            obtenerCeldasColumna(indice);
+
+
+        celdas.forEach(
+            celda => {
+
+                celda.style.width =
+                    anchoFinal + "px";
+
+                celda.style.minWidth =
+                    anchoFinal + "px";
+
+                celda.style.maxWidth =
+                    anchoFinal + "px";
+
+            }
+        );
+
+    }
+
+
+
+    /* =====================================================
+       GUARDAR ANCHOS
+    ===================================================== */
+
+    function guardarAnchos() {
+
+        const anchos = [];
+
+
+        tabla.querySelectorAll(
+            "thead th"
+        ).forEach(
+            (th, indice) => {
+
+                anchos.push(
+                    th.offsetWidth
+                );
+
+            }
+        );
+
+
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(anchos)
+        );
+
+    }
+
+
+
+    /* =====================================================
+       CARGAR ANCHOS
+    ===================================================== */
+
+    function cargarAnchos() {
+
+        const guardados =
+            localStorage.getItem(
+                STORAGE_KEY
+            );
+
+
+        if (guardados) {
+
+            try {
+
+                const anchos =
+                    JSON.parse(guardados);
+
+
+                anchos.forEach(
+                    (ancho, indice) => {
+
+                        if (
+                            typeof ancho === "number"
+                            &&
+                            indice < anchosOriginales.length
+                        ) {
+
+                            aplicarAnchoColumna(
+                                indice,
+                                ancho
+                            );
+
+                        }
+
+                    }
+                );
+
+                return;
+
+            }
+
+            catch (error) {
+
+                console.warn(
+                    "No se pudieron cargar los anchos guardados."
+                );
+
+            }
+
+        }
+
+
+        anchosOriginales.forEach(
+            (ancho, indice) => {
+
+                aplicarAnchoColumna(
+                    indice,
+                    ancho
+                );
+
+            }
+        );
+
+    }
+
+
+
+    /* =====================================================
+       ESTADO BLOQUEADO / DESBLOQUEADO
+    ===================================================== */
+
+    function actualizarEstadoColumnas(bloqueado) {
+
+        if (bloqueado) {
+
+            tablaWrapper.classList.add(
+                "columns-locked"
+            );
+
+
+            toggleResize.innerHTML =
+                "🔓 Ajustar columnas";
+
+
+            toggleResize.classList.remove(
+                "btn-success"
+            );
+
+
+            toggleResize.classList.add(
+                "btn-warning"
+            );
+
+
+            columnStatus.textContent =
+                "🔒 Columnas fijadas";
+
+        }
+
+        else {
+
+            tablaWrapper.classList.remove(
+                "columns-locked"
+            );
+
+
+            toggleResize.innerHTML =
+                "🔒 Fijar columnas";
+
+
+            toggleResize.classList.remove(
+                "btn-warning"
+            );
+
+
+            toggleResize.classList.add(
+                "btn-success"
+            );
+
+
+            columnStatus.textContent =
+                "↔️ Columnas ajustables";
+
+        }
+
+
+        localStorage.setItem(
+            LOCK_KEY,
+            bloqueado
+                ? "true"
+                : "false"
+        );
+
+    }
+
+
+
+    /* =====================================================
+       BOTÓN BLOQUEAR / AJUSTAR
+    ===================================================== */
+
+    toggleResize.addEventListener(
+        "click",
+        function () {
+
+            const bloqueado =
+                tablaWrapper.classList.contains(
+                    "columns-locked"
+                );
+
+
+            actualizarEstadoColumnas(
+                !bloqueado
+            );
+
+        }
+    );
+
+
+
+    /* =====================================================
+       RESTABLECER COLUMNAS
+    ===================================================== */
+
+    resetColumns.addEventListener(
+        "click",
+        function () {
+
+            anchosOriginales.forEach(
+                (ancho, indice) => {
+
+                    aplicarAnchoColumna(
+                        indice,
+                        ancho
+                    );
+
+                }
+            );
+
+
+            localStorage.removeItem(
+                STORAGE_KEY
+            );
+
+
+            actualizarEstadoColumnas(
+                false
+            );
+
+        }
+    );
+
+
+
+    /* =====================================================
+       REDIMENSIONAR COLUMNAS
+    ===================================================== */
+
+    const handles =
+        document.querySelectorAll(
+            ".resize-handle"
+        );
+
+
+    handles.forEach(
+        handle => {
+
+            handle.addEventListener(
+                "mousedown",
+                function (event) {
+
+                    if (
+                        tablaWrapper.classList.contains(
+                            "columns-locked"
+                        )
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    event.preventDefault();
+
+
+                    const th =
+                        handle.parentElement;
+
+
+                    const indice =
+                        parseInt(
+                            th.dataset.column
+                        );
+
+
+                    const inicioX =
+                        event.clientX;
+
+
+                    const anchoInicial =
+                        th.offsetWidth;
+
+
+                    document.body.classList.add(
+                        "resizing"
+                    );
+
+
+                    function mover(evento) {
+
+                        const diferencia =
+                            evento.clientX -
+                            inicioX;
+
+
+                        const nuevoAncho =
+                            Math.max(
+                                anchoInicial +
+                                diferencia,
+                                minimos[indice]
+                            );
+
+
+                        aplicarAnchoColumna(
+                            indice,
+                            nuevoAncho
+                        );
+
+                    }
+
+
+                    function terminar() {
+
+                        document.body.classList.remove(
+                            "resizing"
+                        );
+
+
+                        document.removeEventListener(
+                            "mousemove",
+                            mover
+                        );
+
+
+                        document.removeEventListener(
+                            "mouseup",
+                            terminar
+                        );
+
+
+                        guardarAnchos();
+
+                    }
+
+
+                    document.addEventListener(
+                        "mousemove",
+                        mover
+                    );
+
+
+                    document.addEventListener(
+                        "mouseup",
+                        terminar
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+
+    /* =====================================================
+       INICIALIZACIÓN
+    ===================================================== */
+
+    cargarAnchos();
+
+
+    const estadoGuardado =
+        localStorage.getItem(
+            LOCK_KEY
+        );
+
+
+    actualizarEstadoColumnas(
+        estadoGuardado === "true"
+    );
+
 </script>
-
-
 
 <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
