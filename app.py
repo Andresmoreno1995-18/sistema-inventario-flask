@@ -256,10 +256,6 @@ def init_db():
     """)
 
 
-    # =====================================================
-    # CAMPOS ADICIONALES
-    # =====================================================
-
     cursor.execute("""
         ALTER TABLE movimientos
         ADD COLUMN IF NOT EXISTS factura TEXT
@@ -330,10 +326,6 @@ def init_db():
         """)
 
 
-    # =====================================================
-    # MIGRAR CONTRASEÑAS
-    # =====================================================
-
     migrate_old_passwords(cursor)
 
 
@@ -394,10 +386,6 @@ def index():
     )
 
 
-    # =====================================================
-    # FILTROS DE PRODUCTOS
-    # =====================================================
-
     condiciones = []
 
     parametros = []
@@ -424,27 +412,26 @@ def index():
 
     if filtro_stock == "stock":
 
-        condiciones.append("""
-            p.existencias > 0
-        """)
+        condiciones.append(
+            "p.existencias > 0"
+        )
 
 
     elif filtro_stock == "bajo":
 
-        condiciones.append("""
-            p.existencias BETWEEN 1 AND 5
-        """)
+        condiciones.append(
+            "p.existencias BETWEEN 1 AND 5"
+        )
 
 
     elif filtro_stock == "agotado":
 
-        condiciones.append("""
-            p.existencias = 0
-        """)
+        condiciones.append(
+            "p.existencias = 0"
+        )
 
 
     where_sql = ""
-
 
     if condiciones:
 
@@ -466,24 +453,15 @@ def index():
             p.precio,
             p.existencias
         FROM productos p
-
         {where_sql}
-
         ORDER BY p.id DESC
     """, parametros)
-
 
     productos = cursor.fetchall()
 
 
     # =====================================================
     # MOVIMIENTOS
-    #
-    # SI SE BUSCA UN PRODUCTO:
-    # SOLO MUESTRA MOVIMIENTOS DE ESE PRODUCTO.
-    #
-    # SI NO HAY BÚSQUEDA:
-    # MUESTRA LOS ÚLTIMOS 50 MOVIMIENTOS.
     # =====================================================
 
     if busqueda or filtro_stock != "todos":
@@ -556,16 +534,12 @@ def index():
     # RESUMEN
     # =====================================================
 
-    total_productos = len(
-        productos
-    )
-
+    total_productos = len(productos)
 
     unidades_totales = sum(
         producto["existencias"]
         for producto in productos
     )
-
 
     valor_inventario = sum(
         float(producto["precio"])
@@ -573,13 +547,11 @@ def index():
         for producto in productos
     )
 
-
     stock_bajo = sum(
         1
         for producto in productos
         if 0 < producto["existencias"] <= 5
     )
-
 
     agotados = sum(
         1
@@ -594,25 +566,15 @@ def index():
 
 
     return render_template(
-
         "index.html",
-
         productos=productos,
-
         movimientos=movimientos,
-
         total_productos=total_productos,
-
         unidades_totales=unidades_totales,
-
         valor_inventario=valor_inventario,
-
         stock_bajo=stock_bajo,
-
         agotados=agotados,
-
         busqueda=busqueda,
-
         filtro_stock=filtro_stock
     )
 
@@ -633,7 +595,6 @@ def login():
             "usuario",
             ""
         ).strip()
-
 
         password = request.form.get(
             "password",
@@ -688,9 +649,7 @@ def login():
         ):
 
             session["usuario"] = user["usuario"]
-
             session["rol"] = user["rol"]
-
             session["genero"] = user["genero"]
 
 
@@ -740,18 +699,15 @@ def registro():
             ""
         ).strip()
 
-
         password = request.form.get(
             "password",
             ""
         )
 
-
         genero = request.form.get(
             "genero",
             ""
         ).strip()
-
 
         rol = request.form.get(
             "rol",
@@ -824,12 +780,10 @@ def registro():
 
             conn.close()
 
-
             flash(
                 "Ese nombre de usuario ya existe.",
                 "danger"
             )
-
 
             return render_template(
                 "registro.html"
@@ -897,12 +851,10 @@ def logout():
 
     session.clear()
 
-
     flash(
         "Sesión cerrada correctamente.",
         "info"
     )
-
 
     return redirect(
         url_for("login")
@@ -933,7 +885,6 @@ def agregar():
             ""
         ).strip()
 
-
         categoria = request.form.get(
             "categoria",
             ""
@@ -949,7 +900,6 @@ def agregar():
                 )
             )
 
-
             existencias = int(
                 request.form.get(
                     "existencias",
@@ -957,14 +907,48 @@ def agregar():
                 )
             )
 
-
-        except ValueError:
+        except (TypeError, ValueError):
 
             flash(
                 "Precio o existencias no tienen un valor válido.",
                 "danger"
             )
 
+            return render_template(
+                "producto_form.html"
+            )
+
+
+        if not nombre:
+
+            flash(
+                "Debe ingresar el nombre del producto.",
+                "danger"
+            )
+
+            return render_template(
+                "producto_form.html"
+            )
+
+
+        if precio < 0:
+
+            flash(
+                "El precio no puede ser negativo.",
+                "danger"
+            )
+
+            return render_template(
+                "producto_form.html"
+            )
+
+
+        if existencias < 0:
+
+            flash(
+                "Las existencias no pueden ser negativas.",
+                "danger"
+            )
 
             return render_template(
                 "producto_form.html"
@@ -976,34 +960,105 @@ def agregar():
         cursor = conn.cursor()
 
 
-        cursor.execute("""
-            INSERT INTO productos
-            (
+        try:
+
+            cursor.execute("""
+                INSERT INTO productos
+                (
+                    nombre,
+                    categoria,
+                    precio,
+                    existencias
+                )
+                VALUES (%s, %s, %s, %s)
+                RETURNING id
+            """, (
                 nombre,
                 categoria,
                 precio,
                 existencias
+            ))
+
+
+            producto_id = cursor.fetchone()[0]
+
+
+            # =================================================
+            # REGISTRAR STOCK INICIAL
+            # =================================================
+
+            if existencias > 0:
+
+                cursor.execute("""
+                    INSERT INTO movimientos
+                    (
+                        fecha,
+                        producto_id,
+                        tipo,
+                        cantidad,
+                        motivo,
+                        factura,
+                        orden_compra,
+                        comentarios,
+                        usuario
+                    )
+                    VALUES
+                    (
+                        CURRENT_TIMESTAMP,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s
+                    )
+                """, (
+                    producto_id,
+                    "Entrada",
+                    existencias,
+                    "Ajuste de inventario",
+                    "",
+                    "",
+                    "Stock inicial del producto",
+                    session.get(
+                        "usuario",
+                        "admin"
+                    )
+                ))
+
+
+            conn.commit()
+
+
+            flash(
+                "Producto agregado con éxito.",
+                "success"
             )
-            VALUES (%s, %s, %s, %s)
-        """, (
-            nombre,
-            categoria,
-            precio,
-            existencias
-        ))
 
 
-        conn.commit()
+        except Exception:
+
+            conn.rollback()
+
+            flash(
+                "No fue posible agregar el producto.",
+                "danger"
+            )
+
+            cursor.close()
+
+            conn.close()
+
+            return render_template(
+                "producto_form.html"
+            )
+
 
         cursor.close()
 
         conn.close()
-
-
-        flash(
-            "Producto agregado con éxito.",
-            "success"
-        )
 
 
         return redirect(
@@ -1047,7 +1102,6 @@ def editar(id):
             ""
         ).strip()
 
-
         categoria = request.form.get(
             "categoria",
             ""
@@ -1063,7 +1117,6 @@ def editar(id):
                 )
             )
 
-
             existencias = int(
                 request.form.get(
                     "existencias",
@@ -1071,19 +1124,16 @@ def editar(id):
                 )
             )
 
-
         except ValueError:
 
             cursor.close()
 
             conn.close()
 
-
             flash(
                 "Precio o existencias no válidos.",
                 "danger"
             )
-
 
             return redirect(
                 url_for(
@@ -1151,7 +1201,6 @@ def editar(id):
             "Producto no encontrado.",
             "danger"
         )
-
 
         return redirect(
             url_for("index")
@@ -1253,13 +1302,11 @@ def movimientos():
                 )
             )
 
-
             cantidad = int(
                 request.form.get(
                     "cantidad"
                 )
             )
-
 
         except (
             TypeError,
@@ -1270,12 +1317,10 @@ def movimientos():
 
             conn.close()
 
-
             flash(
                 "Cantidad o producto no válidos.",
                 "danger"
             )
-
 
             return redirect(
                 url_for("movimientos")
@@ -1287,30 +1332,25 @@ def movimientos():
             ""
         ).strip()
 
-
         motivo = request.form.get(
             "motivo",
             ""
         ).strip()
-
 
         factura = request.form.get(
             "factura",
             ""
         ).strip()
 
-
         orden_compra = request.form.get(
             "orden_compra",
             ""
         ).strip()
 
-
         comentarios = request.form.get(
             "comentarios",
             ""
         ).strip()
-
 
         usuario = session.get(
             "usuario",
@@ -1492,7 +1532,7 @@ def movimientos():
 
 
     # =====================================================
-    # HISTORIAL DE MOVIMIENTOS
+    # HISTORIAL
     # =====================================================
 
     cursor.execute("""
@@ -1563,12 +1603,10 @@ def proveedores():
 
             conn.close()
 
-
             flash(
                 "No tienes permisos para agregar proveedores.",
                 "danger"
             )
-
 
             return redirect(
                 url_for("proveedores")
@@ -1580,12 +1618,10 @@ def proveedores():
             ""
         ).strip()
 
-
         contacto = request.form.get(
             "contacto",
             ""
         ).strip()
-
 
         telefono = request.form.get(
             "telefono",
@@ -1728,7 +1764,6 @@ def grafico():
             "warning"
         )
 
-
         return redirect(
             url_for("index")
         )
@@ -1749,11 +1784,9 @@ def grafico():
         "Productos"
     )
 
-
     plt.ylabel(
         "Existencias"
     )
-
 
     plt.title(
         "Stock Actual por Producto"
