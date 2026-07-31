@@ -1,4 +1,5 @@
 Flask
 gunicorn
-matplotlib
 pandas
+matplotlib
+psycopg2-binary
