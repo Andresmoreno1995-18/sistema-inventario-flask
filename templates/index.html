@@ -1,198 +1,340 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Sistema de Gestión de Inventario</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
     <style>
         body {
             background-color: #f8f9fa;
         }
-        .navbar {
-            background-color: #343a40;
-        }
+
         .card-summary {
             border: none;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
     </style>
 </head>
+
 <body>
 
-    <!-- NAV BAR -->
-    <nav class="navbar navbar-dark mb-4">
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-dark bg-dark mb-4">
         <div class="container-fluid px-4">
-            <span class="navbar-brand mb-0 h1 fw-bold">Sistema de Gestión de Inventario</span>
+
+            <a class="navbar-brand fw-bold" href="/">
+                Sistema de Gestión de Inventario
+            </a>
+
             <div class="d-flex align-items-center text-white">
-                <span class="me-3">Hola, <strong>{{ session.get('usuario', 'admin') }}</strong></span>
-                <a href="/logout" class="btn btn-sm btn-danger">Cerrar Sesión</a>
+
+                <span class="me-3">
+                    Hola,
+                    <strong>
+                        {{ session.get('usuario', 'admin') }}
+                    </strong>
+                </span>
+
+                <a href="/logout" class="btn btn-danger btn-sm">
+                    Cerrar Sesión
+                </a>
+
             </div>
         </div>
     </nav>
 
-    <div class="container-fluid px-4">
-
-        <!-- ALERTAS / MENSAJES FLASH -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></Entendido. De aquí en adelante te entregaré siempre los archivos con su código **100% completo**, listo para copiar y reemplazar sin tener que armarlo por partes.
-
-A continuación tienes las dos opciones completas para corregir los movimientos y agregar los botones de entrada/salida.
-
----
-
-### Opción A: Archivo `templates/index.html` (Completo)
-
-Este archivo actualiza el panel principal agregando:
-1. El botón **📦 Registrar / Historial Movimientos** en la barra superior.
-2. Los botones ** Entrada** y ** Salida** en la columna de acciones para cada producto.
-
-```html
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestión de Inventario</title>
-    <link href="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css)" rel="stylesheet">
-    <link rel="stylesheet" href="[https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css](https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css)">
-    <style>
-        body { background-color: #f8f9fa; }
-        .card-summary { border: none; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .table-container { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    </style>
-</head>
-<body>
-    <!-- Navegación Superior -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand fw-bold" href="/">Sistema de Gestión de Inventario</a>
-            <div class="d-flex align-items-center text-white">
-                <span class="me-3">Hola, <strong>{{ session.get('usuario', 'admin') }}</strong></span>
-                <a href="/logout" class="btn btn-danger btn-sm">Cerrar Sesión</a>
-            </div>
-        </div>
-    </nav>
 
     <div class="container-fluid px-4">
-        <!-- Tarjetas de Resumen -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-2">
-                <div class="card card-summary p-3 bg-white border-start border-primary border-4">
-                    <small class="text-muted fw-bold">PRODUCTOS TOTALES</small>
-                    <h3 class="mb-0 mt-1">{{ total_productos if total_productos is defined else productos|length }}</h3>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card card-summary p-3 bg-white border-start border-info border-4">
-                    <small class="text-muted fw-bold">UNIDADES TOTALES</small>
-                    <h3 class="mb-0 mt-1">{{ unidades_totales if unidades_totales is defined else 0 }}</h3>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card card-summary p-3 bg-white border-start border-success border-4">
-                    <small class="text-muted fw-bold">INVENTARIO DE VALOR</small>
-                    <h3 class="mb-0 mt-1">${{ "%.2f"|format(valor_inventario if valor_inventario is defined else 0) }}</h3>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card card-summary p-3 bg-white border-start border-warning border-4">
-                    <small class="text-muted fw-bold">STOCK BAJO</small>
-                    <h3 class="mb-0 mt-1 text-warning">{{ stock_bajo if stock_bajo is defined else 0 }}</h3>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card card-summary p-3 bg-white border-start border-danger border-4">
-                    <small class="text-muted fw-bold">AGOTADOS</small>
-                    <h3 class="mb-0 mt-1 text-danger">{{ agotados if agotados is defined else 0 }}</h3>
-                </div>
-            </div>
-        </div>
 
-        <!-- Botones de Acción Principales -->
-        <div class="mb-4 d-flex flex-wrap gap-2">
-            <a href="/agregar" class="btn btn-primary">+ Agregar Producto</a>
-            <a href="/movimientos" class="btn btn-success">📦 Registrar / Historial Movimientos</a>
-            <a href="/proveedores" class="btn btn-secondary">Gestión Proveedores</a>
-            <a href="/exportar" class="btn btn-outline-secondary">Exportar CSV</a>
-            <a href="/grafico" class="btn btn-outline-secondary">Ver Gráfico</a>
-        </div>
-
-        <!-- Mensajes Flash -->
+        <!-- MENSAJES -->
         {% with messages = get_flashed_messages(with_categories=true) %}
+
             {% if messages %}
+
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show" role="alert">
+
+                    <div
+                        class="alert alert-{{ 'danger' if category == 'error' else category }}"
+                        role="alert"
+                    >
                         {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
+
                 {% endfor %}
+
             {% endif %}
+
         {% endwith %}
 
-        <!-- Tabla de Productos -->
+
+        <!-- RESUMEN -->
+        <div class="row g-3 mb-4">
+
+            <div class="col-md-2">
+                <div class="card card-summary p-3 bg-white">
+                    <small class="text-muted fw-bold">
+                        PRODUCTOS TOTALES
+                    </small>
+
+                    <h3 class="mb-0 mt-1">
+                        {{ total_productos }}
+                    </h3>
+                </div>
+            </div>
+
+
+            <div class="col-md-2">
+                <div class="card card-summary p-3 bg-white">
+                    <small class="text-muted fw-bold">
+                        UNIDADES TOTALES
+                    </small>
+
+                    <h3 class="mb-0 mt-1">
+                        {{ unidades_totales }}
+                    </h3>
+                </div>
+            </div>
+
+
+            <div class="col-md-3">
+                <div class="card card-summary p-3 bg-white">
+                    <small class="text-muted fw-bold">
+                        VALOR DEL INVENTARIO
+                    </small>
+
+                    <h3 class="mb-0 mt-1">
+                        ${{ "%.2f"|format(valor_inventario) }}
+                    </h3>
+                </div>
+            </div>
+
+
+            <div class="col-md-2">
+                <div class="card card-summary p-3 bg-white">
+                    <small class="text-muted fw-bold">
+                        STOCK BAJO
+                    </small>
+
+                    <h3 class="mb-0 mt-1 text-warning">
+                        {{ stock_bajo }}
+                    </h3>
+                </div>
+            </div>
+
+
+            <div class="col-md-3">
+                <div class="card card-summary p-3 bg-white">
+                    <small class="text-muted fw-bold">
+                        AGOTADOS
+                    </small>
+
+                    <h3 class="mb-0 mt-1 text-danger">
+                        {{ agotados }}
+                    </h3>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- BOTONES PRINCIPALES -->
+        <div class="mb-4 d-flex flex-wrap gap-2">
+
+            <a href="/agregar" class="btn btn-primary">
+                + Agregar Producto
+            </a>
+
+            <a href="/movimientos" class="btn btn-success">
+                📦 Movimientos
+            </a>
+
+            <a href="/proveedores" class="btn btn-secondary">
+                Proveedores
+            </a>
+
+            <a href="/exportar" class="btn btn-outline-secondary">
+                Exportar CSV
+            </a>
+
+            <a href="/grafico" class="btn btn-outline-secondary">
+                Ver Gráfico
+            </a>
+
+        </div>
+
+
+        <!-- PRODUCTOS -->
         <div class="table-container mb-4">
-            <h5 class="fw-bold mb-3">Listado de Productos</h5>
+
+            <h5 class="fw-bold mb-3">
+                Listado de Productos
+            </h5>
+
             <div class="table-responsive">
+
                 <table class="table table-hover align-middle">
+
                     <thead class="table-light">
+
                         <tr>
-                            <th>Código</th>
+                            <th>ID</th>
                             <th>Nombre</th>
                             <th>Categoría</th>
                             <th>Precio</th>
                             <th>Existencias</th>
-                            <th class="text-center">Acciones</th>
+                            <th class="text-center">
+                                Acciones
+                            </th>
                         </tr>
+
                     </thead>
+
+
                     <tbody>
+
                         {% if productos %}
+
                             {% for producto in productos %}
-                            <tr>
-                                <td>#{{ producto[0] }}</td>
-                                <td><strong>{{ producto[1] }}</strong></td>
-                                <td><span class="badge bg-secondary">{{ producto[2] if producto[2] else 'Sin Categoría' }}</span></td>
-                                <td>${{ "%.2f"|format(producto[3]) }}</td>
-                                <td>
-                                    <span class="badge {% if producto[4] <= 2 %}bg-danger{% elif producto[4] <= 5 %}bg-warning text-dark{% else %}bg-success{% endif %}">
-                                        {{ producto[4] }}
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                                    <div class="btn-group btn-group-sm" role="group">
-                                        <a href="/movimientos?producto_id={{ producto[0] }}&tipo=Entrada" class="btn btn-outline-success" title="Registrar Entrada">+ Entrada</a>
-                                        <a href="/movimientos?producto_id={{ producto[0] }}&tipo=Salida" class="btn btn-outline-danger" title="Registrar Salida">- Salida</a>
-                                        <a href="/editar/{{ producto[0] }}" class="btn btn-warning">Editar</a>
-                                        <a href="/eliminar/{{ producto[0] }}" class="btn btn-danger" onclick="return confirm('¿Seguro de eliminar este producto?');">Eliminar</a>
-                                    </div>
-                                </td>
-                            </tr>
+
+                                <tr>
+
+                                    <td>
+                                        #{{ producto["id"] }}
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            {{ producto["nombre"] }}
+                                        </strong>
+                                    </td>
+
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            {{ producto["categoria"] or "Sin categoría" }}
+                                        </span>
+                                    </td>
+
+                                    <td>
+                                        ${{ "%.2f"|format(producto["precio"]) }}
+                                    </td>
+
+                                    <td>
+
+                                        {% if producto["existencias"] <= 2 %}
+
+                                            <span class="badge bg-danger">
+                                                {{ producto["existencias"] }}
+                                            </span>
+
+                                        {% elif producto["existencias"] <= 5 %}
+
+                                            <span class="badge bg-warning text-dark">
+                                                {{ producto["existencias"] }}
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="badge bg-success">
+                                                {{ producto["existencias"] }}
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td class="text-center">
+
+                                        <div class="btn-group btn-group-sm">
+
+                                            <a
+                                                href="/editar/{{ producto['id'] }}"
+                                                class="btn btn-warning"
+                                            >
+                                                Editar
+                                            </a>
+
+                                            <a
+                                                href="/eliminar/{{ producto['id'] }}"
+                                                class="btn btn-danger"
+                                                onclick="return confirm('¿Seguro de eliminar este producto?');"
+                                            >
+                                                Eliminar
+                                            </a>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+
                             {% endfor %}
+
                         {% else %}
+
                             <tr>
-                                <td colspan="6" class="text-center text-muted py-4">No hay productos registrados en el inventario.</td>
+
+                                <td
+                                    colspan="6"
+                                    class="text-center text-muted py-4"
+                                >
+                                    No hay productos registrados.
+                                </td>
+
                             </tr>
+
                         {% endif %}
+
                     </tbody>
+
                 </table>
+
             </div>
+
         </div>
 
-        <!-- Tabla de Últimos Movimientos -->
+
+        <!-- ÚLTIMOS MOVIMIENTOS -->
         <div class="table-container mb-4">
+
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0">Últimos Movimientos</h5>
-                <a href="/movimientos" class="btn btn-sm btn-outline-primary">Ver Todos / Nuevo Movimiento</a>
+
+                <h5 class="fw-bold mb-0">
+                    Últimos Movimientos
+                </h5>
+
+                <a
+                    href="/movimientos"
+                    class="btn btn-sm btn-outline-primary"
+                >
+                    Ver Movimientos
+                </a>
+
             </div>
+
+
             <div class="table-responsive">
+
                 <table class="table table-hover align-middle">
+
                     <thead class="table-light">
+
                         <tr>
                             <th>Fecha</th>
                             <th>Producto</th>
@@ -200,33 +342,88 @@ Este archivo actualiza el panel principal agregando:
                             <th>Cantidad</th>
                             <th>Usuario</th>
                         </tr>
+
                     </thead>
+
+
                     <tbody>
+
                         {% if movimientos %}
+
                             {% for mov in movimientos %}
-                            <tr>
-                                <td>{{ mov[0] }}</td>
-                                <td><strong>{{ mov[1] }}</strong></td>
-                                <td>
-                                    <span class="badge {% if mov[2] == 'Entrada' %}bg-success{% else %}bg-danger{% endif %}">
-                                        {{ mov[2] }}
-                                    </span>
-                                </td>
-                                <td>{{ mov[3] }}</td>
-                                <td>{{ mov[4] if mov[4] else 'admin' }}</td>
-                            </tr>
+
+                                <tr>
+
+                                    <td>
+                                        {{ mov["fecha"] }}
+                                    </td>
+
+                                    <td>
+                                        <strong>
+                                            {{ mov["nombre"] or "Producto eliminado" }}
+                                        </strong>
+                                    </td>
+
+                                    <td>
+
+                                        {% if mov["tipo"] == "Entrada" %}
+
+                                            <span class="badge bg-success">
+                                                Entrada
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="badge bg-danger">
+                                                Salida
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                    <td>
+                                        {{ mov["cantidad"] }}
+                                    </td>
+
+                                    <td>
+                                        {{ mov["usuario"] or "admin" }}
+                                    </td>
+
+                                </tr>
+
                             {% endfor %}
+
                         {% else %}
+
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-3">No hay movimientos registrados.</td>
+
+                                <td
+                                    colspan="5"
+                                    class="text-center text-muted py-3"
+                                >
+                                    No hay movimientos registrados.
+                                </td>
+
                             </tr>
+
                         {% endif %}
+
                     </tbody>
+
                 </table>
+
             </div>
+
         </div>
+
     </div>
 
-    <script src="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js)"></script>
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+    ></script>
+
 </body>
+
 </html>
