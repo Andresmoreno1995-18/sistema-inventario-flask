@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Inventarios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .top-bar { background-color: #343a40; color: white; padding: 12px 20px; }
+        .card-metric { background-color: white; border-radius: 6px; padding: 15px; border: 1px solid #dee2e6; }
+        .card-metric h6 { color: #6c757d; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+        .card-metric h3 { font-weight: bold; margin: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar d-flex justify-content-between align-items-center">
+        <h4 class="m-0">Sistema de Gestión de Inventario</h4>
+        <div>
+            <span class="me-3">Hola, <strong>{{ session.get('usuario', 'Usuario') }}</strong></span>
+            <a href="{{ url_for('logout') }}" class="btn btn-danger btn-sm">Cerrar Sesión</a>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-3">
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Tarjetas de Métricas -->
+        <div class="row g-3 mb-3">
+            <div class="col">
+                <div class="card-metric">
+                    <h6>PRODUCTOS TOTALES</h6>
+                    <h3>{{ total_productos or 0 }}</h3>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card-metric">
+                    <h6>UNIDADES TOTALES</h6>
+                    <h3>{{ unidades_totales or 0 }}</h3>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card-metric">
+                    <h6>INVENTARIO DE VALOR</h6>
+                    <h3>${{ "%.2f"|format(valor_inventario or 0.0) }}</h3>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card-metric">
+                    <h6>STOCK BAJO</h6>
+                    <h3 class="text-warning">{{ stock_bajo or 0 }}</h3>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card-metric">
+                    <h6>AGOTADOS</h6>
+                    <h3 class="text-danger">{{ agotados or 0 }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="mb-3 d-flex gap-2">
+            <a href="{{ url_for('agregar_producto') }}" class="btn btn-primary">+ Agregar Producto</a>
+            <a href="{{ url_for('listar_proveedores') }}" class="btn btn-secondary">Gestión Proveedores</a>
+            <a href="{{ url_for('reporte_csv') }}" class="btn btn-secondary">Exportar CSV</a>
+            <a href="{{ url_for('reporte_grafico') }}" target="_blank" class="btn btn-secondary">Ver Gráfico</a>
+        </div>
+
+        <!-- Tabla de Productos -->
+        <div class="card mb-4">
+            <div class="card-header fw-bold bg-white">Listado de Productos</div>
+            <div class="card-body p-0">
+                <table class="table table-striped table-hover m-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Precio</th>
+                            <th>Existencias</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if productos %}
+                            {% for p in productos %}
+                            <tr>
+                                <td>#{{ p.id }}</td>
+                                <td><strong>{{ p.nombre }}</strong></td>
+                                <td><span class="badge bg-secondary">{{ p.categoria }}</span></td>
+                                <td>${{ "%.2f"|format(p.precio) }}</td>
+                                <td>
+                                    {% if p.cantidad == 0 %}
+                                        <span class="badge bg-danger">Agotado (0)</span>
+                                    {% elif p.cantidad <= 5 %}
+                                        <span class="badge bg-warning text-dark">{{ p.cantidad }} (Bajo)</span>
+                                    {% else %}
+                                        <span class="badge bg-success">{{ p.cantidad }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('editar_producto', id=p.id) }}" class="btn btn-warning btn-sm">Editar</a>
+                                    <a href="{{ url_for('eliminar_producto', id=p.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro de eliminar este producto?');">Eliminar</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-3">No hay productos registrados aún. Haga clic en "+ Agregar Producto".</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Últimos Movimientos -->
+        <div class="card">
+            <div class="card-header fw-bold bg-white">Últimos Movimientos</div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-hover m-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Producto</th>
+                            <th>Tipo</th>
+                            <th>Cantidad</th>
+                            <th>Usuario</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if movimientos %}
+                            {% for m in movimientos %}
+                            <tr>
+                                <td>{{ m.fecha }}</td>
+                                <td>{{ m.producto }}</td>
+                                <td>{{ m.tipo }}</td>
+                                <td>{{ m.cantidad }}</td>
+                                <td>{{ m.usuario }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-3">No hay movimientos registrados.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
