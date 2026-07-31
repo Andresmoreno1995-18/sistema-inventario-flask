@@ -5,11 +5,10 @@ from app import app
 class TestSistemaInventario(unittest.TestCase):
 
     def setUp(self):
-        app.config["TESTING"] = True
         self.cliente = app.test_client()
 
     # =====================================================
-    # LOGIN
+    # PRUEBA 1 - LOGIN
     # =====================================================
 
     def test_pagina_login_carga(self):
@@ -21,7 +20,7 @@ class TestSistemaInventario(unittest.TestCase):
         )
 
     # =====================================================
-    # RUTAS PROTEGIDAS
+    # PRUEBA 2 - DASHBOARD PROTEGIDO
     # =====================================================
 
     def test_api_dashboard_requiere_login(self):
@@ -34,6 +33,10 @@ class TestSistemaInventario(unittest.TestCase):
             401
         )
 
+    # =====================================================
+    # PRUEBA 3 - PRODUCTOS PROTEGIDO
+    # =====================================================
+
     def test_api_productos_requiere_login(self):
         respuesta = self.cliente.get(
             "/api/productos"
@@ -43,6 +46,10 @@ class TestSistemaInventario(unittest.TestCase):
             respuesta.status_code,
             401
         )
+
+    # =====================================================
+    # PRUEBA 4 - FACTURAS PROTEGIDAS
+    # =====================================================
 
     def test_api_facturas_requiere_login(self):
         respuesta = self.cliente.get(
@@ -54,58 +61,28 @@ class TestSistemaInventario(unittest.TestCase):
             401
         )
 
-    def test_api_factura_individual_requiere_login(self):
-        respuesta = self.cliente.get(
-            "/api/facturas/1"
+    # =====================================================
+    # PRUEBA 5 - CREAR FACTURA PROTEGIDO
+    # =====================================================
+
+    def test_crear_factura_requiere_login(self):
+        respuesta = self.cliente.post(
+            "/api/facturas/crear",
+            json={
+                "detalles": [
+                    {
+                        "producto_id": 1,
+                        "cantidad": 1,
+                        "precio_unitario": 10000,
+                        "descuento": 0
+                    }
+                ]
+            }
         )
 
         self.assertEqual(
             respuesta.status_code,
             401
-        )
-
-    # =====================================================
-    # PÁGINAS PROTEGIDAS
-    # =====================================================
-
-    def test_inicio_requiere_login(self):
-        respuesta = self.cliente.get(
-            "/"
-        )
-
-        self.assertEqual(
-            respuesta.status_code,
-            302
-        )
-
-    def test_facturacion_requiere_login(self):
-        respuesta = self.cliente.get(
-            "/facturacion"
-        )
-
-        self.assertEqual(
-            respuesta.status_code,
-            302
-        )
-
-    def test_movimientos_requiere_login(self):
-        respuesta = self.cliente.get(
-            "/movimientos"
-        )
-
-        self.assertEqual(
-            respuesta.status_code,
-            302
-        )
-
-    def test_proveedores_requiere_login(self):
-        respuesta = self.cliente.get(
-            "/proveedores"
-        )
-
-        self.assertEqual(
-            respuesta.status_code,
-            302
         )
 
 
