@@ -60,11 +60,6 @@ def get_db():
 
 def password_is_hashed(password):
 
-    """
-    Verifica si una contraseña ya está almacenada
-    utilizando uno de los formatos de hash de Werkzeug.
-    """
-
     if not password:
         return False
 
@@ -75,14 +70,6 @@ def password_is_hashed(password):
 
 
 def migrate_old_passwords(cursor):
-
-    """
-    Convierte automáticamente las contraseñas antiguas
-    almacenadas como texto normal a contraseñas protegidas.
-
-    Esto permite actualizar el sistema sin perder
-    los usuarios existentes.
-    """
 
     cursor.execute("""
         SELECT
@@ -115,6 +102,18 @@ def migrate_old_passwords(cursor):
 
 
 # =========================================================
+# VERIFICAR ADMINISTRADOR
+# =========================================================
+
+def es_admin():
+
+    return (
+        "usuario" in session
+        and session.get("rol") == "admin"
+    )
+
+
+# =========================================================
 # INICIALIZAR BASE DE DATOS
 # =========================================================
 
@@ -137,7 +136,6 @@ def init_db():
         )
     """)
 
-    # Si la tabla ya existía, agrega genero sin borrar usuarios
     cursor.execute("""
         ALTER TABLE usuarios
         ADD COLUMN IF NOT EXISTS genero TEXT NOT NULL DEFAULT 'Hombre'
@@ -196,7 +194,8 @@ def init_db():
     cursor.execute("""
         SELECT
             id,
-            password
+            password,
+            rol
         FROM usuarios
         WHERE usuario = %s
     """, ("admin",))
@@ -224,6 +223,15 @@ def init_db():
             "admin",
             "Hombre"
         ))
+
+    else:
+
+        # Nos aseguramos de que admin siga siendo administrador
+        cursor.execute("""
+            UPDATE usuarios
+            SET rol = 'admin'
+            WHERE usuario = 'admin'
+        """)
 
     # -------------------------
     # MIGRAR CONTRASEÑAS ANTIGUAS
@@ -380,7 +388,6 @@ def login():
         cursor.close()
         conn.close()
 
-        # Verificar contraseña mediante hash
         if user and check_password_hash(
             user["password"],
             password
@@ -419,6 +426,18 @@ def login():
 )
 def registro():
 
+    # Solo administradores pueden crear usuarios
+    if not es_admin():
+
+        flash(
+            "No tienes permisos para crear usuarios.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("index")
+        )
+
     if request.method == "POST":
 
         usuario = request.form.get(
@@ -433,6 +452,11 @@ def registro():
 
         genero = request.form.get(
             "genero",
+            ""
+        ).strip()
+
+        rol = request.form.get(
+            "rol",
             ""
         ).strip()
 
@@ -458,6 +482,20 @@ def registro():
 
             flash(
                 "Debe seleccionar Hombre o Mujer.",
+                "danger"
+            )
+
+            return render_template(
+                "registro.html"
+            )
+
+        if rol not in (
+            "admin",
+            "usuario"
+        ):
+
+            flash(
+                "Debe seleccionar un rol válido.",
                 "danger"
             )
 
@@ -519,7 +557,7 @@ def registro():
         """, (
             usuario,
             password_protegida,
-            "admin",
+            rol,
             genero
         ))
 
@@ -534,7 +572,7 @@ def registro():
         )
 
         return redirect(
-            url_for("login")
+            url_for("index")
         )
 
     return render_template(
