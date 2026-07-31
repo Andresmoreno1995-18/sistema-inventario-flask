@@ -1,330 +1,694 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+```
+<meta charset="UTF-8">
 
-    <title>Gestión de Proveedores</title>
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
+<title>
+    Gestión de Proveedores
+</title>
+
+
+<link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+>
+
+
+<style>
+
+    /* =====================================================
+       FONDO
+    ===================================================== */
+
+    body {
+
+        min-height: 100vh;
+
+        background:
+
+            radial-gradient(
+                circle at 10% 20%,
+                rgba(13, 110, 253, 0.15),
+                transparent 30%
+            ),
+
+            radial-gradient(
+                circle at 90% 10%,
+                rgba(25, 135, 84, 0.12),
+                transparent 30%
+            ),
+
+            linear-gradient(
+                135deg,
+                #eef3f8,
+                #f8fafc,
+                #e9f0f7
+            );
+
+    }
+
+
+    /* =====================================================
+       TARJETAS
+    ===================================================== */
+
+    .main-card {
+
+        border: none;
+
+        border-radius: 16px;
+
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.08);
+
+        overflow: hidden;
+
+    }
+
+
+    .form-control {
+
+        border-radius: 10px;
+
+        min-height: 44px;
+
+    }
+
+
+    .btn {
+
+        border-radius: 10px;
+
+        font-weight: 600;
+
+    }
+
+
+    /* =====================================================
+       TABLA
+    ===================================================== */
+
+    .table-box {
+
+        width: 100%;
+
+        overflow-x: auto;
+
+        overflow-y: auto;
+
+        max-height: 600px;
+
+    }
+
+
+    .resizable-table {
+
+        width: max-content;
+
+        min-width: 100%;
+
+        table-layout: fixed;
+
+        border-collapse: separate;
+
+        border-spacing: 0;
+
+    }
+
+
+    .resizable-table th,
+    .resizable-table td {
+
+        padding: 13px 14px;
+
+        vertical-align: middle;
+
+        white-space: nowrap;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+
+        border-bottom: 1px solid #e9ecef;
+
+    }
+
+
+    .resizable-table thead th {
+
+        position: sticky;
+
+        top: 0;
+
+        z-index: 5;
+
+        background: #f8f9fa;
+
+        font-size: 13px;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.3px;
+
+        color: #374151;
+
+    }
+
+
+    .resizable-table tbody tr:hover {
+
+        background-color: #f8fafc;
+
+    }
+
+
+    /* =====================================================
+       ANCHOS INICIALES
+    ===================================================== */
+
+    .col-id {
+
+        width: 90px;
+
+        min-width: 90px;
+
+    }
+
+
+    .col-nombre {
+
+        width: 280px;
+
+        min-width: 200px;
+
+    }
+
+
+    .col-contacto {
+
+        width: 240px;
+
+        min-width: 180px;
+
+    }
+
+
+    .col-telefono {
+
+        width: 180px;
+
+        min-width: 140px;
+
+    }
+
+
+    /* =====================================================
+       REDIMENSIONAMIENTO
+    ===================================================== */
+
+    .resizable-table th {
+
+        position: sticky;
+
+    }
+
+
+    .resize-handle {
+
+        position: absolute;
+
+        right: 0;
+
+        top: 0;
+
+        width: 7px;
+
+        height: 100%;
+
+        cursor: col-resize;
+
+        user-select: none;
+
+        z-index: 10;
+
+    }
+
+
+    .resize-handle:hover {
+
+        background: rgba(13, 110, 253, 0.35);
+
+    }
+
+
+    .resizing {
+
+        cursor: col-resize !important;
+
+        user-select: none !important;
+
+    }
+
+
+    .table-help {
+
+        font-size: 12px;
+
+        color: #6b7280;
+
+        background: #f8fafc;
+
+        border-top: 1px solid #e5e7eb;
+
+        padding: 9px 14px;
+
+    }
+
+</style>
+```
+
 </head>
-
 
 <body class="bg-light">
 
+<!-- =====================================================
+     NAVBAR
+===================================================== -->
 
-    <!-- BARRA SUPERIOR -->
+<nav class="navbar navbar-dark bg-dark mb-4">
 
-    <nav class="navbar navbar-dark bg-dark mb-4">
+```
+<div class="container-fluid px-4">
 
-        <div class="container-fluid px-4">
 
-            <a
-                class="navbar-brand fw-bold"
-                href="{{ url_for('index') }}"
+    <a
+        class="navbar-brand fw-bold"
+        href="{{ url_for('index') }}"
+    >
+
+        📦 Sistema de Gestión de Inventario
+
+    </a>
+
+
+    <div class="d-flex align-items-center">
+
+        <span class="text-white me-3">
+
+            Usuario:
+
+            <strong>
+
+                {{ session.get('usuario', 'admin') }}
+
+            </strong>
+
+        </span>
+
+
+        <a
+            href="{{ url_for('logout') }}"
+            class="btn btn-danger btn-sm"
+        >
+
+            Cerrar Sesión
+
+        </a>
+
+    </div>
+
+</div>
+```
+
+</nav>
+
+<div class="container-fluid px-4 pb-5">
+
+```
+<!-- ENCABEZADO -->
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+
+        <h2 class="fw-bold mb-1">
+
+            🚚 Gestión de Proveedores
+
+        </h2>
+
+
+        <p class="text-muted mb-0">
+
+            Registro y consulta de proveedores de la empresa.
+
+        </p>
+
+    </div>
+
+
+    <a
+        href="{{ url_for('index') }}"
+        class="btn btn-secondary"
+    >
+
+        ← Volver al Inicio
+
+    </a>
+
+</div>
+
+
+
+<!-- MENSAJES -->
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+
+    {% if messages %}
+
+        {% for category, message in messages %}
+
+            <div
+                class="alert alert-{{ 'danger' if category == 'error' else category }}"
+                role="alert"
             >
-                Sistema de Gestión de Inventario
-            </a>
 
-            <div class="d-flex align-items-center">
-
-                <span class="text-white me-3">
-
-                    Usuario:
-                    <strong>
-                        {{ session.get('usuario', 'admin') }}
-                    </strong>
-
-                </span>
-
-                <a
-                    href="{{ url_for('logout') }}"
-                    class="btn btn-danger btn-sm"
-                >
-                    Cerrar Sesión
-                </a>
+                {{ message }}
 
             </div>
 
-        </div>
+        {% endfor %}
 
-    </nav>
+    {% endif %}
 
-
-    <div class="container">
-
-
-        <!-- ENCABEZADO -->
-
-        <div class="d-flex justify-content-between align-items-center mb-4">
-
-            <h2>
-                Gestión de Proveedores
-            </h2>
-
-            <a
-                href="{{ url_for('index') }}"
-                class="btn btn-secondary"
-            >
-                ← Volver al Inicio
-            </a>
-
-        </div>
+{% endwith %}
 
 
-        <!-- MENSAJES -->
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-
-            {% if messages %}
-
-                {% for category, message in messages %}
-
-                    <div
-                        class="alert alert-{{ 'danger' if category == 'error' else category }}"
-                        role="alert"
-                    >
-                        {{ message }}
-                    </div>
-
-                {% endfor %}
-
-            {% endif %}
-
-        {% endwith %}
+<div class="row g-4">
 
 
-        <div class="row g-4">
+    <!-- =================================================
+         FORMULARIO
+    ================================================== -->
+
+    <div class="col-lg-5">
+
+        <div class="card main-card">
 
 
-            <!-- FORMULARIO -->
+            <div class="card-header bg-primary text-white">
 
-            <div class="col-lg-5">
+                <h5 class="mb-0">
 
-                <div class="card shadow-sm">
+                    ➕ Registrar Proveedor
 
-                    <div class="card-header bg-primary text-white">
+                </h5>
 
-                        <h5 class="mb-0">
-                            Registrar Proveedor
-                        </h5>
-
-                    </div>
+            </div>
 
 
-                    <div class="card-body">
+            <div class="card-body">
 
-                        <form
-                            action="{{ url_for('proveedores') }}"
-                            method="POST"
+
+                <form
+                    action="{{ url_for('proveedores') }}"
+                    method="POST"
+                >
+
+
+                    <div class="mb-3">
+
+                        <label
+                            for="nombre"
+                            class="form-label fw-bold"
                         >
 
+                            Nombre / Razón Social
 
-                            <!-- NOMBRE -->
-
-                            <div class="mb-3">
-
-                                <label
-                                    for="nombre"
-                                    class="form-label"
-                                >
-                                    Nombre / Razón Social
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="nombre"
-                                    name="nombre"
-                                    class="form-control"
-                                    placeholder="Ej: Distribuidora SAS"
-                                    required
-                                >
-
-                            </div>
+                        </label>
 
 
-                            <!-- CONTACTO -->
-
-                            <div class="mb-3">
-
-                                <label
-                                    for="contacto"
-                                    class="form-label"
-                                >
-                                    Persona de Contacto
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="contacto"
-                                    name="contacto"
-                                    class="form-control"
-                                    placeholder="Ej: Andrés Moreno"
-                                >
-
-                            </div>
-
-
-                            <!-- TELÉFONO -->
-
-                            <div class="mb-3">
-
-                                <label
-                                    for="telefono"
-                                    class="form-label"
-                                >
-                                    Teléfono
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="telefono"
-                                    name="telefono"
-                                    class="form-control"
-                                    placeholder="Ej: 3001234567"
-                                >
-
-                            </div>
-
-
-                            <div class="d-flex justify-content-between">
-
-                                <a
-                                    href="{{ url_for('index') }}"
-                                    class="btn btn-secondary"
-                                >
-                                    Cancelar
-                                </a>
-
-                                <button
-                                    type="submit"
-                                    class="btn btn-success"
-                                >
-                                    Guardar Proveedor
-                                </button>
-
-                            </div>
-
-
-                        </form>
+                        <input
+                            type="text"
+                            id="nombre"
+                            name="nombre"
+                            class="form-control"
+                            placeholder="Ej: Distribuidora SAS"
+                            required
+                        >
 
                     </div>
 
-                </div>
+
+
+                    <div class="mb-3">
+
+                        <label
+                            for="contacto"
+                            class="form-label fw-bold"
+                        >
+
+                            Persona de Contacto
+
+                        </label>
+
+
+                        <input
+                            type="text"
+                            id="contacto"
+                            name="contacto"
+                            class="form-control"
+                            placeholder="Ej: Andrés Moreno"
+                        >
+
+                    </div>
+
+
+
+                    <div class="mb-3">
+
+                        <label
+                            for="telefono"
+                            class="form-label fw-bold"
+                        >
+
+                            Teléfono
+
+                        </label>
+
+
+                        <input
+                            type="text"
+                            id="telefono"
+                            name="telefono"
+                            class="form-control"
+                            placeholder="Ej: 3001234567"
+                        >
+
+                    </div>
+
+
+
+                    <div class="d-flex justify-content-between">
+
+                        <a
+                            href="{{ url_for('index') }}"
+                            class="btn btn-secondary"
+                        >
+
+                            Cancelar
+
+                        </a>
+
+
+                        <button
+                            type="submit"
+                            class="btn btn-success"
+                        >
+
+                            💾 Guardar Proveedor
+
+                        </button>
+
+                    </div>
+
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =================================================
+         LISTA
+    ================================================== -->
+
+    <div class="col-lg-7">
+
+        <div class="card main-card">
+
+
+            <div class="card-header bg-dark text-white">
+
+                <h5 class="mb-0">
+
+                    📋 Proveedores Registrados
+
+                </h5>
 
             </div>
 
 
-            <!-- LISTA -->
-
-            <div class="col-lg-7">
-
-                <div class="card shadow-sm">
-
-                    <div class="card-header">
-
-                        <h5 class="mb-0">
-                            Proveedores Registrados
-                        </h5>
-
-                    </div>
+            <div class="table-box">
 
 
-                    <div class="card-body">
-
-                        <div class="table-responsive">
-
-                            <table class="table table-hover align-middle">
-
-                                <thead class="table-light">
-
-                                    <tr>
-
-                                        <th>
-                                            ID
-                                        </th>
-
-                                        <th>
-                                            Nombre
-                                        </th>
-
-                                        <th>
-                                            Contacto
-                                        </th>
-
-                                        <th>
-                                            Teléfono
-                                        </th>
-
-                                    </tr>
-
-                                </thead>
+                <table
+                    class="table table-hover align-middle mb-0 resizable-table"
+                >
 
 
-                                <tbody>
+                    <thead>
 
-                                    {% if proveedores %}
+                        <tr>
 
-                                        {% for proveedor in proveedores %}
+                            <th class="col-id">
 
-                                            <tr>
+                                ID
 
-                                                <td>
-                                                    #{{ proveedor["id"] }}
-                                                </td>
+                                <span class="resize-handle"></span>
 
-                                                <td>
+                            </th>
 
-                                                    <strong>
-                                                        {{ proveedor["nombre"] }}
-                                                    </strong>
 
-                                                </td>
+                            <th class="col-nombre">
 
-                                                <td>
-                                                    {{ proveedor["contacto"] or "-" }}
-                                                </td>
+                                Nombre
 
-                                                <td>
-                                                    {{ proveedor["telefono"] or "-" }}
-                                                </td>
+                                <span class="resize-handle"></span>
 
-                                            </tr>
+                            </th>
 
-                                        {% endfor %}
 
-                                    {% else %}
+                            <th class="col-contacto">
 
-                                        <tr>
+                                Contacto
 
-                                            <td
-                                                colspan="4"
-                                                class="text-center text-muted py-4"
-                                            >
-                                                No hay proveedores registrados.
-                                            </td>
+                                <span class="resize-handle"></span>
 
-                                        </tr>
+                            </th>
 
-                                    {% endif %}
 
-                                </tbody>
+                            <th class="col-telefono">
 
-                            </table>
+                                Teléfono
 
-                        </div>
+                                <span class="resize-handle"></span>
 
-                    </div>
+                            </th>
 
-                </div>
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+
+                        {% if proveedores %}
+
+
+                            {% for proveedor in proveedores %}
+
+
+                                <tr>
+
+
+                                    <td>
+
+                                        #{{ proveedor["id"] }}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <strong>
+
+                                            {{ proveedor["nombre"] }}
+
+                                        </strong>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {{ proveedor["contacto"] or "-" }}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {{ proveedor["telefono"] or "-" }}
+
+                                    </td>
+
+
+                                </tr>
+
+
+                            {% endfor %}
+
+
+                        {% else %}
+
+
+                            <tr>
+
+                                <td
+                                    colspan="4"
+                                    class="text-center text-muted py-5"
+                                >
+
+                                    📭 No hay proveedores registrados.
+
+                                </td>
+
+                            </tr>
+
+
+                        {% endif %}
+
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <div class="table-help">
+
+                ↔️ Arrastra el borde de una columna para
+                aumentar o reducir su tamaño.
+
+                📌 El encabezado permanece visible al desplazarte.
 
             </div>
 
@@ -334,9 +698,103 @@
     </div>
 
 
-    <script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-    ></script>
+</div>
+```
+
+</div>
+
+<script>
+
+    /* =====================================================
+       REDIMENSIONAR COLUMNAS
+    ===================================================== */
+
+    document.querySelectorAll(".resizable-table").forEach(function(table) {
+
+        const headers =
+            table.querySelectorAll("thead th");
+
+        headers.forEach(function(header) {
+
+            const handle =
+                header.querySelector(".resize-handle");
+
+            if (!handle) return;
+
+
+            handle.addEventListener("mousedown", function(event) {
+
+                event.preventDefault();
+
+                const startX =
+                    event.pageX;
+
+                const startWidth =
+                    header.offsetWidth;
+
+                document.body.classList.add("resizing");
+
+
+                function resize(event) {
+
+                    const newWidth =
+                        startWidth +
+                        (event.pageX - startX);
+
+                    const minimumWidth = 90;
+
+
+                    if (newWidth >= minimumWidth) {
+
+                        header.style.width =
+                            newWidth + "px";
+
+                        header.style.minWidth =
+                            newWidth + "px";
+
+                    }
+
+                }
+
+
+                function stopResize() {
+
+                    document.body.classList.remove("resizing");
+
+                    document.removeEventListener(
+                        "mousemove",
+                        resize
+                    );
+
+                    document.removeEventListener(
+                        "mouseup",
+                        stopResize
+                    );
+
+                }
+
+
+                document.addEventListener(
+                    "mousemove",
+                    resize
+                );
+
+                document.addEventListener(
+                    "mouseup",
+                    stopResize
+                );
+
+            });
+
+        });
+
+    });
+
+</script>
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+></script>
 
 </body>
 
