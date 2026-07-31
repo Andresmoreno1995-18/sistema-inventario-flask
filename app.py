@@ -102,8 +102,13 @@ def migrate_old_passwords(cursor):
 
 
 # =========================================================
-# VERIFICAR ADMINISTRADOR
+# FUNCIONES DE PERMISOS
 # =========================================================
+
+def usuario_logueado():
+
+    return "usuario" in session
+
 
 def es_admin():
 
@@ -111,6 +116,43 @@ def es_admin():
         "usuario" in session
         and session.get("rol") == "admin"
     )
+
+
+def requiere_login():
+
+    if not usuario_logueado():
+
+        flash(
+            "Debe iniciar sesión para acceder.",
+            "danger"
+        )
+
+        return False
+
+    return True
+
+
+def requiere_admin():
+
+    if not usuario_logueado():
+
+        flash(
+            "Debe iniciar sesión para acceder.",
+            "danger"
+        )
+
+        return False
+
+    if session.get("rol") != "admin":
+
+        flash(
+            "No tienes permisos de administrador para realizar esta acción.",
+            "danger"
+        )
+
+        return False
+
+    return True
 
 
 # =========================================================
@@ -226,7 +268,6 @@ def init_db():
 
     else:
 
-        # Nos aseguramos de que admin siga siendo administrador
         cursor.execute("""
             UPDATE usuarios
             SET rol = 'admin'
@@ -256,7 +297,7 @@ init_db()
 @app.route("/")
 def index():
 
-    if "usuario" not in session:
+    if not requiere_login():
         return redirect(url_for("login"))
 
     conn = get_db()
@@ -426,13 +467,7 @@ def login():
 )
 def registro():
 
-    # Solo administradores pueden crear usuarios
-    if not es_admin():
-
-        flash(
-            "No tienes permisos para crear usuarios.",
-            "danger"
-        )
+    if not requiere_admin():
 
         return redirect(
             url_for("index")
@@ -459,10 +494,6 @@ def registro():
             "rol",
             ""
         ).strip()
-
-        # -------------------------
-        # VALIDACIONES
-        # -------------------------
 
         if not usuario or not password:
 
@@ -507,10 +538,6 @@ def registro():
 
         cursor = conn.cursor()
 
-        # -------------------------
-        # VERIFICAR USUARIO
-        # -------------------------
-
         cursor.execute("""
             SELECT id
             FROM usuarios
@@ -533,17 +560,9 @@ def registro():
                 "registro.html"
             )
 
-        # -------------------------
-        # PROTEGER CONTRASEÑA
-        # -------------------------
-
         password_protegida = generate_password_hash(
             password
         )
-
-        # -------------------------
-        # CREAR USUARIO
-        # -------------------------
 
         cursor.execute("""
             INSERT INTO usuarios
@@ -600,7 +619,7 @@ def logout():
 
 
 # =========================================================
-# AGREGAR PRODUCTO
+# AGREGAR PRODUCTO - SOLO ADMIN
 # =========================================================
 
 @app.route(
@@ -609,10 +628,8 @@ def logout():
 )
 def agregar():
 
-    if "usuario" not in session:
-        return redirect(
-            url_for("login")
-        )
+    if not requiere_admin():
+        return redirect(url_for("index"))
 
     if request.method == "POST":
 
@@ -693,7 +710,7 @@ def agregar():
 
 
 # =========================================================
-# EDITAR PRODUCTO
+# EDITAR PRODUCTO - SOLO ADMIN
 # =========================================================
 
 @app.route(
@@ -702,10 +719,8 @@ def agregar():
 )
 def editar(id):
 
-    if "usuario" not in session:
-        return redirect(
-            url_for("login")
-        )
+    if not requiere_admin():
+        return redirect(url_for("index"))
 
     conn = get_db()
 
@@ -817,7 +832,7 @@ def editar(id):
 
 
 # =========================================================
-# ELIMINAR PRODUCTO
+# ELIMINAR PRODUCTO - SOLO ADMIN
 # =========================================================
 
 @app.route(
@@ -825,10 +840,8 @@ def editar(id):
 )
 def eliminar(id):
 
-    if "usuario" not in session:
-        return redirect(
-            url_for("login")
-        )
+    if not requiere_admin():
+        return redirect(url_for("index"))
 
     conn = get_db()
 
@@ -866,7 +879,7 @@ def eliminar(id):
 
 
 # =========================================================
-# MOVIMIENTOS
+# MOVIMIENTOS - ADMIN Y USUARIO
 # =========================================================
 
 @app.route(
@@ -875,10 +888,8 @@ def eliminar(id):
 )
 def movimientos():
 
-    if "usuario" not in session:
-        return redirect(
-            url_for("login")
-        )
+    if not requiere_login():
+        return redirect(url_for("login"))
 
     conn = get_db()
 
@@ -1066,6 +1077,8 @@ def movimientos():
 
 # =========================================================
 # PROVEEDORES
+# ADMIN = CONSULTAR + AGREGAR
+# USUARIO = SOLO CONSULTAR
 # =========================================================
 
 @app.route(
@@ -1074,10 +1087,8 @@ def movimientos():
 )
 def proveedores():
 
-    if "usuario" not in session:
-        return redirect(
-            url_for("login")
-        )
+    if not requiere_login():
+        return redirect(url_for("login"))
 
     conn = get_db()
 
@@ -1086,6 +1097,20 @@ def proveedores():
     )
 
     if request.method == "POST":
+
+        if not es_admin():
+
+            cursor.close()
+            conn.close()
+
+            flash(
+                "No tienes permisos para agregar proveedores.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("proveedores")
+            )
 
         nombre = request.form.get(
             "nombre",
@@ -1141,16 +1166,14 @@ def proveedores():
 
 
 # =========================================================
-# EXPORTAR INVENTARIO
+# EXPORTAR INVENTARIO - SOLO ADMIN
 # =========================================================
 
 @app.route("/exportar")
 def exportar():
 
-    if "usuario" not in session:
-        return redirect(
-            url_for("login")
-        )
+    if not requiere_admin():
+        return redirect(url_for("index"))
 
     conn = get_db()
 
@@ -1186,16 +1209,14 @@ def exportar():
 
 
 # =========================================================
-# GRÁFICO
+# GRÁFICO - ADMIN Y USUARIO
 # =========================================================
 
 @app.route("/grafico")
 def grafico():
 
-    if "usuario" not in session:
-        return redirect(
-            url_for("login")
-        )
+    if not requiere_login():
+        return redirect(url_for("login"))
 
     conn = get_db()
 
