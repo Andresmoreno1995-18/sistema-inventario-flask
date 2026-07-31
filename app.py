@@ -1,4 +1,3 @@
-```python
 import os
 import pandas as pd
 import matplotlib
@@ -1770,4 +1769,3 @@ if __name__ == "__main__":
         port=port,
         debug=False
     )
-```
