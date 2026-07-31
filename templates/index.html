@@ -1,750 +1,710 @@
 <!DOCTYPE html>
-
 <html lang="es">
 
 <head>
 
-<meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>
-    Sistema de Gestión de Inventario
-</title>
-
-
-<link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
->
-
-
-<style>
-
-    body {
-
-        margin: 0;
-
-        min-height: 100vh;
-
-        font-family:
-            Arial,
-            Helvetica,
-            sans-serif;
-
-        background:
-
-            radial-gradient(
-                circle at 10% 20%,
-                rgba(13, 110, 253, 0.15),
-                transparent 30%
-            ),
-
-            radial-gradient(
-                circle at 90% 10%,
-                rgba(25, 135, 84, 0.12),
-                transparent 30%
-            ),
-
-            linear-gradient(
-                135deg,
-                #eef3f8 0%,
-                #f8fafc 50%,
-                #e9f0f7 100%
-            );
-
-        background-attachment: fixed;
-
-    }
-
-
-    .main-navbar {
-
-        background:
-
-            linear-gradient(
-                135deg,
-                #111827,
-                #1f2937,
-                #263548
-            );
-
-        box-shadow:
-            0 4px 18px rgba(0, 0, 0, 0.18);
-
-    }
-
-
-    .navbar-brand {
-
-        letter-spacing:
-            0.3px;
-
-    }
-
-
-    .user-profile {
-
-        display:
-            flex;
-
-        align-items:
-            center;
-
-        gap:
-            10px;
-
-    }
-
-
-    .user-icon {
-
-        width:
-            42px;
-
-        height:
-            42px;
-
-        display:
-            flex;
-
-        align-items:
-            center;
-
-        justify-content:
-            center;
-
-        border-radius:
-            50%;
-
-        background:
-            rgba(255, 255, 255, 0.12);
-
-        font-size:
-            22px;
-
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.2);
-
-    }
-
-
-    .user-name {
-
-        color:
-            white;
-
-        font-size:
-            14px;
-
-    }
-
-
-    .main-container {
-
-        padding-top:
-            10px;
-
-        padding-bottom:
-            40px;
-
-    }
-
-
-    .card-summary {
-
-        border:
-            none;
-
-        border-radius:
-            16px;
-
-        background:
-            rgba(255, 255, 255, 0.92);
-
-        box-shadow:
-            0 8px 24px
-            rgba(15, 23, 42, 0.08);
-
-        transition:
-            transform 0.2s ease,
-            box-shadow 0.2s ease;
-
-    }
-
-
-    .card-summary:hover {
-
-        transform:
-            translateY(-4px);
-
-        box-shadow:
-            0 12px 28px
-            rgba(15, 23, 42, 0.13);
-
-    }
-
-
-    .summary-number {
-
-        font-size:
-            28px;
-
-        font-weight:
-            700;
-
-    }
-
-
-    .main-buttons .btn {
-
-        border-radius:
-            10px;
-
-        padding:
-            9px 15px;
-
-        font-weight:
-            600;
-
-        transition:
-            transform 0.2s ease,
-            box-shadow 0.2s ease;
-
-    }
-
-
-    .main-buttons .btn:hover {
-
-        transform:
-            translateY(-2px);
-
-        box-shadow:
-            0 5px 12px
-            rgba(0, 0, 0, 0.12);
-
-    }
-
-
-    .search-container {
-
-        background:
-            rgba(255, 255, 255, 0.95);
-
-        border-radius:
-            16px;
-
-        padding:
-            20px;
-
-        box-shadow:
-            0 8px 24px
-            rgba(15, 23, 42, 0.08);
-
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.7);
-
-    }
-
-
-    .search-container label {
-
-        font-size:
-            13px;
-
-        font-weight:
-            700;
-
-        color:
-            #374151;
-
-    }
-
-
-    .search-input {
-
-        border-radius:
-            10px;
-
-        min-height:
-            44px;
-
-    }
-
-
-    .filter-buttons .btn {
-
-        border-radius:
-            10px;
-
-        font-weight:
-            600;
-
-    }
-
-
-    .result-count {
-
-        font-size:
-            13px;
-
-        color:
-            #6b7280;
-
-    }
-
-
-    .table-container {
-
-        background:
-            rgba(255, 255, 255, 0.97);
-
-        border-radius:
-            16px;
-
-        padding:
-            22px;
-
-        box-shadow:
-            0 8px 24px
-            rgba(15, 23, 42, 0.08);
-
-        border:
-            1px solid
-            rgba(255, 255, 255, 0.7);
-
-        overflow:
-            hidden;
-
-    }
-
-
-    .table-container h5 {
-
-        color:
-            #1f2937;
-
-    }
-
-
-    .table-scroll {
-
-        width:
-            100%;
-
-        overflow-x:
-            auto;
-
-        overflow-y:
-            hidden;
-
-        border:
-            1px solid
-            #dee2e6;
-
-        border-radius:
-            12px;
-
-        background:
-            white;
-
-    }
-
-
-    .structured-table {
-
-        margin:
-            0;
-
-        table-layout:
-            fixed;
-
-        width:
-            100%;
-
-        min-width:
-            850px;
-
-        border-collapse:
-            separate;
-
-        border-spacing:
-            0;
-
-    }
-
-
-    .structured-table thead th {
-
-        position:
-            relative;
-
-        background:
-            #f1f5f9;
-
-        color:
-            #1f2937;
-
-        font-size:
-            13px;
-
-        font-weight:
-            700;
-
-        text-transform:
-            uppercase;
-
-        letter-spacing:
-            0.3px;
-
-        white-space:
-            nowrap;
-
-        border-bottom:
-            2px solid
-            #dbe2ea;
-
-        padding:
-            13px 14px;
-
-        vertical-align:
-            middle;
-
-    }
-
-
-    .structured-table tbody td {
-
-        padding:
-            13px 14px;
-
-        vertical-align:
-            middle;
-
-        border-bottom:
-            1px solid
-            #edf0f3;
-
-        word-wrap:
-            break-word;
-
-        overflow-wrap:
-            break-word;
-
-    }
-
-
-    .structured-table tbody tr:last-child td {
-
-        border-bottom:
-            none;
-
-    }
-
-
-    .structured-table tbody tr:hover {
-
-        background:
-            #f8fafc;
-
-    }
-
-
-    .productos-table th:nth-child(1),
-    .productos-table td:nth-child(1) {
-
-        width:
-            70px;
-
-    }
-
-
-    .productos-table th:nth-child(2),
-    .productos-table td:nth-child(2) {
-
-        width:
-            25%;
-
-    }
-
-
-    .productos-table th:nth-child(3),
-    .productos-table td:nth-child(3) {
-
-        width:
-            18%;
-
-    }
-
-
-    .productos-table th:nth-child(4),
-    .productos-table td:nth-child(4) {
-
-        width:
-            130px;
-
-    }
-
-
-    .productos-table th:nth-child(5),
-    .productos-table td:nth-child(5) {
-
-        width:
-            150px;
-
-    }
-
-
-    .productos-table th:nth-child(6),
-    .productos-table td:nth-child(6) {
-
-        width:
-            190px;
-
-    }
-
-
-    .movimientos-table th:nth-child(1),
-    .movimientos-table td:nth-child(1) {
-
-        width:
-            180px;
-
-    }
-
-
-    .movimientos-table th:nth-child(2),
-    .movimientos-table td:nth-child(2) {
-
-        width:
-            250px;
-
-    }
-
-
-    .movimientos-table th:nth-child(3),
-    .movimientos-table td:nth-child(3) {
-
-        width:
-            130px;
-
-    }
-
-
-    .movimientos-table th:nth-child(4),
-    .movimientos-table td:nth-child(4) {
-
-        width:
-            120px;
-
-    }
-
-
-    .movimientos-table th:nth-child(5),
-    .movimientos-table td:nth-child(5) {
-
-        width:
-            170px;
-
-    }
-
-
-    .resize-handle {
-
-        position:
-            absolute;
-
-        top:
-            0;
-
-        right:
-            0;
-
-        width:
-            7px;
-
-        height:
-            100%;
-
-        cursor:
-            col-resize;
-
-        user-select:
-            none;
-
-        z-index:
-            5;
-
-    }
-
-
-    .resize-handle:hover {
-
-        background:
-            rgba(13, 110, 253, 0.25);
-
-    }
-
-
-    .resizing {
-
-        cursor:
-            col-resize !important;
-
-        user-select:
-            none !important;
-
-    }
-
-
-    .badge {
-
-        font-size:
-            12px;
-
-        padding:
-            6px 9px;
-
-    }
-
-
-    .actions-cell {
-
-        white-space:
-            nowrap;
-
-        text-align:
-            center;
-
-    }
-
-
-    .actions-cell .btn {
-
-        font-size:
-            12px;
-
-        font-weight:
-            600;
-
-    }
-
-
-    .dashboard-title {
-
-        color:
-            #1f2937;
-
-        font-weight:
-            700;
-
-    }
-
-
-    .dashboard-subtitle {
-
-        color:
-            #6b7280;
-
-        font-size:
-            14px;
-
-    }
-
-
-    .alert {
-
-        border-radius:
-            12px;
-
-        border:
-            none;
-
-    }
-
-
-    @media (max-width: 768px) {
-
-        .navbar-brand {
-
-            font-size:
-                15px;
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Sistema de Gestión de Inventario
+    </title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <style>
+
+        /* =====================================================
+           FONDO PRINCIPAL
+        ===================================================== */
+
+        body {
+
+            margin: 0;
+
+            min-height: 100vh;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background:
+                radial-gradient(
+                    circle at 10% 20%,
+                    rgba(13, 110, 253, 0.15),
+                    transparent 30%
+                ),
+
+                radial-gradient(
+                    circle at 90% 10%,
+                    rgba(25, 135, 84, 0.12),
+                    transparent 30%
+                ),
+
+                linear-gradient(
+                    135deg,
+                    #eef3f8 0%,
+                    #f8fafc 50%,
+                    #e9f0f7 100%
+                );
+
+            background-attachment: fixed;
 
         }
 
 
-        .user-name {
+        /* =====================================================
+           NAVBAR
+        ===================================================== */
 
-            display:
-                none;
+        .main-navbar {
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #111827,
+                    #1f2937,
+                    #263548
+                );
+
+            box-shadow:
+                0 4px 18px
+                rgba(0, 0, 0, 0.18);
+
+        }
+
+
+        .navbar-brand {
+
+            letter-spacing: 0.3px;
+
+        }
+
+
+        /* =====================================================
+           PERFIL
+        ===================================================== */
+
+        .user-profile {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 10px;
 
         }
 
 
         .user-icon {
 
-            width:
-                38px;
+            width: 42px;
 
-            height:
-                38px;
+            height: 42px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            border-radius: 50%;
+
+            background:
+                rgba(255, 255, 255, 0.12);
+
+            font-size: 22px;
+
+            border:
+                1px solid
+                rgba(255, 255, 255, 0.2);
 
         }
 
 
-        .table-container {
+        .user-name {
 
-            padding:
-                15px;
+            color: white;
+
+            font-size: 14px;
 
         }
 
+
+        /* =====================================================
+           CONTENEDOR
+        ===================================================== */
+
+        .main-container {
+
+            padding-top: 10px;
+
+            padding-bottom: 40px;
+
+        }
+
+
+        /* =====================================================
+           TARJETAS
+        ===================================================== */
+
+        .card-summary {
+
+            border: none;
+
+            border-radius: 16px;
+
+            background:
+                rgba(255, 255, 255, 0.92);
+
+            box-shadow:
+                0 8px 24px
+                rgba(15, 23, 42, 0.08);
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+
+        }
+
+
+        .card-summary:hover {
+
+            transform: translateY(-4px);
+
+            box-shadow:
+                0 12px 28px
+                rgba(15, 23, 42, 0.13);
+
+        }
+
+
+        .summary-number {
+
+            font-size: 28px;
+
+            font-weight: 700;
+
+        }
+
+
+        /* =====================================================
+           BOTONES
+        ===================================================== */
+
+        .main-buttons .btn {
+
+            border-radius: 10px;
+
+            padding: 9px 15px;
+
+            font-weight: 600;
+
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+
+        }
+
+
+        .main-buttons .btn:hover {
+
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 5px 12px
+                rgba(0, 0, 0, 0.12);
+
+        }
+
+
+        /* =====================================================
+           BUSCADOR
+        ===================================================== */
 
         .search-container {
 
-            padding:
-                15px;
+            background:
+                rgba(255, 255, 255, 0.95);
+
+            border-radius: 16px;
+
+            padding: 20px;
+
+            box-shadow:
+                0 8px 24px
+                rgba(15, 23, 42, 0.08);
+
+            border:
+                1px solid
+                rgba(255, 255, 255, 0.7);
 
         }
 
 
-        .filter-buttons {
+        .search-container label {
 
-            display:
-                grid;
+            font-size: 13px;
 
-            grid-template-columns:
-                1fr 1fr;
+            font-weight: 700;
 
-            gap:
-                8px;
+            color: #374151;
+
+        }
+
+
+        .search-input {
+
+            border-radius: 10px;
+
+            min-height: 44px;
 
         }
 
 
         .filter-buttons .btn {
 
-            width:
-                100%;
+            border-radius: 10px;
+
+            font-weight: 600;
 
         }
 
+
+        .result-count {
+
+            font-size: 13px;
+
+            color: #6b7280;
+
+        }
+
+
+        /* =====================================================
+           CONTENEDOR DE TABLAS
+        ===================================================== */
+
+        .table-container {
+
+            background:
+                rgba(255, 255, 255, 0.97);
+
+            border-radius: 16px;
+
+            padding: 22px;
+
+            box-shadow:
+                0 8px 24px
+                rgba(15, 23, 42, 0.08);
+
+            border:
+                1px solid
+                rgba(255, 255, 255, 0.7);
+
+            overflow: hidden;
+
+        }
+
+
+        .table-container h5 {
+
+            color: #1f2937;
+
+        }
+
+
+        /* =====================================================
+           CONTENEDOR HORIZONTAL
+        ===================================================== */
+
+        .table-scroll {
+
+            width: 100%;
+
+            overflow-x: auto;
+
+            overflow-y: hidden;
+
+            border:
+                1px solid #9ca3af;
+
+            border-radius: 10px;
+
+            background: white;
+
+        }
+
+
+        /* =====================================================
+           TABLAS
+        ===================================================== */
 
         .structured-table {
 
-            min-width:
-                850px;
+            margin: 0;
+
+            table-layout: fixed;
+
+            width: 100%;
+
+            min-width: 850px;
+
+            border-collapse: collapse;
+
+            border-spacing: 0;
 
         }
 
-    }
 
-</style>
+        /* =====================================================
+           ENCABEZADOS
+        ===================================================== */
+
+        .structured-table thead th {
+
+            position: relative;
+
+            background: #e9eef5;
+
+            color: #1f2937;
+
+            font-size: 13px;
+
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.3px;
+
+            white-space: nowrap;
+
+            border:
+                1px solid #aeb7c2;
+
+            padding: 13px 14px;
+
+            vertical-align: middle;
+
+        }
+
+
+        /* =====================================================
+           CELDAS
+        ===================================================== */
+
+        .structured-table tbody td {
+
+            padding: 13px 14px;
+
+            vertical-align: middle;
+
+            border:
+                1px solid #d1d5db;
+
+            word-wrap: break-word;
+
+            overflow-wrap: break-word;
+
+            background: #ffffff;
+
+        }
+
+
+        /* =====================================================
+           FILAS
+        ===================================================== */
+
+        .structured-table tbody tr:hover td {
+
+            background: #f1f5f9;
+
+        }
+
+
+        /* =====================================================
+           ANCHOS PRODUCTOS
+        ===================================================== */
+
+        .productos-table th:nth-child(1),
+        .productos-table td:nth-child(1) {
+
+            width: 80px;
+
+        }
+
+
+        .productos-table th:nth-child(2),
+        .productos-table td:nth-child(2) {
+
+            width: 25%;
+
+        }
+
+
+        .productos-table th:nth-child(3),
+        .productos-table td:nth-child(3) {
+
+            width: 18%;
+
+        }
+
+
+        .productos-table th:nth-child(4),
+        .productos-table td:nth-child(4) {
+
+            width: 130px;
+
+        }
+
+
+        .productos-table th:nth-child(5),
+        .productos-table td:nth-child(5) {
+
+            width: 150px;
+
+        }
+
+
+        .productos-table th:nth-child(6),
+        .productos-table td:nth-child(6) {
+
+            width: 190px;
+
+        }
+
+
+        /* =====================================================
+           ANCHOS MOVIMIENTOS
+        ===================================================== */
+
+        .movimientos-table th:nth-child(1),
+        .movimientos-table td:nth-child(1) {
+
+            width: 180px;
+
+        }
+
+
+        .movimientos-table th:nth-child(2),
+        .movimientos-table td:nth-child(2) {
+
+            width: 250px;
+
+        }
+
+
+        .movimientos-table th:nth-child(3),
+        .movimientos-table td:nth-child(3) {
+
+            width: 130px;
+
+        }
+
+
+        .movimientos-table th:nth-child(4),
+        .movimientos-table td:nth-child(4) {
+
+            width: 120px;
+
+        }
+
+
+        .movimientos-table th:nth-child(5),
+        .movimientos-table td:nth-child(5) {
+
+            width: 170px;
+
+        }
+
+
+        /* =====================================================
+           REDIMENSIONAMIENTO
+        ===================================================== */
+
+        .resize-handle {
+
+            position: absolute;
+
+            top: 0;
+
+            right: 0;
+
+            width: 8px;
+
+            height: 100%;
+
+            cursor: col-resize;
+
+            user-select: none;
+
+        }
+
+
+        .resize-handle:hover {
+
+            background:
+                rgba(13, 110, 253, 0.30);
+
+        }
+
+
+        .resizing {
+
+            cursor: col-resize !important;
+
+            user-select: none !important;
+
+        }
+
+
+        /* =====================================================
+           BADGES
+        ===================================================== */
+
+        .badge {
+
+            font-size: 12px;
+
+            padding: 6px 9px;
+
+        }
+
+
+        /* =====================================================
+           ACCIONES
+        ===================================================== */
+
+        .actions-cell {
+
+            white-space: nowrap;
+
+            text-align: center;
+
+        }
+
+
+        .actions-cell .btn {
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+        }
+
+
+        /* =====================================================
+           TITULOS
+        ===================================================== */
+
+        .dashboard-title {
+
+            color: #1f2937;
+
+            font-weight: 700;
+
+        }
+
+
+        .dashboard-subtitle {
+
+            color: #6b7280;
+
+            font-size: 14px;
+
+        }
+
+
+        /* =====================================================
+           ALERTAS
+        ===================================================== */
+
+        .alert {
+
+            border-radius: 12px;
+
+            border: none;
+
+        }
+
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+
+        @media (max-width: 768px) {
+
+            .navbar-brand {
+
+                font-size: 15px;
+
+            }
+
+
+            .user-name {
+
+                display: none;
+
+            }
+
+
+            .user-icon {
+
+                width: 38px;
+
+                height: 38px;
+
+            }
+
+
+            .table-container {
+
+                padding: 15px;
+
+            }
+
+
+            .search-container {
+
+                padding: 15px;
+
+            }
+
+
+            .filter-buttons {
+
+                display: grid;
+
+                grid-template-columns: 1fr 1fr;
+
+                gap: 8px;
+
+            }
+
+
+            .filter-buttons .btn {
+
+                width: 100%;
+
+            }
+
+
+            .structured-table {
+
+                min-width: 850px;
+
+            }
+
+        }
+
+    </style>
 
 </head>
 
@@ -760,7 +720,6 @@
 
     <div class="container-fluid px-4">
 
-
         <a
             class="navbar-brand fw-bold"
             href="/"
@@ -772,7 +731,6 @@
 
 
         <div class="user-profile">
-
 
             <div class="user-icon">
 
@@ -796,7 +754,6 @@
                 <strong>
                     {{ session.get('usuario', 'admin') }}
                 </strong>
-
 
                 <span class="ms-1">
 
@@ -893,12 +850,10 @@
 
     <div class="search-container mb-4">
 
-
         <form
             method="GET"
             action="/"
         >
-
 
             <div class="row g-3 align-items-end">
 
@@ -925,6 +880,7 @@
                     >
 
                 </div>
+
 
 
                 <div class="col-lg-4">
@@ -997,6 +953,7 @@
                 </div>
 
 
+
                 <div class="col-lg-2 d-grid">
 
                     <button
@@ -1014,7 +971,7 @@
 
 
 
-            <!-- FILTROS RÁPIDOS -->
+            <!-- FILTROS -->
 
             <div class="mt-3 filter-buttons d-flex flex-wrap gap-2">
 
@@ -1122,7 +1079,6 @@
 
             </div>
 
-
         </form>
 
     </div>
@@ -1146,7 +1102,6 @@
 
                 </small>
 
-
                 <div class="summary-number mt-1">
 
                     {{ total_productos }}
@@ -1167,7 +1122,6 @@
                     UNIDADES TOTALES
 
                 </small>
-
 
                 <div class="summary-number mt-1">
 
@@ -1190,7 +1144,6 @@
 
                 </small>
 
-
                 <div class="summary-number mt-1">
 
                     ${{ "%.2f"|format(valor_inventario) }}
@@ -1211,7 +1164,6 @@
                     STOCK BAJO
 
                 </small>
-
 
                 <div class="summary-number mt-1 text-warning">
 
@@ -1234,7 +1186,6 @@
 
                 </small>
 
-
                 <div class="summary-number mt-1 text-danger">
 
                     {{ agotados }}
@@ -1244,7 +1195,6 @@
             </div>
 
         </div>
-
 
     </div>
 
@@ -1302,10 +1252,6 @@
 
             </a>
 
-        {% endif %}
-
-
-        {% if session.get('rol') == 'admin' %}
 
             <a
                 href="/exportar"
@@ -1328,13 +1274,12 @@
 
         </a>
 
-
     </div>
 
 
 
     <!-- =================================================
-         PRODUCTOS
+         TABLA DE PRODUCTOS
     ================================================= -->
 
     <div class="table-container mb-4">
@@ -1364,50 +1309,73 @@
         </div>
 
 
+
         <div class="table-scroll">
 
 
             <table
-                class="table table-hover align-middle structured-table productos-table"
+                class="table structured-table productos-table"
                 id="productosTable"
             >
 
 
-                <thead class="table-light">
+                <thead>
 
                     <tr>
 
                         <th>
+
                             ID
+
                             <span class="resize-handle"></span>
+
                         </th>
 
+
                         <th>
+
                             Nombre
+
                             <span class="resize-handle"></span>
+
                         </th>
 
+
                         <th>
+
                             Categoría
+
                             <span class="resize-handle"></span>
+
                         </th>
 
+
                         <th>
+
                             Precio
+
                             <span class="resize-handle"></span>
+
                         </th>
 
+
                         <th>
+
                             Existencias
+
                             <span class="resize-handle"></span>
+
                         </th>
 
 
                         {% if session.get('rol') == 'admin' %}
 
                             <th class="text-center">
+
                                 Acciones
+
                                 <span class="resize-handle"></span>
+
                             </th>
 
                         {% endif %}
@@ -1417,6 +1385,7 @@
                 </thead>
 
 
+
                 <tbody>
 
 
@@ -1424,7 +1393,6 @@
 
 
                         {% for producto in productos %}
-
 
                             <tr>
 
@@ -1513,7 +1481,6 @@
 
                                     {% endif %}
 
-
                                 </td>
 
 
@@ -1521,9 +1488,7 @@
 
                                     <td class="actions-cell">
 
-
                                         <div class="btn-group btn-group-sm">
-
 
                                             <a
                                                 href="/editar/{{ producto['id'] }}"
@@ -1545,9 +1510,7 @@
 
                                             </a>
 
-
                                         </div>
-
 
                                     </td>
 
@@ -1555,7 +1518,6 @@
 
 
                             </tr>
-
 
                         {% endfor %}
 
@@ -1586,8 +1548,8 @@
 
                                 <div class="mt-1">
 
-                                    Prueba con otro nombre, categoría
-                                    o filtro de stock.
+                                    Prueba con otro nombre,
+                                    categoría o filtro de stock.
 
                                 </div>
 
@@ -1605,25 +1567,22 @@
 
                         </tr>
 
-
                     {% endif %}
 
 
                 </tbody>
 
-
             </table>
-
 
         </div>
 
 
         <div class="small text-muted mt-2">
 
-            ↔️ Puedes arrastrar el borde de cada encabezado para ajustar el ancho de la columna.
+            ↔️ Arrastra el borde de cada encabezado para ajustar
+            el ancho de la columna.
 
         </div>
-
 
     </div>
 
@@ -1640,11 +1599,37 @@
             class="d-flex justify-content-between align-items-center mb-3"
         >
 
-            <h5 class="fw-bold mb-0">
+            <div>
 
-                📊 Últimos Movimientos
+                <h5 class="fw-bold mb-0">
 
-            </h5>
+                    📊
+
+                    {% if busqueda %}
+
+                        Movimientos del producto consultado
+
+                    {% else %}
+
+                        Últimos Movimientos
+
+                    {% endif %}
+
+                </h5>
+
+
+                {% if busqueda %}
+
+                    <small class="text-muted">
+
+                        Solo se muestran movimientos relacionados
+                        con la consulta actual.
+
+                    </small>
+
+                {% endif %}
+
+            </div>
 
 
             <a
@@ -1659,42 +1644,62 @@
         </div>
 
 
+
         <div class="table-scroll">
 
 
             <table
-                class="table table-hover align-middle structured-table movimientos-table"
+                class="table structured-table movimientos-table"
                 id="movimientosTable"
             >
 
 
-                <thead class="table-light">
+                <thead>
 
                     <tr>
 
                         <th>
+
                             Fecha / Hora
+
                             <span class="resize-handle"></span>
+
                         </th>
 
+
                         <th>
+
                             Producto
+
                             <span class="resize-handle"></span>
+
                         </th>
 
+
                         <th>
+
                             Tipo
+
                             <span class="resize-handle"></span>
+
                         </th>
 
+
                         <th>
+
                             Cantidad
+
                             <span class="resize-handle"></span>
+
                         </th>
 
+
                         <th>
+
                             Usuario
+
                             <span class="resize-handle"></span>
+
                         </th>
 
                     </tr>
@@ -1702,7 +1707,11 @@
                 </thead>
 
 
+
                 <tbody>
+
+
+                    {% set movimientos_mostrados = namespace(total=0) %}
 
 
                     {% if movimientos %}
@@ -1711,159 +1720,183 @@
                         {% for mov in movimientos %}
 
 
-                            <tr>
+                            {% set mostrar_movimiento = true %}
 
 
-                                <!-- FECHA / HORA -->
+                            {% if busqueda %}
 
-                                <td>
+                                {% set mostrar_movimiento = false %}
 
-                                    {% if mov["fecha"] %}
 
-                                        {% if mov["fecha"] is string %}
+                                {% for producto in productos %}
+
+                                    {% if
+                                        producto["nombre"]|lower
+                                        ==
+                                        (mov["nombre"] or "")|lower
+                                    %}
+
+                                        {% set mostrar_movimiento = true %}
+
+                                    {% endif %}
+
+                                {% endfor %}
+
+                            {% endif %}
+
+
+                            {% if mostrar_movimiento %}
+
+                                {% set movimientos_mostrados.total =
+                                    movimientos_mostrados.total + 1 %}
+
+
+                                <tr>
+
+
+                                    <td>
+
+                                        {% if mov["fecha"] %}
 
                                             <strong>
-                                                {{ mov["fecha"][:10] }}
+
+                                                {% if mov["fecha"] is string %}
+
+                                                    {{ mov["fecha"] }}
+
+                                                {% else %}
+
+                                                    {{ mov["fecha"].strftime('%d/%m/%Y') }}
+
+                                                    <br>
+
+                                                    <small class="text-primary">
+
+                                                        {{ mov["fecha"].strftime('%H:%M:%S') }}
+
+                                                    </small>
+
+                                                {% endif %}
+
                                             </strong>
-
-                                            <br>
-
-                                            <small class="text-primary">
-
-                                                {{ mov["fecha"][11:19] }}
-
-                                            </small>
 
                                         {% else %}
 
-                                            <strong>
-
-                                                {{ mov["fecha"].strftime('%d/%m/%Y') }}
-
-                                            </strong>
-
-                                            <br>
-
-                                            <small class="text-primary">
-
-                                                {{ mov["fecha"].strftime('%H:%M:%S') }}
-
-                                            </small>
+                                            -
 
                                         {% endif %}
 
-                                    {% else %}
-
-                                        -
-
-                                    {% endif %}
-
-                                </td>
+                                    </td>
 
 
-                                <!-- PRODUCTO -->
+                                    <td>
 
-                                <td>
+                                        <strong>
 
-                                    <strong>
+                                            {{ mov["nombre"] or "Producto eliminado" }}
 
-                                        {{ mov["nombre"] or "Producto eliminado" }}
+                                        </strong>
 
-                                    </strong>
-
-                                </td>
+                                    </td>
 
 
-                                <!-- TIPO -->
-
-                                <td>
+                                    <td>
 
 
-                                    {% if mov["tipo"] == "Entrada" %}
+                                        {% if mov["tipo"] == "Entrada" %}
 
-                                        <span class="badge bg-success">
+                                            <span class="badge bg-success">
 
-                                            🟢 Entrada
+                                                🟢 Entrada
 
-                                        </span>
+                                            </span>
 
-                                    {% else %}
+                                        {% else %}
 
-                                        <span class="badge bg-danger">
+                                            <span class="badge bg-danger">
 
-                                            🔴 Salida
+                                                🔴 Salida
 
-                                        </span>
+                                            </span>
 
-                                    {% endif %}
+                                        {% endif %}
 
-
-                                </td>
-
-
-                                <!-- CANTIDAD -->
-
-                                <td>
-
-                                    <strong>
-
-                                        {{ mov["cantidad"] }}
-
-                                    </strong>
-
-                                </td>
+                                    </td>
 
 
-                                <!-- USUARIO -->
+                                    <td>
 
-                                <td>
+                                        <strong>
 
-                                    👤 {{ mov["usuario"] or "admin" }}
+                                            {{ mov["cantidad"] }}
 
-                                </td>
+                                        </strong>
+
+                                    </td>
 
 
-                            </tr>
+                                    <td>
+
+                                        👤
+
+                                        {{ mov["usuario"] or "admin" }}
+
+                                    </td>
+
+
+                                </tr>
+
+                            {% endif %}
 
 
                         {% endfor %}
 
 
-                    {% else %}
+                    {% endif %}
 
+
+                    {% if movimientos_mostrados.total == 0 %}
 
                         <tr>
 
                             <td
                                 colspan="5"
-                                class="text-center text-muted py-3"
+                                class="text-center text-muted py-5"
                             >
 
-                                📭 No hay movimientos registrados.
+
+                                {% if busqueda %}
+
+                                    📭 No hay movimientos registrados
+                                    para el producto consultado.
+
+                                {% else %}
+
+                                    📭 No hay movimientos registrados.
+
+                                {% endif %}
+
 
                             </td>
 
                         </tr>
-
 
                     {% endif %}
 
 
                 </tbody>
 
-
             </table>
-
 
         </div>
 
 
         <div class="small text-muted mt-2">
 
-            ↔️ Puedes arrastrar el borde de cada encabezado para ajustar el ancho de la columna.
+            ↔️ Arrastra el borde de cada encabezado para ajustar
+            el ancho de la columna.
 
         </div>
-
 
     </div>
 
@@ -1873,7 +1906,7 @@
 
 
 <!-- =====================================================
-     SCRIPT PARA REDIMENSIONAR COLUMNAS
+     REDIMENSIONAR COLUMNAS
 ===================================================== -->
 
 <script>
@@ -1881,6 +1914,7 @@
 document.addEventListener(
     "DOMContentLoaded",
     function () {
+
 
         const tables =
             document.querySelectorAll(
@@ -1891,6 +1925,7 @@ document.addEventListener(
         tables.forEach(
             function (table) {
 
+
                 const headers =
                     table.querySelectorAll(
                         "thead th"
@@ -1899,6 +1934,7 @@ document.addEventListener(
 
                 headers.forEach(
                     function (header) {
+
 
                         const handle =
                             header.querySelector(
@@ -1922,7 +1958,10 @@ document.addEventListener(
                             "mousedown",
                             function (event) {
 
+
                                 event.preventDefault();
+
+                                event.stopPropagation();
 
 
                                 startX =
@@ -1940,6 +1979,7 @@ document.addEventListener(
 
                                 function resize(event) {
 
+
                                     const newWidth =
                                         startWidth
                                         +
@@ -1950,12 +1990,7 @@ document.addEventListener(
                                         );
 
 
-                                    if (
-                                        newWidth >= 70
-                                    ) {
-
-                                        header.style.width =
-                                            newWidth + "px";
+                                    if (newWidth >= 70) {
 
 
                                         const columnIndex =
@@ -1966,10 +2001,15 @@ document.addEventListener(
                                             );
 
 
+                                        header.style.width =
+                                            newWidth + "px";
+
+
                                         table.querySelectorAll(
                                             "tr"
                                         ).forEach(
                                             function (row) {
+
 
                                                 const cell =
                                                     row.children[
@@ -1993,6 +2033,7 @@ document.addEventListener(
 
 
                                 function stopResize() {
+
 
                                     document.removeEventListener(
                                         "mousemove",
@@ -2039,6 +2080,10 @@ document.addEventListener(
 </script>
 
 
+
+<!-- =====================================================
+     BOOTSTRAP
+===================================================== -->
 
 <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
