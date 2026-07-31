@@ -1,4 +1,4 @@
-name: Pruebas del sistema de inventario
+name: Pruebas automaticas del sistema
 
 on:
   push:
