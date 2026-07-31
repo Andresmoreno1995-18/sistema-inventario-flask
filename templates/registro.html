@@ -10,95 +10,135 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Registrar Usuario - Inventario</title>
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
+    <title>Registrar usuario</title>
 
     <style>
 
+        * {
+            box-sizing: border-box;
+        }
+
         body {
+            margin: 0;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    #111827,
-                    #1d4ed8,
-                    #0f172a
-                );
+            font-family: Arial, sans-serif;
+            background: linear-gradient(
+                135deg,
+                #667eea,
+                #764ba2
+            );
         }
 
-        .registro-card {
-
+        .contenedor {
             width: 100%;
             max-width: 430px;
-
-            border: none;
-            border-radius: 20px;
-
-            box-shadow:
-                0 20px 50px
-                rgba(0, 0, 0, 0.35);
+            padding: 20px;
         }
 
-        .genero-option {
-
-            border: 2px solid #dee2e6;
-            border-radius: 14px;
-
-            padding: 15px;
-
-            cursor: pointer;
-
-            transition: 0.2s;
+        .tarjeta {
+            background: white;
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.20);
         }
 
-        .genero-option:hover {
-
-            border-color: #0d6efd;
-            background-color: #f8f9fa;
+        h1 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            text-align: center;
+            color: #222;
         }
 
-        .icono-genero {
+        .subtitulo {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+        }
 
-            font-size: 38px;
+        label {
             display: block;
-            margin-bottom: 5px;
+            margin-top: 15px;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #5568d9;
+        }
+
+        .volver {
+            display: block;
+            margin-top: 18px;
+            text-align: center;
+            text-decoration: none;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .mensaje {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            text-align: center;
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        @media (max-width: 500px) {
+
+            .tarjeta {
+                padding: 22px;
+            }
+
         }
 
     </style>
 
 </head>
 
-
 <body>
 
-    <div class="card registro-card">
+    <div class="contenedor">
 
-        <div class="card-body p-4">
+        <div class="tarjeta">
 
-            <div class="text-center mb-4">
+            <h1>Crear usuario</h1>
 
-                <div style="font-size: 55px;">
-                    👤
-                </div>
-
-                <h3 class="fw-bold">
-                    Crear Usuario
-                </h3>
-
-                <p class="text-muted mb-0">
-                    Sistema de Gestión de Inventario
-                </p>
-
-            </div>
-
+            <p class="subtitulo">
+                Registro de usuarios del sistema
+            </p>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
 
@@ -106,10 +146,7 @@
 
                     {% for category, message in messages %}
 
-                        <div
-                            class="alert alert-{{ category }}"
-                            role="alert"
-                        >
+                        <div class="mensaje">
                             {{ message }}
                         </div>
 
@@ -122,129 +159,98 @@
 
             <form
                 method="POST"
-                action="/registro"
+                action="{{ url_for('registro') }}"
             >
 
+                <label for="usuario">
+                    Usuario
+                </label>
 
-                <div class="mb-3">
-
-                    <label class="form-label fw-bold">
-                        Usuario
-                    </label>
-
-                    <input
-                        type="text"
-                        name="usuario"
-                        class="form-control"
-                        placeholder="Ejemplo: andres"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="mb-3">
-
-                    <label class="form-label fw-bold">
-                        Contraseña
-                    </label>
-
-                    <input
-                        type="password"
-                        name="password"
-                        class="form-control"
-                        placeholder="Ingrese una contraseña"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="mb-4">
-
-                    <label class="form-label fw-bold d-block">
-                        Seleccione su género
-                    </label>
-
-
-                    <div class="row g-2">
-
-
-                        <div class="col-6">
-
-                            <label
-                                class="genero-option w-100 text-center"
-                            >
-
-                                <span class="icono-genero">
-                                    👨
-                                </span>
-
-                                <input
-                                    type="radio"
-                                    name="genero"
-                                    value="Hombre"
-                                    required
-                                >
-
-                                Hombre
-
-                            </label>
-
-                        </div>
-
-
-                        <div class="col-6">
-
-                            <label
-                                class="genero-option w-100 text-center"
-                            >
-
-                                <span class="icono-genero">
-                                    👩
-                                </span>
-
-                                <input
-                                    type="radio"
-                                    name="genero"
-                                    value="Mujer"
-                                    required
-                                >
-
-                                Mujer
-
-                            </label>
-
-                        </div>
-
-
-                    </div>
-
-                </div>
-
-
-                <button
-                    type="submit"
-                    class="btn btn-primary w-100 py-2 fw-bold"
+                <input
+                    type="text"
+                    id="usuario"
+                    name="usuario"
+                    placeholder="Ingrese el usuario"
+                    required
                 >
-                    Registrar Usuario
-                </button>
 
+
+                <label for="password">
+                    Contraseña
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Ingrese la contraseña"
+                    required
+                >
+
+
+                <label for="genero">
+                    Género
+                </label>
+
+                <select
+                    id="genero"
+                    name="genero"
+                    required
+                >
+
+                    <option value="">
+                        Seleccione una opción
+                    </option>
+
+                    <option value="Hombre">
+                        Hombre
+                    </option>
+
+                    <option value="Mujer">
+                        Mujer
+                    </option>
+
+                </select>
+
+
+                <label for="rol">
+                    Rol del usuario
+                </label>
+
+                <select
+                    id="rol"
+                    name="rol"
+                    required
+                >
+
+                    <option value="">
+                        Seleccione un rol
+                    </option>
+
+                    <option value="usuario">
+                        Usuario
+                    </option>
+
+                    <option value="admin">
+                        Administrador
+                    </option>
+
+                </select>
+
+
+                <button type="submit">
+                    Crear usuario
+                </button>
 
             </form>
 
 
-            <div class="text-center mt-3">
-
-                <a
-                    href="/login"
-                    class="text-decoration-none"
-                >
-                    Volver al inicio de sesión
-                </a>
-
-            </div>
-
+            <a
+                class="volver"
+                href="{{ url_for('index') }}"
+            >
+                ← Volver al sistema
+            </a>
 
         </div>
 
