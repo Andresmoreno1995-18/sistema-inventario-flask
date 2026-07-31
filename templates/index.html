@@ -1,112 +1,757 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
 
-    <meta charset="UTF-8">
+```
+<meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <title>
-        Sistema de Gestión de Inventario
-    </title>
-
-
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
+<title>
+    Sistema de Gestión de Inventario
+</title>
 
 
-    <style>
-
-        /* =====================================================
-           FONDO PRINCIPAL
-        ===================================================== */
-
-        body {
-
-            margin: 0;
-
-            min-height: 100vh;
-
-            font-family:
-                Arial,
-                Helvetica,
-                sans-serif;
-
-            background:
-
-                radial-gradient(
-                    circle at 10% 20%,
-                    rgba(13, 110, 253, 0.15),
-                    transparent 30%
-                ),
-
-                radial-gradient(
-                    circle at 90% 10%,
-                    rgba(25, 135, 84, 0.12),
-                    transparent 30%
-                ),
-
-                linear-gradient(
-                    135deg,
-                    #eef3f8 0%,
-                    #f8fafc 50%,
-                    #e9f0f7 100%
-                );
-
-            background-attachment: fixed;
-
-        }
+<link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+>
 
 
-        /* =====================================================
-           NAVBAR
-        ===================================================== */
+<style>
 
-        .main-navbar {
+    /* =====================================================
+       FONDO PRINCIPAL
+    ===================================================== */
 
-            background:
+    body {
 
-                linear-gradient(
-                    135deg,
-                    #111827,
-                    #1f2937,
-                    #263548
-                );
+        margin: 0;
 
-            box-shadow:
-                0 4px 18px rgba(0, 0, 0, 0.18);
+        min-height: 100vh;
 
-        }
+        font-family:
+            Arial,
+            Helvetica,
+            sans-serif;
 
+        background:
+
+            radial-gradient(
+                circle at 10% 20%,
+                rgba(13, 110, 253, 0.15),
+                transparent 30%
+            ),
+
+            radial-gradient(
+                circle at 90% 10%,
+                rgba(25, 135, 84, 0.12),
+                transparent 30%
+            ),
+
+            linear-gradient(
+                135deg,
+                #eef3f8 0%,
+                #f8fafc 50%,
+                #e9f0f7 100%
+            );
+
+        background-attachment: fixed;
+
+    }
+
+
+    /* =====================================================
+       NAVBAR
+    ===================================================== */
+
+    .main-navbar {
+
+        background:
+
+            linear-gradient(
+                135deg,
+                #111827,
+                #1f2937,
+                #263548
+            );
+
+        box-shadow:
+            0 4px 18px rgba(0, 0, 0, 0.18);
+
+    }
+
+
+    .navbar-brand {
+
+        letter-spacing:
+            0.3px;
+
+    }
+
+
+    /* =====================================================
+       PERFIL
+    ===================================================== */
+
+    .user-profile {
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        gap:
+            10px;
+
+    }
+
+
+    .user-icon {
+
+        width:
+            42px;
+
+        height:
+            42px;
+
+        display:
+            flex;
+
+        align-items:
+            center;
+
+        justify-content:
+            center;
+
+        border-radius:
+            50%;
+
+        background:
+            rgba(255, 255, 255, 0.12);
+
+        font-size:
+            22px;
+
+        border:
+            1px solid
+            rgba(255, 255, 255, 0.2);
+
+    }
+
+
+    .user-name {
+
+        color:
+            white;
+
+        font-size:
+            14px;
+
+    }
+
+
+    /* =====================================================
+       CONTENEDOR
+    ===================================================== */
+
+    .main-container {
+
+        padding-top:
+            10px;
+
+        padding-bottom:
+            40px;
+
+    }
+
+
+    /* =====================================================
+       TARJETAS DE RESUMEN
+    ===================================================== */
+
+    .card-summary {
+
+        border:
+            none;
+
+        border-radius:
+            16px;
+
+        background:
+            rgba(255, 255, 255, 0.92);
+
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.08);
+
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+
+    }
+
+
+    .card-summary:hover {
+
+        transform:
+            translateY(-4px);
+
+        box-shadow:
+            0 12px 28px
+            rgba(15, 23, 42, 0.13);
+
+    }
+
+
+    .summary-number {
+
+        font-size:
+            28px;
+
+        font-weight:
+            700;
+
+    }
+
+
+    /* =====================================================
+       BOTONES
+    ===================================================== */
+
+    .main-buttons .btn {
+
+        border-radius:
+            10px;
+
+        padding:
+            9px 15px;
+
+        font-weight:
+            600;
+
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+
+    }
+
+
+    .main-buttons .btn:hover {
+
+        transform:
+            translateY(-2px);
+
+        box-shadow:
+            0 5px 12px
+            rgba(0, 0, 0, 0.12);
+
+    }
+
+
+    /* =====================================================
+       BUSCADOR
+    ===================================================== */
+
+    .search-container {
+
+        background:
+            rgba(255, 255, 255, 0.95);
+
+        border-radius:
+            16px;
+
+        padding:
+            20px;
+
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.08);
+
+        border:
+            1px solid
+            rgba(255, 255, 255, 0.7);
+
+    }
+
+
+    .search-container label {
+
+        font-size:
+            13px;
+
+        font-weight:
+            700;
+
+        color:
+            #374151;
+
+    }
+
+
+    .search-input {
+
+        border-radius:
+            10px;
+
+        min-height:
+            44px;
+
+    }
+
+
+    .filter-buttons .btn {
+
+        border-radius:
+            10px;
+
+        font-weight:
+            600;
+
+    }
+
+
+    .result-count {
+
+        font-size:
+            13px;
+
+        color:
+            #6b7280;
+
+    }
+
+
+    /* =====================================================
+       CUADROS / TABLAS
+    ===================================================== */
+
+    .table-container {
+
+        background:
+            rgba(255, 255, 255, 0.97);
+
+        border-radius:
+            16px;
+
+        padding:
+            22px;
+
+        box-shadow:
+            0 8px 24px
+            rgba(15, 23, 42, 0.08);
+
+        border:
+            1px solid
+            rgba(255, 255, 255, 0.7);
+
+        overflow:
+            hidden;
+
+    }
+
+
+    .table-container h5 {
+
+        color:
+            #1f2937;
+
+    }
+
+
+    /* =====================================================
+       CONTENEDOR HORIZONTAL DE TABLAS
+    ===================================================== */
+
+    .table-scroll {
+
+        width:
+            100%;
+
+        overflow-x:
+            auto;
+
+        overflow-y:
+            hidden;
+
+        border:
+            1px solid
+            #dee2e6;
+
+        border-radius:
+            12px;
+
+        background:
+            white;
+
+    }
+
+
+    /* =====================================================
+       TABLAS
+    ===================================================== */
+
+    .structured-table {
+
+        margin:
+            0;
+
+        table-layout:
+            fixed;
+
+        width:
+            100%;
+
+        min-width:
+            850px;
+
+        border-collapse:
+            separate;
+
+        border-spacing:
+            0;
+
+    }
+
+
+    .structured-table thead th {
+
+        position:
+            relative;
+
+        background:
+            #f1f5f9;
+
+        color:
+            #1f2937;
+
+        font-size:
+            13px;
+
+        font-weight:
+            700;
+
+        text-transform:
+            uppercase;
+
+        letter-spacing:
+            0.3px;
+
+        white-space:
+            nowrap;
+
+        border-bottom:
+            2px solid
+            #dbe2ea;
+
+        padding:
+            13px 14px;
+
+        vertical-align:
+            middle;
+
+    }
+
+
+    .structured-table tbody td {
+
+        padding:
+            13px 14px;
+
+        vertical-align:
+            middle;
+
+        border-bottom:
+            1px solid
+            #edf0f3;
+
+        word-wrap:
+            break-word;
+
+        overflow-wrap:
+            break-word;
+
+    }
+
+
+    .structured-table tbody tr:last-child td {
+
+        border-bottom:
+            none;
+
+    }
+
+
+    .structured-table tbody tr:hover {
+
+        background:
+            #f8fafc;
+
+    }
+
+
+    /* =====================================================
+       ANCHOS FIJOS PRODUCTOS
+    ===================================================== */
+
+    .productos-table th:nth-child(1),
+    .productos-table td:nth-child(1) {
+
+        width:
+            70px;
+
+    }
+
+
+    .productos-table th:nth-child(2),
+    .productos-table td:nth-child(2) {
+
+        width:
+            25%;
+
+    }
+
+
+    .productos-table th:nth-child(3),
+    .productos-table td:nth-child(3) {
+
+        width:
+            18%;
+
+    }
+
+
+    .productos-table th:nth-child(4),
+    .productos-table td:nth-child(4) {
+
+        width:
+            130px;
+
+    }
+
+
+    .productos-table th:nth-child(5),
+    .productos-table td:nth-child(5) {
+
+        width:
+            150px;
+
+    }
+
+
+    .productos-table th:nth-child(6),
+    .productos-table td:nth-child(6) {
+
+        width:
+            190px;
+
+    }
+
+
+    /* =====================================================
+       ANCHOS FIJOS MOVIMIENTOS
+    ===================================================== */
+
+    .movimientos-table th:nth-child(1),
+    .movimientos-table td:nth-child(1) {
+
+        width:
+            180px;
+
+    }
+
+
+    .movimientos-table th:nth-child(2),
+    .movimientos-table td:nth-child(2) {
+
+        width:
+            250px;
+
+    }
+
+
+    .movimientos-table th:nth-child(3),
+    .movimientos-table td:nth-child(3) {
+
+        width:
+            130px;
+
+    }
+
+
+    .movimientos-table th:nth-child(4),
+    .movimientos-table td:nth-child(4) {
+
+        width:
+            120px;
+
+    }
+
+
+    .movimientos-table th:nth-child(5),
+    .movimientos-table td:nth-child(5) {
+
+        width:
+            170px;
+
+    }
+
+
+    /* =====================================================
+       CONTROL DE REDIMENSIONAMIENTO
+    ===================================================== */
+
+    .resize-handle {
+
+        position:
+            absolute;
+
+        top:
+            0;
+
+        right:
+            0;
+
+        width:
+            7px;
+
+        height:
+            100%;
+
+        cursor:
+            col-resize;
+
+        user-select:
+            none;
+
+    }
+
+
+    .resize-handle:hover {
+
+        background:
+            rgba(13, 110, 253, 0.25);
+
+    }
+
+
+    .resizing {
+
+        cursor:
+            col-resize !important;
+
+        user-select:
+            none !important;
+
+    }
+
+
+    /* =====================================================
+       BADGES
+    ===================================================== */
+
+    .badge {
+
+        font-size:
+            12px;
+
+        padding:
+            6px 9px;
+
+    }
+
+
+    /* =====================================================
+       ACCIONES
+    ===================================================== */
+
+    .actions-cell {
+
+        white-space:
+            nowrap;
+
+        text-align:
+            center;
+
+    }
+
+
+    .actions-cell .btn {
+
+        font-size:
+            12px;
+
+        font-weight:
+            600;
+
+    }
+
+
+    /* =====================================================
+       TITULOS
+    ===================================================== */
+
+    .dashboard-title {
+
+        color:
+            #1f2937;
+
+        font-weight:
+            700;
+
+    }
+
+
+    .dashboard-subtitle {
+
+        color:
+            #6b7280;
+
+        font-size:
+            14px;
+
+    }
+
+
+    /* =====================================================
+       ALERTAS
+    ===================================================== */
+
+    .alert {
+
+        border-radius:
+            12px;
+
+        border:
+            none;
+
+    }
+
+
+    /* =====================================================
+       RESPONSIVE
+    ===================================================== */
+
+    @media (max-width: 768px) {
 
         .navbar-brand {
 
-            letter-spacing:
-                0.3px;
+            font-size:
+                15px;
 
         }
 
 
-        /* =====================================================
-           PERFIL
-        ===================================================== */
-
-        .user-profile {
+        .user-name {
 
             display:
-                flex;
-
-            align-items:
-                center;
-
-            gap:
-                10px;
+                none;
 
         }
 
@@ -114,394 +759,67 @@
         .user-icon {
 
             width:
-                42px;
+                38px;
 
             height:
-                42px;
-
-            display:
-                flex;
-
-            align-items:
-                center;
-
-            justify-content:
-                center;
-
-            border-radius:
-                50%;
-
-            background:
-                rgba(255, 255, 255, 0.12);
-
-            font-size:
-                22px;
-
-            border:
-                1px solid
-                rgba(255, 255, 255, 0.2);
+                38px;
 
         }
 
 
-        .user-name {
-
-            color:
-                white;
-
-            font-size:
-                14px;
-
-        }
-
-
-        /* =====================================================
-           CONTENEDOR
-        ===================================================== */
-
-        .main-container {
-
-            padding-top:
-                10px;
-
-            padding-bottom:
-                40px;
-
-        }
-
-
-        /* =====================================================
-           TARJETAS
-        ===================================================== */
-
-        .card-summary {
-
-            border:
-                none;
-
-            border-radius:
-                16px;
-
-            background:
-                rgba(255, 255, 255, 0.92);
-
-            box-shadow:
-                0 8px 24px
-                rgba(15, 23, 42, 0.08);
-
-            transition:
-                transform 0.2s ease,
-                box-shadow 0.2s ease;
-
-        }
-
-
-        .card-summary:hover {
-
-            transform:
-                translateY(-4px);
-
-            box-shadow:
-                0 12px 28px
-                rgba(15, 23, 42, 0.13);
-
-        }
-
-
-        .summary-number {
-
-            font-size:
-                28px;
-
-            font-weight:
-                700;
-
-        }
-
-
-        /* =====================================================
-           BOTONES
-        ===================================================== */
-
-        .main-buttons .btn {
-
-            border-radius:
-                10px;
+        .table-container {
 
             padding:
-                9px 15px;
-
-            font-weight:
-                600;
-
-            transition:
-                transform 0.2s ease,
-                box-shadow 0.2s ease;
+                15px;
 
         }
 
-
-        .main-buttons .btn:hover {
-
-            transform:
-                translateY(-2px);
-
-            box-shadow:
-                0 5px 12px
-                rgba(0, 0, 0, 0.12);
-
-        }
-
-
-        /* =====================================================
-           BUSCADOR
-        ===================================================== */
 
         .search-container {
 
-            background:
-                rgba(255, 255, 255, 0.95);
-
-            border-radius:
-                16px;
-
             padding:
-                20px;
-
-            box-shadow:
-                0 8px 24px
-                rgba(15, 23, 42, 0.08);
-
-            border:
-                1px solid
-                rgba(255, 255, 255, 0.7);
+                15px;
 
         }
 
 
-        .search-container label {
+        .filter-buttons {
 
-            font-size:
-                13px;
+            display:
+                grid;
 
-            font-weight:
-                700;
+            grid-template-columns:
+                1fr 1fr;
 
-            color:
-                #374151;
-
-        }
-
-
-        .search-input {
-
-            border-radius:
-                10px;
-
-            min-height:
-                44px;
+            gap:
+                8px;
 
         }
 
 
         .filter-buttons .btn {
 
-            border-radius:
-                10px;
-
-            font-weight:
-                600;
+            width:
+                100%;
 
         }
 
 
-        .result-count {
+        .structured-table {
 
-            font-size:
-                13px;
-
-            color:
-                #6b7280;
+            min-width:
+                850px;
 
         }
 
+    }
 
-        /* =====================================================
-           TABLAS
-        ===================================================== */
-
-        .table-container {
-
-            background:
-                rgba(255, 255, 255, 0.95);
-
-            border-radius:
-                16px;
-
-            padding:
-                22px;
-
-            box-shadow:
-                0 8px 24px
-                rgba(15, 23, 42, 0.08);
-
-            border:
-                1px solid
-                rgba(255, 255, 255, 0.7);
-
-        }
-
-
-        .table-container h5 {
-
-            color:
-                #1f2937;
-
-        }
-
-
-        .table {
-
-            margin-bottom:
-                0;
-
-        }
-
-
-        .table thead th {
-
-            font-size:
-                13px;
-
-            text-transform:
-                uppercase;
-
-            letter-spacing:
-                0.3px;
-
-        }
-
-
-        /* =====================================================
-           TITULOS
-        ===================================================== */
-
-        .dashboard-title {
-
-            color:
-                #1f2937;
-
-            font-weight:
-                700;
-
-        }
-
-
-        .dashboard-subtitle {
-
-            color:
-                #6b7280;
-
-            font-size:
-                14px;
-
-        }
-
-
-        /* =====================================================
-           ALERTAS
-        ===================================================== */
-
-        .alert {
-
-            border-radius:
-                12px;
-
-            border:
-                none;
-
-        }
-
-
-        /* =====================================================
-           RESPONSIVE
-        ===================================================== */
-
-        @media (max-width: 768px) {
-
-            .navbar-brand {
-
-                font-size:
-                    15px;
-
-            }
-
-
-            .user-name {
-
-                display:
-                    none;
-
-            }
-
-
-            .user-icon {
-
-                width:
-                    38px;
-
-                height:
-                    38px;
-
-            }
-
-
-            .table-container {
-
-                padding:
-                    15px;
-
-            }
-
-
-            .search-container {
-
-                padding:
-                    15px;
-
-            }
-
-
-            .filter-buttons {
-
-                display:
-                    grid;
-
-                grid-template-columns:
-                    1fr 1fr;
-
-                gap:
-                    8px;
-
-            }
-
-
-            .filter-buttons .btn {
-
-                width:
-                    100%;
-
-            }
-
-        }
-
-    </style>
+</style>
+```
 
 </head>
 
-
 <body>
-
 
 <!-- =====================================================
      NAVBAR
@@ -509,78 +827,78 @@
 
 <nav class="navbar navbar-dark main-navbar mb-4">
 
-    <div class="container-fluid px-4">
+```
+<div class="container-fluid px-4">
 
 
-        <a
-            class="navbar-brand fw-bold"
-            href="/"
-        >
+    <a
+        class="navbar-brand fw-bold"
+        href="/"
+    >
 
-            📦 Sistema de Gestión de Inventario
+        📦 Sistema de Gestión de Inventario
 
-        </a>
-
-
-        <div class="user-profile">
+    </a>
 
 
-            <div class="user-icon">
-
-                {% if session.get('genero') == 'Mujer' %}
-
-                    👩
-
-                {% else %}
-
-                    👨
-
-                {% endif %}
-
-            </div>
+    <div class="user-profile">
 
 
-            <div class="user-name">
+        <div class="user-icon">
 
-                Hola,
+            {% if session.get('genero') == 'Mujer' %}
 
-                <strong>
-                    {{ session.get('usuario', 'admin') }}
-                </strong>
+                👩
 
-                <span class="ms-1">
+            {% else %}
 
-                    {% if session.get('rol') == 'admin' %}
+                👨
 
-                        👑 Administrador
-
-                    {% else %}
-
-                        👤 Usuario
-
-                    {% endif %}
-
-                </span>
-
-            </div>
-
-
-            <a
-                href="/logout"
-                class="btn btn-danger btn-sm"
-            >
-
-                Cerrar Sesión
-
-            </a>
+            {% endif %}
 
         </div>
 
+
+        <div class="user-name">
+
+            Hola,
+
+            <strong>
+                {{ session.get('usuario', 'admin') }}
+            </strong>
+
+            <span class="ms-1">
+
+                {% if session.get('rol') == 'admin' %}
+
+                    👑 Administrador
+
+                {% else %}
+
+                    👤 Usuario
+
+                {% endif %}
+
+            </span>
+
+        </div>
+
+
+        <a
+            href="/logout"
+            class="btn btn-danger btn-sm"
+        >
+
+            Cerrar Sesión
+
+        </a>
+
     </div>
 
+</div>
+```
+
 </nav>
-
-
 
 <!-- =====================================================
      CONTENIDO
@@ -588,550 +906,257 @@
 
 <div class="container-fluid px-4 main-container">
 
+```
+<!-- TITULO -->
 
-    <!-- TITULO -->
+<div class="mb-4">
 
-    <div class="mb-4">
+    <h2 class="dashboard-title">
 
-        <h2 class="dashboard-title">
+        Panel principal
 
-            Panel principal
-
-        </h2>
-
-
-        <p class="dashboard-subtitle mb-0">
-
-            Administración y control general del inventario
-
-        </p>
-
-    </div>
+    </h2>
 
 
+    <p class="dashboard-subtitle mb-0">
 
-    <!-- =================================================
-         MENSAJES
-    ================================================= -->
+        Administración y control general del inventario
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
+    </p>
 
-        {% if messages %}
+</div>
 
-            {% for category, message in messages %}
 
-                <div
-                    class="alert alert-{{ 'danger' if category == 'error' else category }}"
-                    role="alert"
+
+<!-- =================================================
+     MENSAJES
+================================================= -->
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+
+    {% if messages %}
+
+        {% for category, message in messages %}
+
+            <div
+                class="alert alert-{{ 'danger' if category == 'error' else category }}"
+                role="alert"
+            >
+
+                {{ message }}
+
+            </div>
+
+        {% endfor %}
+
+    {% endif %}
+
+{% endwith %}
+
+
+
+<!-- =================================================
+     BUSCADOR
+================================================= -->
+
+<div class="search-container mb-4">
+
+
+    <form
+        method="GET"
+        action="/"
+    >
+
+
+        <div class="row g-3 align-items-end">
+
+
+            <div class="col-lg-6">
+
+                <label
+                    for="q"
+                    class="form-label"
                 >
 
-                    {{ message }}
+                    🔎 Buscar producto
 
-                </div>
-
-            {% endfor %}
-
-        {% endif %}
-
-    {% endwith %}
+                </label>
 
 
-
-    <!-- =================================================
-         BUSCADOR
-    ================================================= -->
-
-    <div class="search-container mb-4">
-
-
-        <form
-            method="GET"
-            action="/"
-        >
-
-
-            <div class="row g-3 align-items-end">
-
-
-                <!-- BUSCAR -->
-
-                <div class="col-lg-6">
-
-                    <label
-                        for="q"
-                        class="form-label"
-                    >
-
-                        🔎 Buscar producto
-
-                    </label>
-
-
-                    <input
-                        type="text"
-                        id="q"
-                        name="q"
-                        class="form-control search-input"
-                        placeholder="Buscar por nombre, categoría o ID..."
-                        value="{{ busqueda }}"
-                    >
-
-                </div>
-
-
-                <!-- FILTRO -->
-
-                <div class="col-lg-4">
-
-                    <label
-                        for="stock"
-                        class="form-label"
-                    >
-
-                        📦 Filtrar por stock
-
-                    </label>
-
-
-                    <select
-                        id="stock"
-                        name="stock"
-                        class="form-select search-input"
-                    >
-
-                        <option
-                            value="todos"
-                            {% if filtro_stock == 'todos' %}
-                                selected
-                            {% endif %}
-                        >
-
-                            Todos los productos
-
-                        </option>
-
-
-                        <option
-                            value="stock"
-                            {% if filtro_stock == 'stock' %}
-                                selected
-                            {% endif %}
-                        >
-
-                            🟢 Con stock
-
-                        </option>
-
-
-                        <option
-                            value="bajo"
-                            {% if filtro_stock == 'bajo' %}
-                                selected
-                            {% endif %}
-                        >
-
-                            🟡 Stock bajo (1 - 5)
-
-                        </option>
-
-
-                        <option
-                            value="agotado"
-                            {% if filtro_stock == 'agotado' %}
-                                selected
-                            {% endif %}
-                        >
-
-                            🔴 Agotados
-
-                        </option>
-
-                    </select>
-
-                </div>
-
-
-                <!-- BOTÓN BUSCAR -->
-
-                <div class="col-lg-2 d-grid">
-
-                    <button
-                        type="submit"
-                        class="btn btn-primary"
-                    >
-
-                        🔎 Buscar
-
-                    </button>
-
-                </div>
-
+                <input
+                    type="text"
+                    id="q"
+                    name="q"
+                    class="form-control search-input"
+                    placeholder="Buscar por nombre, categoría o ID..."
+                    value="{{ busqueda }}"
+                >
 
             </div>
 
 
-            <!-- FILTROS RÁPIDOS -->
+            <div class="col-lg-4">
 
-            <div class="mt-3 filter-buttons d-flex flex-wrap gap-2">
+                <label
+                    for="stock"
+                    class="form-label"
+                >
 
+                    📦 Filtrar por stock
+
+                </label>
+
+
+                <select
+                    id="stock"
+                    name="stock"
+                    class="form-select search-input"
+                >
+
+                    <option
+                        value="todos"
+                        {% if filtro_stock == 'todos' %}
+                            selected
+                        {% endif %}
+                    >
+
+                        Todos los productos
+
+                    </option>
+
+
+                    <option
+                        value="stock"
+                        {% if filtro_stock == 'stock' %}
+                            selected
+                        {% endif %}
+                    >
+
+                        🟢 Con stock
+
+                    </option>
+
+
+                    <option
+                        value="bajo"
+                        {% if filtro_stock == 'bajo' %}
+                            selected
+                        {% endif %}
+                    >
+
+                        🟡 Stock bajo (1 - 5)
+
+                    </option>
+
+
+                    <option
+                        value="agotado"
+                        {% if filtro_stock == 'agotado' %}
+                            selected
+                        {% endif %}
+                    >
+
+                        🔴 Agotados
+
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="col-lg-2 d-grid">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+
+                    🔎 Buscar
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- FILTROS RÁPIDOS -->
+
+        <div class="mt-3 filter-buttons d-flex flex-wrap gap-2">
+
+
+            <a
+                href="/"
+                class="btn btn-sm
+                {% if not busqueda and filtro_stock == 'todos' %}
+                    btn-dark
+                {% else %}
+                    btn-outline-dark
+                {% endif %}"
+            >
+
+                📋 Todos
+
+            </a>
+
+
+            <a
+                href="/?stock=stock"
+                class="btn btn-sm
+                {% if filtro_stock == 'stock' and not busqueda %}
+                    btn-success
+                {% else %}
+                    btn-outline-success
+                {% endif %}"
+            >
+
+                🟢 Con stock
+
+            </a>
+
+
+            <a
+                href="/?stock=bajo"
+                class="btn btn-sm
+                {% if filtro_stock == 'bajo' and not busqueda %}
+                    btn-warning
+                {% else %}
+                    btn-outline-warning
+                {% endif %}"
+            >
+
+                🟡 Stock bajo
+
+            </a>
+
+
+            <a
+                href="/?stock=agotado"
+                class="btn btn-sm
+                {% if filtro_stock == 'agotado' and not busqueda %}
+                    btn-danger
+                {% else %}
+                    btn-outline-danger
+                {% endif %}"
+            >
+
+                🔴 Agotados
+
+            </a>
+
+
+            {% if busqueda or filtro_stock != 'todos' %}
 
                 <a
                     href="/"
-                    class="btn btn-sm
-                    {% if not busqueda and filtro_stock == 'todos' %}
-                        btn-dark
-                    {% else %}
-                        btn-outline-dark
-                    {% endif %}"
+                    class="btn btn-sm btn-outline-secondary"
                 >
 
-                    📋 Todos
+                    🧹 Limpiar filtros
 
                 </a>
-
-
-                <a
-                    href="/?stock=stock"
-                    class="btn btn-sm
-                    {% if filtro_stock == 'stock' and not busqueda %}
-                        btn-success
-                    {% else %}
-                        btn-outline-success
-                    {% endif %}"
-                >
-
-                    🟢 Con stock
-
-                </a>
-
-
-                <a
-                    href="/?stock=bajo"
-                    class="btn btn-sm
-                    {% if filtro_stock == 'bajo' and not busqueda %}
-                        btn-warning
-                    {% else %}
-                        btn-outline-warning
-                    {% endif %}"
-                >
-
-                    🟡 Stock bajo
-
-                </a>
-
-
-                <a
-                    href="/?stock=agotado"
-                    class="btn btn-sm
-                    {% if filtro_stock == 'agotado' and not busqueda %}
-                        btn-danger
-                    {% else %}
-                        btn-outline-danger
-                    {% endif %}"
-                >
-
-                    🔴 Agotados
-
-                </a>
-
-
-                {% if busqueda or filtro_stock != 'todos' %}
-
-                    <a
-                        href="/"
-                        class="btn btn-sm btn-outline-secondary"
-                    >
-
-                        🧹 Limpiar filtros
-
-                    </a>
-
-                {% endif %}
-
-
-            </div>
-
-
-            <!-- RESULTADOS -->
-
-            <div class="mt-3 result-count">
-
-                {% if busqueda %}
-
-                    Resultados para:
-
-                    <strong>
-                        "{{ busqueda }}"
-                    </strong>
-
-                    —
-
-                {% endif %}
-
-
-                <strong>
-                    {{ total_productos }}
-                </strong>
-
-                producto(s) encontrado(s).
-
-            </div>
-
-
-        </form>
-
-    </div>
-
-
-
-    <!-- =================================================
-         RESUMEN
-    ================================================= -->
-
-    <div class="row g-3 mb-4">
-
-
-        <!-- PRODUCTOS -->
-
-        <div class="col-md-2">
-
-            <div class="card card-summary p-3">
-
-                <small class="text-muted fw-bold">
-
-                    PRODUCTOS TOTALES
-
-                </small>
-
-
-                <div class="summary-number mt-1">
-
-                    {{ total_productos }}
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- UNIDADES -->
-
-        <div class="col-md-2">
-
-            <div class="card card-summary p-3">
-
-                <small class="text-muted fw-bold">
-
-                    UNIDADES TOTALES
-
-                </small>
-
-
-                <div class="summary-number mt-1">
-
-                    {{ unidades_totales }}
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- VALOR -->
-
-        <div class="col-md-3">
-
-            <div class="card card-summary p-3">
-
-                <small class="text-muted fw-bold">
-
-                    VALOR DEL INVENTARIO
-
-                </small>
-
-
-                <div class="summary-number mt-1">
-
-                    ${{ "%.2f"|format(valor_inventario) }}
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- STOCK BAJO -->
-
-        <div class="col-md-2">
-
-            <div class="card card-summary p-3">
-
-                <small class="text-muted fw-bold">
-
-                    STOCK BAJO
-
-                </small>
-
-
-                <div class="summary-number mt-1 text-warning">
-
-                    {{ stock_bajo }}
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-
-        <!-- AGOTADOS -->
-
-        <div class="col-md-3">
-
-            <div class="card card-summary p-3">
-
-                <small class="text-muted fw-bold">
-
-                    AGOTADOS
-
-                </small>
-
-
-                <div class="summary-number mt-1 text-danger">
-
-                    {{ agotados }}
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-    </div>
-
-
-
-    <!-- =================================================
-         BOTONES PRINCIPALES
-    ================================================= -->
-
-    <div class="mb-4 d-flex flex-wrap gap-2 main-buttons">
-
-
-        {% if session.get('rol') == 'admin' %}
-
-            <a
-                href="/agregar"
-                class="btn btn-primary"
-            >
-
-                ➕ Agregar Producto
-
-            </a>
-
-        {% endif %}
-
-
-        <a
-            href="/movimientos"
-            class="btn btn-success"
-        >
-
-            📦 Movimientos
-
-        </a>
-
-
-        <a
-            href="/proveedores"
-            class="btn btn-secondary"
-        >
-
-            🚚 Proveedores
-
-        </a>
-
-
-        <!-- =================================================
-             USUARIOS - SOLO ADMINISTRADOR
-        ================================================= -->
-
-        {% if session.get('rol') == 'admin' %}
-
-            <a
-                href="/usuarios"
-                class="btn btn-dark"
-            >
-
-                👥 Usuarios
-
-            </a>
-
-        {% endif %}
-
-
-        {% if session.get('rol') == 'admin' %}
-
-            <a
-                href="/exportar"
-                class="btn btn-light border"
-            >
-
-                📥 Exportar CSV
-
-            </a>
-
-        {% endif %}
-
-
-        <a
-            href="/grafico"
-            class="btn btn-light border"
-        >
-
-            📊 Ver Gráfico
-
-        </a>
-
-
-    </div>
-
-
-
-    <!-- =================================================
-         PRODUCTOS
-    ================================================= -->
-
-    <div class="table-container mb-4">
-
-
-        <div
-            class="d-flex justify-content-between align-items-center mb-3"
-        >
-
-
-            <h5 class="fw-bold mb-0">
-
-                📋 Listado de Productos
-
-            </h5>
-
-
-            {% if productos %}
-
-                <span class="badge bg-primary">
-
-                    {{ productos|length }} resultado(s)
-
-                </span>
 
             {% endif %}
 
@@ -1139,392 +1164,150 @@
         </div>
 
 
-        <div class="table-responsive">
 
+        <!-- RESULTADOS -->
 
-            <table class="table table-hover align-middle">
+        <div class="mt-3 result-count">
 
+            {% if busqueda %}
 
-                <thead class="table-light">
+                Resultados para:
 
-                    <tr>
+                <strong>
+                    "{{ busqueda }}"
+                </strong>
 
-                        <th>ID</th>
+                —
 
-                        <th>Nombre</th>
+            {% endif %}
 
-                        <th>Categoría</th>
 
-                        <th>Precio</th>
+            <strong>
+                {{ total_productos }}
+            </strong>
 
-                        <th>Existencias</th>
+            producto(s) encontrado(s).
 
-                        {% if session.get('rol') == 'admin' %}
+        </div>
 
-                            <th class="text-center">
 
-                                Acciones
+    </form>
 
-                            </th>
+</div>
 
-                        {% endif %}
 
-                    </tr>
 
-                </thead>
+<!-- =================================================
+     RESUMEN
+================================================= -->
 
+<div class="row g-3 mb-4">
 
-                <tbody>
 
+    <div class="col-md-2">
 
-                    {% if productos %}
+        <div class="card card-summary p-3">
 
+            <small class="text-muted fw-bold">
 
-                        {% for producto in productos %}
+                PRODUCTOS TOTALES
 
+            </small>
 
-                            <tr>
 
+            <div class="summary-number mt-1">
 
-                                <td>
+                {{ total_productos }}
 
-                                    #{{ producto["id"] }}
-
-                                </td>
-
-
-                                <td>
-
-                                    <strong>
-
-                                        {{ producto["nombre"] }}
-
-                                    </strong>
-
-                                </td>
-
-
-                                <td>
-
-                                    <span class="badge bg-secondary">
-
-                                        {{ producto["categoria"] or "Sin categoría" }}
-
-                                    </span>
-
-                                </td>
-
-
-                                <td>
-
-                                    ${{ "%.2f"|format(producto["precio"]) }}
-
-                                </td>
-
-
-                                <td>
-
-
-                                    {% if producto["existencias"] == 0 %}
-
-                                        <span class="badge bg-danger">
-
-                                            0 — Agotado
-
-                                        </span>
-
-
-                                    {% elif producto["existencias"] <= 2 %}
-
-                                        <span class="badge bg-danger">
-
-                                            {{ producto["existencias"] }}
-
-                                        </span>
-
-
-                                    {% elif producto["existencias"] <= 5 %}
-
-                                        <span class="badge bg-warning text-dark">
-
-                                            {{ producto["existencias"] }}
-
-                                        </span>
-
-
-                                    {% else %}
-
-                                        <span class="badge bg-success">
-
-                                            {{ producto["existencias"] }}
-
-                                        </span>
-
-                                    {% endif %}
-
-
-                                </td>
-
-
-                                {% if session.get('rol') == 'admin' %}
-
-                                    <td class="text-center">
-
-
-                                        <div class="btn-group btn-group-sm">
-
-
-                                            <a
-                                                href="/editar/{{ producto['id'] }}"
-                                                class="btn btn-warning"
-                                            >
-
-                                                ✏️ Editar
-
-                                            </a>
-
-
-                                            <a
-                                                href="/eliminar/{{ producto['id'] }}"
-                                                class="btn btn-danger"
-                                                onclick="return confirm('¿Seguro de eliminar este producto?');"
-                                            >
-
-                                                🗑️ Eliminar
-
-                                            </a>
-
-                                        </div>
-
-
-                                    </td>
-
-                                {% endif %}
-
-
-                            </tr>
-
-
-                        {% endfor %}
-
-
-                    {% else %}
-
-
-                        <tr>
-
-                            <td
-                                colspan="6"
-                                class="text-center text-muted py-5"
-                            >
-
-                                <div class="fs-1 mb-2">
-
-                                    🔎
-
-                                </div>
-
-
-                                <strong>
-
-                                    No se encontraron productos.
-
-                                </strong>
-
-
-                                <div class="mt-1">
-
-                                    Prueba con otro nombre, categoría
-                                    o filtro de stock.
-
-                                </div>
-
-
-                                <a
-                                    href="/"
-                                    class="btn btn-sm btn-outline-primary mt-3"
-                                >
-
-                                    🧹 Limpiar búsqueda
-
-                                </a>
-
-                            </td>
-
-                        </tr>
-
-
-                    {% endif %}
-
-
-                </tbody>
-
-
-            </table>
-
+            </div>
 
         </div>
 
     </div>
 
 
+    <div class="col-md-2">
 
-    <!-- =================================================
-         ÚLTIMOS MOVIMIENTOS
-    ================================================= -->
+        <div class="card card-summary p-3">
 
-    <div class="table-container mb-4">
+            <small class="text-muted fw-bold">
 
+                UNIDADES TOTALES
 
-        <div
-            class="d-flex justify-content-between align-items-center mb-3"
-        >
+            </small>
 
 
-            <h5 class="fw-bold mb-0">
+            <div class="summary-number mt-1">
 
-                📊 Últimos Movimientos
+                {{ unidades_totales }}
 
-            </h5>
-
-
-            <a
-                href="/movimientos"
-                class="btn btn-sm btn-outline-primary"
-            >
-
-                Ver Movimientos
-
-            </a>
+            </div>
 
         </div>
 
+    </div>
 
-        <div class="table-responsive">
 
+    <div class="col-md-3">
 
-            <table class="table table-hover align-middle">
+        <div class="card card-summary p-3">
 
+            <small class="text-muted fw-bold">
 
-                <thead class="table-light">
+                VALOR DEL INVENTARIO
 
-                    <tr>
+            </small>
 
-                        <th>Fecha</th>
 
-                        <th>Producto</th>
+            <div class="summary-number mt-1">
 
-                        <th>Tipo</th>
+                ${{ "%.2f"|format(valor_inventario) }}
 
-                        <th>Cantidad</th>
+            </div>
 
-                        <th>Usuario</th>
+        </div>
 
-                    </tr>
+    </div>
 
-                </thead>
 
+    <div class="col-md-2">
 
-                <tbody>
+        <div class="card card-summary p-3">
 
+            <small class="text-muted fw-bold">
 
-                    {% if movimientos %}
+                STOCK BAJO
 
+            </small>
 
-                        {% for mov in movimientos %}
 
+            <div class="summary-number mt-1 text-warning">
 
-                            <tr>
+                {{ stock_bajo }}
 
+            </div>
 
-                                <td>
+        </div>
 
-                                    {{ mov["fecha"] }}
+    </div>
 
-                                </td>
 
+    <div class="col-md-3">
 
-                                <td>
+        <div class="card card-summary p-3">
 
-                                    <strong>
+            <small class="text-muted fw-bold">
 
-                                        {{ mov["nombre"] or "Producto eliminado" }}
+                AGOTADOS
 
-                                    </strong>
+            </small>
 
-                                </td>
 
+            <div class="summary-number mt-1 text-danger">
 
-                                <td>
+                {{ agotados }}
 
-
-                                    {% if mov["tipo"] == "Entrada" %}
-
-                                        <span class="badge bg-success">
-
-                                            Entrada
-
-                                        </span>
-
-                                    {% else %}
-
-                                        <span class="badge bg-danger">
-
-                                            Salida
-
-                                        </span>
-
-                                    {% endif %}
-
-
-                                </td>
-
-
-                                <td>
-
-                                    {{ mov["cantidad"] }}
-
-                                </td>
-
-
-                                <td>
-
-                                    {{ mov["usuario"] or "admin" }}
-
-                                </td>
-
-
-                            </tr>
-
-
-                        {% endfor %}
-
-
-                    {% else %}
-
-
-                        <tr>
-
-                            <td
-                                colspan="5"
-                                class="text-center text-muted py-3"
-                            >
-
-                                No hay movimientos registrados.
-
-                            </td>
-
-                        </tr>
-
-
-                    {% endif %}
-
-
-                </tbody>
-
-
-            </table>
-
+            </div>
 
         </div>
 
@@ -1535,6 +1318,771 @@
 
 
 
+<!-- =================================================
+     BOTONES PRINCIPALES
+================================================= -->
+
+<div class="mb-4 d-flex flex-wrap gap-2 main-buttons">
+
+
+    {% if session.get('rol') == 'admin' %}
+
+        <a
+            href="/agregar"
+            class="btn btn-primary"
+        >
+
+            ➕ Agregar Producto
+
+        </a>
+
+    {% endif %}
+
+
+    <a
+        href="/movimientos"
+        class="btn btn-success"
+    >
+
+        📦 Movimientos
+
+    </a>
+
+
+    <a
+        href="/proveedores"
+        class="btn btn-secondary"
+    >
+
+        🚚 Proveedores
+
+    </a>
+
+
+    {% if session.get('rol') == 'admin' %}
+
+        <a
+            href="/usuarios"
+            class="btn btn-dark"
+        >
+
+            👥 Usuarios
+
+        </a>
+
+    {% endif %}
+
+
+    {% if session.get('rol') == 'admin' %}
+
+        <a
+            href="/exportar"
+            class="btn btn-light border"
+        >
+
+            📥 Exportar CSV
+
+        </a>
+
+    {% endif %}
+
+
+    <a
+        href="/grafico"
+        class="btn btn-light border"
+    >
+
+        📊 Ver Gráfico
+
+    </a>
+
+
+</div>
+
+
+
+<!-- =================================================
+     PRODUCTOS
+================================================= -->
+
+<div class="table-container mb-4">
+
+
+    <div
+        class="d-flex justify-content-between align-items-center mb-3"
+    >
+
+        <h5 class="fw-bold mb-0">
+
+            📋 Listado de Productos
+
+        </h5>
+
+
+        {% if productos %}
+
+            <span class="badge bg-primary">
+
+                {{ productos|length }} resultado(s)
+
+            </span>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="table-scroll">
+
+
+        <table
+            class="table table-hover align-middle structured-table productos-table"
+            id="productosTable"
+        >
+
+
+            <thead class="table-light">
+
+                <tr>
+
+                    <th>
+                        ID
+                        <span class="resize-handle"></span>
+                    </th>
+
+                    <th>
+                        Nombre
+                        <span class="resize-handle"></span>
+                    </th>
+
+                    <th>
+                        Categoría
+                        <span class="resize-handle"></span>
+                    </th>
+
+                    <th>
+                        Precio
+                        <span class="resize-handle"></span>
+                    </th>
+
+                    <th>
+                        Existencias
+                        <span class="resize-handle"></span>
+                    </th>
+
+
+                    {% if session.get('rol') == 'admin' %}
+
+                        <th class="text-center">
+                            Acciones
+                            <span class="resize-handle"></span>
+                        </th>
+
+                    {% endif %}
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+
+                {% if productos %}
+
+
+                    {% for producto in productos %}
+
+
+                        <tr>
+
+
+                            <td>
+
+                                <strong>
+
+                                    #{{ producto["id"] }}
+
+                                </strong>
+
+                            </td>
+
+
+                            <td>
+
+                                <strong>
+
+                                    {{ producto["nombre"] }}
+
+                                </strong>
+
+                            </td>
+
+
+                            <td>
+
+                                <span class="badge bg-secondary">
+
+                                    {{ producto["categoria"] or "Sin categoría" }}
+
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                <strong>
+
+                                    ${{ "%.2f"|format(producto["precio"]) }}
+
+                                </strong>
+
+                            </td>
+
+
+                            <td>
+
+
+                                {% if producto["existencias"] == 0 %}
+
+                                    <span class="badge bg-danger">
+
+                                        0 — Agotado
+
+                                    </span>
+
+
+                                {% elif producto["existencias"] <= 2 %}
+
+                                    <span class="badge bg-danger">
+
+                                        {{ producto["existencias"] }}
+
+                                    </span>
+
+
+                                {% elif producto["existencias"] <= 5 %}
+
+                                    <span class="badge bg-warning text-dark">
+
+                                        {{ producto["existencias"] }}
+
+                                    </span>
+
+
+                                {% else %}
+
+                                    <span class="badge bg-success">
+
+                                        {{ producto["existencias"] }}
+
+                                    </span>
+
+                                {% endif %}
+
+
+                            </td>
+
+
+                            {% if session.get('rol') == 'admin' %}
+
+                                <td class="actions-cell">
+
+
+                                    <div class="btn-group btn-group-sm">
+
+
+                                        <a
+                                            href="/editar/{{ producto['id'] }}"
+                                            class="btn btn-warning"
+                                        >
+
+                                            ✏️ Editar
+
+                                        </a>
+
+
+                                        <a
+                                            href="/eliminar/{{ producto['id'] }}"
+                                            class="btn btn-danger"
+                                            onclick="return confirm('¿Seguro de eliminar este producto?');"
+                                        >
+
+                                            🗑️ Eliminar
+
+                                        </a>
+
+
+                                    </div>
+
+
+                                </td>
+
+                            {% endif %}
+
+
+                        </tr>
+
+
+                    {% endfor %}
+
+
+                {% else %}
+
+
+                    <tr>
+
+                        <td
+                            colspan="{% if session.get('rol') == 'admin' %}6{% else %}5{% endif %}"
+                            class="text-center text-muted py-5"
+                        >
+
+                            <div class="fs-1 mb-2">
+
+                                🔎
+
+                            </div>
+
+
+                            <strong>
+
+                                No se encontraron productos.
+
+                            </strong>
+
+
+                            <div class="mt-1">
+
+                                Prueba con otro nombre, categoría
+                                o filtro de stock.
+
+                            </div>
+
+
+                            <a
+                                href="/"
+                                class="btn btn-sm btn-outline-primary mt-3"
+                            >
+
+                                🧹 Limpiar búsqueda
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+
+                {% endif %}
+
+
+            </tbody>
+
+
+        </table>
+
+
+    </div>
+
+
+    <div class="small text-muted mt-2">
+
+        ↔️ Puedes arrastrar el borde de cada encabezado para ajustar el ancho de la columna.
+
+    </div>
+
+
+</div>
+
+
+
+<!-- =================================================
+     ÚLTIMOS MOVIMIENTOS
+================================================= -->
+
+<div class="table-container mb-4">
+
+
+    <div
+        class="d-flex justify-content-between align-items-center mb-3"
+    >
+
+        <h5 class="fw-bold mb-0">
+
+            📊 Últimos Movimientos
+
+        </h5>
+
+
+        <a
+            href="/movimientos"
+            class="btn btn-sm btn-outline-primary"
+        >
+
+            Ver Movimientos
+
+        </a>
+
+    </div>
+
+
+    <div class="table-scroll">
+
+
+        <table
+            class="table table-hover align-middle structured-table movimientos-table"
+            id="movimientosTable"
+        >
+
+
+            <thead class="table-light">
+
+                <tr>
+
+                    <th>
+                        Fecha / Hora
+                        <span class="resize-handle"></span>
+                    </th>
+
+                    <th>
+                        Producto
+                        <span class="resize-handle"></span>
+                    </th>
+
+                    <th>
+                        Tipo
+                        <span class="resize-handle"></span>
+                    </th>
+
+                    <th>
+                        Cantidad
+                        <span class="resize-handle"></span>
+                    </th>
+
+                    <th>
+                        Usuario
+                        <span class="resize-handle"></span>
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+
+                {% if movimientos %}
+
+
+                    {% for mov in movimientos %}
+
+
+                        <tr>
+
+
+                            <td>
+
+                                {% if mov["fecha"] %}
+
+                                    <strong>
+
+                                        {{ mov["fecha"].strftime('%d/%m/%Y') }}
+
+                                    </strong>
+
+                                    <br>
+
+                                    <small class="text-primary">
+
+                                        {{ mov["fecha"].strftime('%H:%M:%S') }}
+
+                                    </small>
+
+                                {% else %}
+
+                                    -
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+
+                                <strong>
+
+                                    {{ mov["nombre"] or "Producto eliminado" }}
+
+                                </strong>
+
+                            </td>
+
+
+                            <td>
+
+
+                                {% if mov["tipo"] == "Entrada" %}
+
+                                    <span class="badge bg-success">
+
+                                        🟢 Entrada
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge bg-danger">
+
+                                        🔴 Salida
+
+                                    </span>
+
+                                {% endif %}
+
+
+                            </td>
+
+
+                            <td>
+
+                                <strong>
+
+                                    {{ mov["cantidad"] }}
+
+                                </strong>
+
+                            </td>
+
+
+                            <td>
+
+                                👤 {{ mov["usuario"] or "admin" }}
+
+                            </td>
+
+
+                        </tr>
+
+
+                    {% endfor %}
+
+
+                {% else %}
+
+
+                    <tr>
+
+                        <td
+                            colspan="5"
+                            class="text-center text-muted py-3"
+                        >
+
+                            📭 No hay movimientos registrados.
+
+                        </td>
+
+                    </tr>
+
+
+                {% endif %}
+
+
+            </tbody>
+
+
+        </table>
+
+
+    </div>
+
+
+    <div class="small text-muted mt-2">
+
+        ↔️ Puedes arrastrar el borde de cada encabezado para ajustar el ancho de la columna.
+
+    </div>
+
+
+</div>
+```
+
+</div>
+
+<!-- =====================================================
+     SCRIPT PARA REDIMENSIONAR COLUMNAS
+===================================================== -->
+
+<script>
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+
+            const tables =
+                document.querySelectorAll(
+                    ".structured-table"
+                );
+
+
+            tables.forEach(
+                function (table) {
+
+
+                    const headers =
+                        table.querySelectorAll(
+                            "thead th"
+                        );
+
+
+                    headers.forEach(
+                        function (header) {
+
+
+                            const handle =
+                                header.querySelector(
+                                    ".resize-handle"
+                                );
+
+
+                            if (!handle) {
+
+                                return;
+
+                            }
+
+
+                            let startX = 0;
+
+                            let startWidth = 0;
+
+
+                            handle.addEventListener(
+                                "mousedown",
+                                function (event) {
+
+
+                                    event.preventDefault();
+
+
+                                    startX =
+                                        event.pageX;
+
+
+                                    startWidth =
+                                        header.offsetWidth;
+
+
+                                    document.body.classList.add(
+                                        "resizing"
+                                    );
+
+
+                                    function resize(event) {
+
+
+                                        const newWidth =
+                                            startWidth
+                                            +
+                                            (
+                                                event.pageX
+                                                -
+                                                startX
+                                            );
+
+
+                                        if (
+                                            newWidth >= 70
+                                        ) {
+
+                                            header.style.width =
+                                                newWidth + "px";
+
+
+                                            const columnIndex =
+                                                Array.from(
+                                                    header.parentElement.children
+                                                ).indexOf(
+                                                    header
+                                                );
+
+
+                                            table.querySelectorAll(
+                                                "tr"
+                                            ).forEach(
+                                                function (row) {
+
+
+                                                    const cell =
+                                                        row.children[
+                                                            columnIndex
+                                                        ];
+
+
+                                                    if (cell) {
+
+                                                        cell.style.width =
+                                                            newWidth + "px";
+
+                                                    }
+
+                                                }
+                                            );
+
+                                        }
+
+                                    }
+
+
+                                    function stopResize() {
+
+
+                                        document.removeEventListener(
+                                            "mousemove",
+                                            resize
+                                        );
+
+
+                                        document.removeEventListener(
+                                            "mouseup",
+                                            stopResize
+                                        );
+
+
+                                        document.body.classList.remove(
+                                            "resizing"
+                                        );
+
+                                    }
+
+
+                                    document.addEventListener(
+                                        "mousemove",
+                                        resize
+                                    );
+
+
+                                    document.addEventListener(
+                                        "mouseup",
+                                        stopResize
+                                    );
+
+                                }
+                            );
+
+                        }
+                    );
+
+                }
+            );
+
+        }
+    );
+
+</script>
+
 <!-- =====================================================
      BOOTSTRAP
 ===================================================== -->
@@ -1542,7 +2090,6 @@
 <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
 ></script>
-
 
 </body>
 
