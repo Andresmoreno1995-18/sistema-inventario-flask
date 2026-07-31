@@ -1,7 +1,4 @@
 import unittest
-# Importamos la app de Flask desde tu archivo principal
-import importlib
-import unittest
 
 # Importamos el archivo principal usando su nombre exacto con espacios
 modulo = importlib.import_module("Ssitema de Inventario")
