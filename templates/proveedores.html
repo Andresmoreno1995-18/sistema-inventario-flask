@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Proveedores</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; background-color: #f8f9fa; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .container { display: flex; gap: 20px; }
+        .form-box { background: white; padding: 20px; border-radius: 8px; width: 350px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .table-box { background: white; padding: 20px; border-radius: 8px; flex: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        label { font-weight: bold; display: block; margin-top: 10px; font-size: 14px; }
+        input { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .btn { display: inline-block; padding: 10px 15px; background: #0d6efd; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 15px; text-decoration: none; width: 100%; text-align: center; box-sizing: border-box; }
+        .btn-secondary { background: #6c757d; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; border: 1px solid #dee2e6; text-align: left; font-size: 14px; }
+        th { background: #e9ecef; }
+        .alert { padding: 10px 15px; margin-bottom: 15px; border-radius: 4px; }
+        .alert-success { background: #d1e7dd; color: #0f5132; }
+        .alert-danger { background: #f8d7da; color: #842029; }
+        @media (max-width: 768px) {
+    .container { flex-direction: column; }
+    .form-box { width: 100%; }
+    table { display: block; overflow-x: auto; }
+}
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h2>Módulo de Gestión de Proveedores</h2>
+    <a href="{{ url_for('inicio') }}" class="btn btn-secondary" style="width: auto;">← Volver al Inicio</a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div>
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="container">
+    {% if rol in ['administrador', 'bodega'] %}
+    <div class="form-box">
+        <h3>Registrar Proveedor</h3>
+        <form action="{{ url_for('nuevo_proveedor') }}" method="POST">
+            <label>NIT / RUT:</label>
+            <input type="text" name="nit" required placeholder="Ej: 900123456-1">
+
+            <label>Nombre / Razón Social:</label>
+            <input type="text" name="nombre" required placeholder="Ej: Distribuidora SAS">
+
+            <label>Teléfono:</label>
+            <input type="text" name="telefono" placeholder="Ej: 3001234567">
+
+            <label>Correo Electrónico:</label>
+            <input type="email" name="email" placeholder="contacto@ejemplo.com">
+
+            <label>Dirección:</label>
+            <input type="text" name="direccion" placeholder="Ej: Calle 10 #20-30">
+
+            <button type="submit" class="btn">Guardar Proveedor</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="table-box">
+        <h3>Lista de Proveedores Registrados</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>NIT</th>
+                    <th>Nombre</th>
+                    <th>Teléfono</th>
+                    <th>Email</th>
+                    <th>Dirección</th>
+                    {% if rol == 'administrador' %}
+                    <th>Acción</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for pr in proveedores %}
+                <tr>
+                    <td>{{ pr.nit }}</td>
+                    <td><strong>{{ pr.nombre }}</strong></td>
+                    <td>{{ pr.telefono if pr.telefono else '-' }}</td>
+                    <td>{{ pr.email if pr.email else '-' }}</td>
+                    <td>{{ pr.direccion if pr.direccion else '-' }}</td>
+                    {% if rol == 'administrador' %}
+                    <td>
+                        <form action="{{ url_for('eliminar_proveedor', id=pr.id) }}" method="POST" onsubmit="return confirm('¿Seguro de eliminar este proveedor? Se desvinculará de sus productos.');">
+                            <button type="submit" style="background:none; border:none; color:red; cursor:pointer; font-size:13px; text-decoration:underline; padding:0;">Eliminar</button>
+                        </form>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: #777;">No hay proveedores registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
