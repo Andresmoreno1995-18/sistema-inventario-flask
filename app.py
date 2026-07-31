@@ -6,9 +6,6 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 
-from datetime import datetime
-from zoneinfo import ZoneInfo
-
 from flask import (
     Flask,
     render_template,
@@ -42,22 +39,6 @@ app.secret_key = os.environ.get(
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
-# Hora oficial de Colombia
-ZONA_HORARIA = ZoneInfo("America/Bogota")
-
-
-# =========================================================
-# HORA ACTUAL DE COLOMBIA
-# =========================================================
-
-def hora_colombia():
-
-    return datetime.now(
-        ZONA_HORARIA
-    ).replace(
-        tzinfo=None
-    )
-
 
 # =========================================================
 # CONEXIÓN A POSTGRESQL
@@ -71,9 +52,21 @@ def get_db():
             "No se encontró la variable DATABASE_URL."
         )
 
-    return psycopg2.connect(
-        DATABASE_URL
+    conn = psycopg2.connect(DATABASE_URL)
+
+    # =====================================================
+    # HORA OFICIAL DE COLOMBIA
+    # =====================================================
+
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SET TIME ZONE 'America/Bogota'"
     )
+
+    cursor.close()
+
+    return conn
 
 
 # =========================================================
@@ -199,7 +192,7 @@ def init_db():
             password TEXT NOT NULL,
             rol TEXT NOT NULL DEFAULT 'admin',
             genero TEXT NOT NULL DEFAULT 'Hombre',
-            fecha_creacion TIMESTAMP
+            fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
 
@@ -212,7 +205,8 @@ def init_db():
 
     cursor.execute("""
         ALTER TABLE usuarios
-        ADD COLUMN IF NOT EXISTS fecha_creacion TIMESTAMP
+        ADD COLUMN IF NOT EXISTS fecha_registro
+        TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     """)
 
 
@@ -257,10 +251,10 @@ def init_db():
             tipo TEXT NOT NULL,
             cantidad INTEGER NOT NULL,
             motivo TEXT,
-            usuario TEXT,
             factura TEXT,
             orden_compra TEXT,
             comentarios TEXT,
+            usuario TEXT,
             FOREIGN KEY (producto_id)
                 REFERENCES productos(id)
                 ON DELETE CASCADE
@@ -269,7 +263,7 @@ def init_db():
 
 
     # =====================================================
-    # AGREGAR CAMPOS NUEVOS A MOVIMIENTOS EXISTENTES
+    # AGREGAR CAMPOS SI LA TABLA YA EXISTÍA
     # =====================================================
 
     cursor.execute("""
@@ -298,13 +292,10 @@ def init_db():
         SELECT
             id,
             password,
-            rol,
-            fecha_creacion
+            rol
         FROM usuarios
         WHERE usuario = %s
-    """, (
-        "admin",
-    ))
+    """, ("admin",))
 
 
     usuario_admin = cursor.fetchone()
@@ -323,15 +314,20 @@ def init_db():
                 password,
                 rol,
                 genero,
-                fecha_creacion
+                fecha_registro
             )
-            VALUES (%s, %s, %s, %s, %s)
+            VALUES (
+                %s,
+                %s,
+                %s,
+                %s,
+                CURRENT_TIMESTAMP
+            )
         """, (
             "admin",
             password_admin,
             "admin",
-            "Hombre",
-            hora_colombia()
+            "Hombre"
         ))
 
     else:
@@ -344,25 +340,10 @@ def init_db():
 
 
     # =====================================================
-    # COLOCAR FECHA A USUARIOS ANTIGUOS
-    # =====================================================
-
-    cursor.execute("""
-        UPDATE usuarios
-        SET fecha_creacion = %s
-        WHERE fecha_creacion IS NULL
-    """, (
-        hora_colombia(),
-    ))
-
-
-    # =====================================================
     # MIGRAR CONTRASEÑAS ANTIGUAS
     # =====================================================
 
-    migrate_old_passwords(
-        cursor
-    )
+    migrate_old_passwords(cursor)
 
 
     conn.commit()
@@ -393,10 +374,6 @@ def index():
         )
 
 
-    # =====================================================
-    # DATOS DE BÚSQUEDA
-    # =====================================================
-
     busqueda = request.args.get(
         "q",
         ""
@@ -409,10 +386,6 @@ def index():
     ).strip().lower()
 
 
-    # =====================================================
-    # VALIDAR FILTRO
-    # =====================================================
-
     if filtro_stock not in (
         "todos",
         "stock",
@@ -423,10 +396,6 @@ def index():
         filtro_stock = "todos"
 
 
-    # =====================================================
-    # CONEXIÓN
-    # =====================================================
-
     conn = get_db()
 
     cursor = conn.cursor(
@@ -434,18 +403,10 @@ def index():
     )
 
 
-    # =====================================================
-    # CONDICIONES DE BÚSQUEDA
-    # =====================================================
-
     condiciones = []
 
     parametros = []
 
-
-    # =====================================================
-    # BUSCAR POR ID, NOMBRE O CATEGORÍA
-    # =====================================================
 
     if busqueda:
 
@@ -465,10 +426,6 @@ def index():
             texto_busqueda
         ])
 
-
-    # =====================================================
-    # FILTROS DE STOCK
-    # =====================================================
 
     if filtro_stock == "stock":
 
@@ -491,10 +448,6 @@ def index():
         """)
 
 
-    # =====================================================
-    # CREAR WHERE
-    # =====================================================
-
     where_sql = ""
 
 
@@ -502,17 +455,11 @@ def index():
 
         where_sql = (
             "WHERE "
-            + " AND ".join(
-                condiciones
-            )
+            + " AND ".join(condiciones)
         )
 
 
-    # =====================================================
-    # CONSULTAR PRODUCTOS
-    # =====================================================
-
-    consulta_productos = f"""
+    cursor.execute(f"""
         SELECT
             id,
             nombre,
@@ -524,109 +471,37 @@ def index():
         {where_sql}
 
         ORDER BY id DESC
-    """
-
-
-    cursor.execute(
-        consulta_productos,
-        parametros
-    )
+    """, parametros)
 
 
     productos = cursor.fetchall()
 
 
     # =====================================================
-    # MOVIMIENTOS RELACIONADOS CON LA BÚSQUEDA
+    # ÚLTIMOS MOVIMIENTOS
     # =====================================================
 
-    if busqueda:
-
-        condiciones_movimientos = []
-
-        parametros_movimientos = []
-
-        texto_busqueda = f"%{busqueda}%"
-
-
-        condiciones_movimientos.append("""
-            (
-                CAST(p.id AS TEXT) ILIKE %s
-                OR p.nombre ILIKE %s
-                OR COALESCE(p.categoria, '') ILIKE %s
-            )
-        """)
-
-
-        parametros_movimientos.extend([
-            texto_busqueda,
-            texto_busqueda,
-            texto_busqueda
-        ])
+    cursor.execute("""
+        SELECT
+            m.fecha,
+            p.nombre,
+            m.tipo,
+            m.cantidad,
+            m.motivo,
+            m.factura,
+            m.orden_compra,
+            m.comentarios,
+            m.usuario
+        FROM movimientos m
+        LEFT JOIN productos p
+            ON m.producto_id = p.id
+        ORDER BY m.id DESC
+        LIMIT 5
+    """)
 
 
-        consulta_movimientos = """
-            SELECT
-                m.id,
-                m.fecha,
-                p.nombre,
-                m.tipo,
-                m.cantidad,
-                m.motivo,
-                m.factura,
-                m.orden_compra,
-                m.comentarios,
-                m.usuario
-            FROM movimientos m
-            LEFT JOIN productos p
-                ON m.producto_id = p.id
-            WHERE
-                (
-                    CAST(p.id AS TEXT) ILIKE %s
-                    OR p.nombre ILIKE %s
-                    OR COALESCE(p.categoria, '') ILIKE %s
-                )
-            ORDER BY m.id DESC
-        """
+    movimientos = cursor.fetchall()
 
-
-        cursor.execute(
-            consulta_movimientos,
-            parametros_movimientos
-        )
-
-
-        movimientos = cursor.fetchall()
-
-
-    else:
-
-        cursor.execute("""
-            SELECT
-                m.id,
-                m.fecha,
-                p.nombre,
-                m.tipo,
-                m.cantidad,
-                m.motivo,
-                m.factura,
-                m.orden_compra,
-                m.comentarios,
-                m.usuario
-            FROM movimientos m
-            LEFT JOIN productos p
-                ON m.producto_id = p.id
-            ORDER BY m.id DESC
-            LIMIT 5
-        """)
-
-
-        movimientos = cursor.fetchall()
-
-
-    # =====================================================
-    # RESUMEN DE LOS RESULTADOS
-    # =====================================================
 
     total_productos = len(
         productos
@@ -660,18 +535,10 @@ def index():
     )
 
 
-    # =====================================================
-    # CERRAR CONEXIÓN
-    # =====================================================
-
     cursor.close()
 
     conn.close()
 
-
-    # =====================================================
-    # ENVIAR INFORMACIÓN
-    # =====================================================
 
     return render_template(
 
@@ -921,10 +788,6 @@ def registro():
         )
 
 
-        # =================================================
-        # CREAR USUARIO CON FECHA Y HORA DE COLOMBIA
-        # =================================================
-
         cursor.execute("""
             INSERT INTO usuarios
             (
@@ -932,15 +795,20 @@ def registro():
                 password,
                 rol,
                 genero,
-                fecha_creacion
+                fecha_registro
             )
-            VALUES (%s, %s, %s, %s, %s)
+            VALUES (
+                %s,
+                %s,
+                %s,
+                %s,
+                CURRENT_TIMESTAMP
+            )
         """, (
             usuario,
             password_protegida,
             rol,
-            genero,
-            hora_colombia()
+            genero
         ))
 
 
@@ -958,59 +826,12 @@ def registro():
 
 
         return redirect(
-            url_for("usuarios")
+            url_for("index")
         )
 
 
     return render_template(
         "registro.html"
-    )
-
-
-# =========================================================
-# USUARIOS - SOLO ADMIN
-# =========================================================
-
-@app.route("/usuarios")
-def usuarios():
-
-    if not requiere_admin():
-
-        return redirect(
-            url_for("index")
-        )
-
-
-    conn = get_db()
-
-    cursor = conn.cursor(
-        cursor_factory=RealDictCursor
-    )
-
-
-    cursor.execute("""
-        SELECT
-            id,
-            usuario,
-            rol,
-            genero,
-            fecha_creacion
-        FROM usuarios
-        ORDER BY id DESC
-    """)
-
-
-    lista_usuarios = cursor.fetchall()
-
-
-    cursor.close()
-
-    conn.close()
-
-
-    return render_template(
-        "usuarios.html",
-        usuarios=lista_usuarios
     )
 
 
@@ -1036,7 +857,7 @@ def logout():
 
 
 # =========================================================
-# AGREGAR PRODUCTO - SOLO ADMIN
+# AGREGAR PRODUCTO
 # =========================================================
 
 @app.route(
@@ -1143,7 +964,7 @@ def agregar():
 
 
 # =========================================================
-# EDITAR PRODUCTO - SOLO ADMIN
+# EDITAR PRODUCTO
 # =========================================================
 
 @app.route(
@@ -1291,7 +1112,7 @@ def editar(id):
 
 
 # =========================================================
-# ELIMINAR PRODUCTO - SOLO ADMIN
+# ELIMINAR PRODUCTO
 # =========================================================
 
 @app.route(
@@ -1347,7 +1168,6 @@ def eliminar(id):
 
 # =========================================================
 # MOVIMIENTOS
-# ADMIN Y USUARIO
 # =========================================================
 
 @app.route(
@@ -1445,15 +1265,8 @@ def movimientos():
         )
 
 
-        # =================================================
-        # VALIDACIÓN DEL PRODUCTO
-        # =================================================
-
         cursor.execute("""
-            SELECT
-                id,
-                nombre,
-                existencias
+            SELECT existencias
             FROM productos
             WHERE id = %s
         """, (
@@ -1502,10 +1315,17 @@ def movimientos():
             )
 
 
-        elif not motivo:
+        elif motivo not in (
+            "Compra",
+            "Venta",
+            "Devolución de cliente",
+            "Devolución a proveedor",
+            "Ajuste de inventario",
+            "Otro"
+        ):
 
             flash(
-                "Debe seleccionar un motivo para el movimiento.",
+                "Debe seleccionar un motivo válido.",
                 "danger"
             )
 
@@ -1519,7 +1339,7 @@ def movimientos():
         ):
 
             flash(
-                "Debe indicar en comentarios el motivo de la devolución.",
+                "En una devolución debe indicar el motivo o explicación en comentarios.",
                 "danger"
             )
 
@@ -1530,10 +1350,6 @@ def movimientos():
                 "existencias"
             ]
 
-
-            # =============================================
-            # CALCULAR NUEVO STOCK
-            # =============================================
 
             if tipo == "Entrada":
 
@@ -1548,10 +1364,6 @@ def movimientos():
                 )
 
 
-            # =============================================
-            # ACTUALIZAR STOCK
-            # =============================================
-
             cursor.execute("""
                 UPDATE productos
                 SET existencias = %s
@@ -1562,10 +1374,9 @@ def movimientos():
             ))
 
 
-            # =============================================
-            # GUARDAR MOVIMIENTO
-            # HORA EXACTA DE COLOMBIA
-            # =============================================
+            # =================================================
+            # REGISTRAR MOVIMIENTO CON HORA DE COLOMBIA
+            # =================================================
 
             cursor.execute("""
                 INSERT INTO movimientos
@@ -1575,14 +1386,13 @@ def movimientos():
                     tipo,
                     cantidad,
                     motivo,
-                    usuario,
                     factura,
                     orden_compra,
-                    comentarios
+                    comentarios,
+                    usuario
                 )
-                VALUES
-                (
-                    %s,
+                VALUES (
+                    CURRENT_TIMESTAMP,
                     %s,
                     %s,
                     %s,
@@ -1593,15 +1403,14 @@ def movimientos():
                     %s
                 )
             """, (
-                hora_colombia(),
                 producto_id,
                 tipo,
                 cantidad,
                 motivo,
-                usuario,
                 factura,
                 orden_compra,
-                comentarios
+                comentarios,
+                usuario
             ))
 
 
@@ -1639,7 +1448,6 @@ def movimientos():
 
     cursor.execute("""
         SELECT
-            m.id,
             m.fecha,
             p.nombre,
             m.tipo,
@@ -1673,8 +1481,6 @@ def movimientos():
 
 # =========================================================
 # PROVEEDORES
-# ADMIN = CONSULTAR + AGREGAR
-# USUARIO = SOLO CONSULTAR
 # =========================================================
 
 @app.route(
@@ -1781,7 +1587,7 @@ def proveedores():
 
 
 # =========================================================
-# EXPORTAR INVENTARIO - SOLO ADMIN
+# EXPORTAR INVENTARIO
 # =========================================================
 
 @app.route("/exportar")
@@ -1833,7 +1639,7 @@ def exportar():
 
 
 # =========================================================
-# GRÁFICO - ADMIN Y USUARIO
+# GRÁFICO
 # =========================================================
 
 @app.route("/grafico")
