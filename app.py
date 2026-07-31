@@ -216,16 +216,16 @@ def init_db():
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS movimientos (
-        id SERIAL PRIMARY KEY,
-        fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        producto_id INTEGER,
-        tipo TEXT NOT NULL,
-        cantidad INTEGER NOT NULL,
-        motivo TEXT,
-        usuario TEXT,
-        FOREIGN KEY (producto_id)
-            REFERENCES productos(id)
-            ON DELETE CASCADE
+            id SERIAL PRIMARY KEY,
+            fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            producto_id INTEGER,
+            tipo TEXT NOT NULL,
+            cantidad INTEGER NOT NULL,
+            motivo TEXT,
+            usuario TEXT,
+            FOREIGN KEY (producto_id)
+                REFERENCES productos(id)
+                ON DELETE CASCADE
         )
     """)
 
@@ -275,7 +275,7 @@ def init_db():
         """)
 
     # -------------------------
-    # MIGRAR CONTRASEÑAS
+    # MIGRAR CONTRASEÑAS ANTIGUAS
     # -------------------------
 
     migrate_old_passwords(cursor)
@@ -292,7 +292,6 @@ init_db()
 
 # =========================================================
 # PÁGINA PRINCIPAL
-# BUSCADOR + FILTROS DE STOCK
 # =========================================================
 
 @app.route("/")
@@ -301,12 +300,12 @@ def index():
     if not requiere_login():
         return redirect(url_for("login"))
 
-    # -----------------------------------------------------
+    # =====================================================
     # DATOS DEL BUSCADOR
-    # -----------------------------------------------------
+    # =====================================================
 
     busqueda = request.args.get(
-        "q",
+        "buscar",
         ""
     ).strip()
 
@@ -315,21 +314,17 @@ def index():
         "todos"
     ).strip().lower()
 
+    # Solo aceptamos filtros válidos
     filtros_validos = (
         "todos",
-        "stock",
+        "agotados",
         "bajo",
-        "agotado"
+        "normal"
     )
 
     if filtro_stock not in filtros_validos:
 
         filtro_stock = "todos"
-
-
-    # -----------------------------------------------------
-    # CONEXIÓN
-    # -----------------------------------------------------
 
     conn = get_db()
 
@@ -337,12 +332,11 @@ def index():
         cursor_factory=RealDictCursor
     )
 
+    # =====================================================
+    # PRODUCTOS
+    # =====================================================
 
-    # -----------------------------------------------------
-    # CONSULTA DE PRODUCTOS
-    # -----------------------------------------------------
-
-    consulta = """
+    consulta_productos = """
         SELECT
             id,
             nombre,
@@ -355,71 +349,81 @@ def index():
 
     parametros = []
 
-
     # -----------------------------------------------------
-    # BUSCAR POR NOMBRE O CATEGORÍA
+    # BUSCAR POR ID, NOMBRE O CATEGORÍA
     # -----------------------------------------------------
 
     if busqueda:
 
-        consulta += """
-            AND (
-                nombre ILIKE %s
-                OR COALESCE(categoria, '') ILIKE %s
-            )
-        """
+        try:
 
-        texto_busqueda = f"%{busqueda}%"
+            id_busqueda = int(busqueda)
 
-        parametros.extend([
-            texto_busqueda,
-            texto_busqueda
-        ])
+            consulta_productos += """
+                AND (
+                    id = %s
+                    OR nombre ILIKE %s
+                    OR COALESCE(categoria, '') ILIKE %s
+                )
+            """
 
+            parametros.extend([
+                id_busqueda,
+                f"%{busqueda}%",
+                f"%{busqueda}%"
+            ])
+
+        except ValueError:
+
+            consulta_productos += """
+                AND (
+                    nombre ILIKE %s
+                    OR COALESCE(categoria, '') ILIKE %s
+                )
+            """
+
+            parametros.extend([
+                f"%{busqueda}%",
+                f"%{busqueda}%"
+            ])
 
     # -----------------------------------------------------
-    # FILTRO DE STOCK
+    # FILTROS DE STOCK
     # -----------------------------------------------------
 
-    if filtro_stock == "stock":
+    if filtro_stock == "agotados":
 
-        consulta += """
-            AND existencias > 0
+        consulta_productos += """
+            AND existencias = 0
         """
 
     elif filtro_stock == "bajo":
 
-        consulta += """
-            AND existencias BETWEEN 1 AND 5
+        consulta_productos += """
+            AND existencias > 0
+            AND existencias <= 5
         """
 
-    elif filtro_stock == "agotado":
+    elif filtro_stock == "normal":
 
-        consulta += """
-            AND existencias = 0
+        consulta_productos += """
+            AND existencias > 5
         """
 
-
-    # -----------------------------------------------------
-    # ORDENAR
-    # -----------------------------------------------------
-
-    consulta += """
+    consulta_productos += """
         ORDER BY id DESC
     """
 
-
     cursor.execute(
-        consulta,
+        consulta_productos,
         parametros
     )
 
     productos = cursor.fetchall()
 
-
-    # -----------------------------------------------------
+    # =====================================================
     # ÚLTIMOS MOVIMIENTOS
-    # -----------------------------------------------------
+    # =====================================================
 
     cursor.execute("""
         SELECT
@@ -437,56 +441,113 @@ def index():
 
     movimientos = cursor.fetchall()
 
+    # =====================================================
+    # CONTADORES GENERALES DEL INVENTARIO
+    # =====================================================
 
-    # -----------------------------------------------------
-    # ESTADÍSTICAS DE LOS RESULTADOS
-    # -----------------------------------------------------
+    cursor.execute("""
+        SELECT
+            COUNT(*) AS total_productos,
+            COALESCE(SUM(existencias), 0) AS unidades_totales,
+            COALESCE(
+                SUM(precio * existencias),
+                0
+            ) AS valor_inventario,
 
-    total_productos = len(productos)
+            COUNT(
+                CASE
+                    WHEN existencias > 0
+                    AND existencias <= 5
+                    THEN 1
+                END
+            ) AS stock_bajo,
 
-    unidades_totales = sum(
-        producto["existencias"]
-        for producto in productos
-    )
+            COUNT(
+                CASE
+                    WHEN existencias = 0
+                    THEN 1
+                END
+            ) AS agotados
 
-    valor_inventario = sum(
-        float(producto["precio"]) *
-        producto["existencias"]
-        for producto in productos
-    )
+        FROM productos
+    """)
 
-    stock_bajo = sum(
-        1
-        for producto in productos
-        if 0 < producto["existencias"] <= 5
-    )
+    resumen = cursor.fetchone()
 
-    agotados = sum(
-        1
-        for producto in productos
-        if producto["existencias"] == 0
-    )
+    total_productos = resumen["total_productos"]
+    unidades_totales = resumen["unidades_totales"]
+    valor_inventario = resumen["valor_inventario"]
+    stock_bajo = resumen["stock_bajo"]
+    agotados = resumen["agotados"]
 
+    # =====================================================
+    # CONTADORES DE FILTROS
+    # =====================================================
+
+    cursor.execute("""
+        SELECT
+            COUNT(*) AS total,
+            COUNT(
+                CASE
+                    WHEN existencias = 0
+                    THEN 1
+                END
+            ) AS agotados,
+            COUNT(
+                CASE
+                    WHEN existencias > 0
+                    AND existencias <= 5
+                    THEN 1
+                END
+            ) AS bajo,
+            COUNT(
+                CASE
+                    WHEN existencias > 5
+                    THEN 1
+                END
+            ) AS normal
+        FROM productos
+    """)
+
+    conteo_stock = cursor.fetchone()
+
+    # =====================================================
+    # CONTAR RESULTADOS ACTUALES
+    # =====================================================
+
+    total_resultados = len(productos)
 
     cursor.close()
     conn.close()
 
-
-    # -----------------------------------------------------
-    # ENVIAR DATOS A HTML
-    # -----------------------------------------------------
-
     return render_template(
         "index.html",
+
         productos=productos,
         movimientos=movimientos,
+
         total_productos=total_productos,
         unidades_totales=unidades_totales,
         valor_inventario=valor_inventario,
         stock_bajo=stock_bajo,
         agotados=agotados,
+
+        # -----------------------------------------------
+        # VARIABLES DEL BUSCADOR
+        # -----------------------------------------------
+
         busqueda=busqueda,
-        filtro_stock=filtro_stock
+        filtro_stock=filtro_stock,
+        total_resultados=total_resultados,
+
+        # -----------------------------------------------
+        # CONTADORES DE STOCK
+        # -----------------------------------------------
+
+        total_stock=conteo_stock["total"],
+        total_agotados=conteo_stock["agotados"],
+        total_bajo=conteo_stock["bajo"],
+        total_normal=conteo_stock["normal"]
     )
 
 
@@ -574,7 +635,6 @@ def login():
 
 # =========================================================
 # REGISTRO DE USUARIOS
-# SOLO ADMIN
 # =========================================================
 
 @app.route(
