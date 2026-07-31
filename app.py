@@ -54,10 +54,7 @@ def get_db():
 
     conn = psycopg2.connect(DATABASE_URL)
 
-    # =====================================================
-    # HORA OFICIAL DE COLOMBIA
-    # =====================================================
-
+    # Hora oficial de Colombia
     cursor = conn.cursor()
 
     cursor.execute(
@@ -263,7 +260,7 @@ def init_db():
 
 
     # =====================================================
-    # AGREGAR CAMPOS SI LA TABLA YA EXISTÍA
+    # AGREGAR CAMPOS SI YA EXISTÍA LA TABLA
     # =====================================================
 
     cursor.execute("""
@@ -295,7 +292,9 @@ def init_db():
             rol
         FROM usuarios
         WHERE usuario = %s
-    """, ("admin",))
+    """, (
+        "admin",
+    ))
 
 
     usuario_admin = cursor.fetchone()
@@ -374,6 +373,10 @@ def index():
         )
 
 
+    # =====================================================
+    # DATOS DE BÚSQUEDA
+    # =====================================================
+
     busqueda = request.args.get(
         "q",
         ""
@@ -402,6 +405,10 @@ def index():
         cursor_factory=RealDictCursor
     )
 
+
+    # =====================================================
+    # CONSTRUIR FILTROS DE PRODUCTOS
+    # =====================================================
 
     condiciones = []
 
@@ -459,6 +466,10 @@ def index():
         )
 
 
+    # =====================================================
+    # PRODUCTOS
+    # =====================================================
+
     cursor.execute(f"""
         SELECT
             id,
@@ -478,34 +489,74 @@ def index():
 
 
     # =====================================================
-    # ÚLTIMOS MOVIMIENTOS
-    # SIN MICROSEGUNDOS
+    # MOVIMIENTOS
+    #
+    # IMPORTANTE:
+    #
+    # Si se está consultando un producto:
+    # solamente aparecen movimientos de los productos
+    # que coinciden con la consulta.
+    #
+    # Si no se está consultando ningún producto:
+    # aparecen los últimos 5 movimientos generales.
     # =====================================================
 
-    cursor.execute("""
-        SELECT
-            TO_CHAR(
+    if busqueda or filtro_stock != "todos":
+
+        cursor.execute(f"""
+            SELECT
                 m.fecha,
-                'DD/MM/YYYY HH24:MI:SS'
-            ) AS fecha,
-            p.nombre,
-            m.tipo,
-            m.cantidad,
-            m.motivo,
-            m.factura,
-            m.orden_compra,
-            m.comentarios,
-            m.usuario
-        FROM movimientos m
-        LEFT JOIN productos p
-            ON m.producto_id = p.id
-        ORDER BY m.id DESC
-        LIMIT 5
-    """)
+                p.nombre,
+                m.tipo,
+                m.cantidad,
+                m.motivo,
+                m.factura,
+                m.orden_compra,
+                m.comentarios,
+                m.usuario
+            FROM movimientos m
+
+            INNER JOIN productos p
+                ON m.producto_id = p.id
+
+            {where_sql}
+
+            ORDER BY m.id DESC
+            LIMIT 50
+        """, parametros)
 
 
-    movimientos = cursor.fetchall()
+        movimientos = cursor.fetchall()
 
+    else:
+
+        cursor.execute("""
+            SELECT
+                m.fecha,
+                p.nombre,
+                m.tipo,
+                m.cantidad,
+                m.motivo,
+                m.factura,
+                m.orden_compra,
+                m.comentarios,
+                m.usuario
+            FROM movimientos m
+
+            LEFT JOIN productos p
+                ON m.producto_id = p.id
+
+            ORDER BY m.id DESC
+            LIMIT 5
+        """)
+
+
+        movimientos = cursor.fetchall()
+
+
+    # =====================================================
+    # RESUMEN
+    # =====================================================
 
     total_productos = len(
         productos
@@ -1380,8 +1431,6 @@ def movimientos():
 
             # =================================================
             # REGISTRAR MOVIMIENTO
-            # HORA DE COLOMBIA
-            # SIN MICROSEGUNDOS
             # =================================================
 
             cursor.execute("""
@@ -1450,15 +1499,19 @@ def movimientos():
 
     # =====================================================
     # HISTORIAL DE MOVIMIENTOS
-    # SIN MICROSEGUNDOS
+    #
+    # IMPORTANTE:
+    # NO usamos TO_CHAR.
+    #
+    # fecha queda como TIMESTAMP para que el HTML pueda
+    # utilizar:
+    #
+    # mov["fecha"].strftime(...)
     # =====================================================
 
     cursor.execute("""
         SELECT
-            TO_CHAR(
-                m.fecha,
-                'DD/MM/YYYY HH24:MI:SS'
-            ) AS fecha,
+            m.fecha,
             p.nombre,
             m.tipo,
             m.cantidad,
