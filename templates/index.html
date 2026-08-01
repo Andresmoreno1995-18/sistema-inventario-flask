@@ -694,8 +694,8 @@
             </a>
 
             {% if session.get('rol') == 'admin' %}
-            <a href="{{ url_for('registro') }}"
-               class="nav-btn purple">
+            <a href="{{ url_for('usuarios') }}"
+                class="nav-btn purple">
                 👥 Usuarios
             </a>
             {% endif %}
@@ -767,6 +767,17 @@
                 Agregar producto
 
             </a>
+
+            <a href="{{ url_for('importar_productos') }}"
+                class="quick-btn">
+
+                 <span class="quick-icon">
+                📊
+            </span>
+
+    Importar Excel
+
+</a>
 
             {% endif %}
 

@@ -1,861 +1,967 @@
-<!DOCTYPE html>
-
-<html lang="es">
-
-<head>
-
-```
-<meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>
-    Usuarios - Sistema de Inventario
-</title>
-
-
-<link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
->
-
-
-<style>
-
-    /* =====================================================
-       FONDO
-    ===================================================== */
-
-    body {
-
-        min-height: 100vh;
-
-        background:
-
-            radial-gradient(
-                circle at 10% 20%,
-                rgba(13, 110, 253, 0.15),
-                transparent 30%
-            ),
-
-            radial-gradient(
-                circle at 90% 10%,
-                rgba(25, 135, 84, 0.12),
-                transparent 30%
-            ),
-
-            linear-gradient(
-                135deg,
-                #eef3f8,
-                #f8fafc,
-                #e9f0f7
-            );
-
-    }
-
-
-    /* =====================================================
-       TARJETAS
-    ===================================================== */
-
-    .main-card {
-
-        border: none;
-
-        border-radius: 16px;
-
-        box-shadow:
-            0 8px 24px
-            rgba(15, 23, 42, 0.08);
-
-        overflow: hidden;
-
-    }
-
-
-    /* =====================================================
-       TABLA
-    ===================================================== */
-
-    .table-box {
-
-        width: 100%;
-
-        overflow-x: auto;
-
-        overflow-y: auto;
-
-        max-height: 600px;
-
-        border-radius: 0 0 16px 16px;
-
-    }
-
-
-    .resizable-table {
-
-        width: max-content;
-
-        min-width: 100%;
-
-        table-layout: fixed;
-
-        border-collapse: separate;
-
-        border-spacing: 0;
-
-    }
-
-
-    .resizable-table th,
-    .resizable-table td {
-
-        padding: 13px 14px;
-
-        vertical-align: middle;
-
-        white-space: nowrap;
-
-        overflow: hidden;
-
-        text-overflow: ellipsis;
-
-        border-bottom: 1px solid #e9ecef;
-
-    }
-
-
-    .resizable-table thead th {
-
-        position: sticky;
-
-        top: 0;
-
-        z-index: 5;
-
-        background: #f8f9fa;
-
-        font-size: 13px;
-
-        text-transform: uppercase;
-
-        letter-spacing: 0.3px;
-
-        color: #374151;
-
-    }
-
-
-    .resizable-table tbody tr:hover {
-
-        background-color: #f8fafc;
-
-    }
-
-
-    /* =====================================================
-       ANCHOS INICIALES
-    ===================================================== */
-
-    .col-id {
-
-        width: 90px;
-
-        min-width: 90px;
-
-    }
-
-
-    .col-usuario {
-
-        width: 230px;
-
-        min-width: 170px;
-
-    }
-
-
-    .col-genero {
-
-        width: 150px;
-
-        min-width: 120px;
-
-    }
-
-
-    .col-rol {
-
-        width: 210px;
-
-        min-width: 170px;
-
-    }
-
-
-    .col-fecha {
-
-        width: 190px;
-
-        min-width: 160px;
-
-    }
-
-
-    .col-hora {
-
-        width: 160px;
-
-        min-width: 140px;
-
-    }
-
-
-    /* =====================================================
-       CONTROL PARA REDIMENSIONAR COLUMNAS
-    ===================================================== */
-
-    .resizable-table th {
-
-        position: sticky;
-
-    }
-
-
-    .resize-handle {
-
-        position: absolute;
-
-        right: 0;
-
-        top: 0;
-
-        width: 7px;
-
-        height: 100%;
-
-        cursor: col-resize;
-
-        user-select: none;
-
-        z-index: 10;
-
-    }
-
-
-    .resize-handle:hover {
-
-        background: rgba(13, 110, 253, 0.35);
-
-    }
-
-
-    .resizing {
-
-        cursor: col-resize !important;
-
-        user-select: none !important;
-
-    }
-
-
-    /* =====================================================
-       BOTONES
-    ===================================================== */
-
-    .btn {
-
-        border-radius: 10px;
-
-        font-weight: 600;
-
-    }
-
-
-    .fecha {
-
-        white-space: nowrap !important;
-
-    }
-
-
-    /* =====================================================
-       INDICACIÓN
-    ===================================================== */
-
-    .table-help {
-
-        font-size: 12px;
-
-        color: #6b7280;
-
-        background: #f8fafc;
-
-        border-top: 1px solid #e5e7eb;
-
-        padding: 9px 14px;
-
-    }
-
-
-    @media (max-width: 768px) {
-
-        .table-box {
-
-            max-height: 500px;
-
+# =========================================================
+# GESTIÓN DE USUARIOS
+# =========================================================
+
+@app.route("/usuarios")
+def usuarios():
+    if not requiere_admin():
+        return redirect(url_for("index"))
+
+    conn = get_db()
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+    cursor.execute("""
+        SELECT
+            id,
+            usuario,
+            rol,
+            genero,
+            fecha_registro,
+            creado_por
+        FROM usuarios
+        ORDER BY id DESC
+    """)
+
+    usuarios_lista = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM usuarios
+    """)
+    total_usuarios = cursor.fetchone()["total"]
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM usuarios
+        WHERE rol = 'admin'
+    """)
+    total_admins = cursor.fetchone()["total"]
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM usuarios
+        WHERE rol = 'usuario'
+    """)
+    total_normales = cursor.fetchone()["total"]
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM usuarios
+        WHERE genero = 'Hombre'
+    """)
+    total_hombres = cursor.fetchone()["total"]
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM usuarios
+        WHERE genero = 'Mujer'
+    """)
+    total_mujeres = cursor.fetchone()["total"]
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "usuarios.html",
+        usuarios=usuarios_lista,
+        total_usuarios=total_usuarios,
+        total_admins=total_admins,
+        total_normales=total_normales,
+        total_hombres=total_hombres,
+        total_mujeres=total_mujeres,
+    )
+
+
+@app.route(
+    "/editar_usuario/<int:id>",
+    methods=["GET", "POST"]
+)
+def editar_usuario(id):
+    if not requiere_admin():
+        return redirect(url_for("index"))
+
+    conn = get_db()
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+    if request.method == "POST":
+
+        nuevo_usuario = request.form.get(
+            "usuario",
+            ""
+        ).strip()
+
+        nuevo_genero = request.form.get(
+            "genero",
+            ""
+        ).strip()
+
+        nuevo_rol = request.form.get(
+            "rol",
+            ""
+        ).strip()
+
+        nueva_password = request.form.get(
+            "password",
+            ""
+        )
+
+        if not nuevo_usuario:
+            flash(
+                "El nombre de usuario es obligatorio.",
+                "danger"
+            )
+
+            cursor.close()
+            conn.close()
+
+            return redirect(
+                url_for(
+                    "editar_usuario",
+                    id=id
+                )
+            )
+
+        if nuevo_genero not in (
+            "Hombre",
+            "Mujer"
+        ):
+            flash(
+                "Debe seleccionar un género válido.",
+                "danger"
+            )
+
+            cursor.close()
+            conn.close()
+
+            return redirect(
+                url_for(
+                    "editar_usuario",
+                    id=id
+                )
+            )
+
+        if nuevo_rol not in (
+            "admin",
+            "usuario"
+        ):
+            flash(
+                "Debe seleccionar un rol válido.",
+                "danger"
+            )
+
+            cursor.close()
+            conn.close()
+
+            return redirect(
+                url_for(
+                    "editar_usuario",
+                    id=id
+                )
+            )
+
+        cursor.execute("""
+            SELECT
+                id,
+                usuario,
+                rol
+            FROM usuarios
+            WHERE id = %s
+        """, (id,))
+
+        usuario_actual = cursor.fetchone()
+
+        if usuario_actual is None:
+            cursor.close()
+            conn.close()
+
+            flash(
+                "El usuario no existe.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("usuarios")
+            )
+
+        # Evitar duplicados
+        cursor.execute("""
+            SELECT id
+            FROM usuarios
+            WHERE usuario = %s
+              AND id <> %s
+        """, (
+            nuevo_usuario,
+            id
+        ))
+
+        if cursor.fetchone():
+            cursor.close()
+            conn.close()
+
+            flash(
+                "Ese nombre de usuario ya existe.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "editar_usuario",
+                    id=id
+                )
+            )
+
+        # No permitir dejar el sistema sin administrador
+        if (
+            usuario_actual["rol"] == "admin"
+            and nuevo_rol != "admin"
+        ):
+            cursor.execute("""
+                SELECT COUNT(*) AS total
+                FROM usuarios
+                WHERE rol = 'admin'
+            """)
+
+            cantidad_admins = cursor.fetchone()["total"]
+
+            if cantidad_admins <= 1:
+                cursor.close()
+                conn.close()
+
+                flash(
+                    "No puedes quitar el último administrador del sistema.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "editar_usuario",
+                        id=id
+                    )
+                )
+
+        if nueva_password.strip():
+
+            cursor.execute("""
+                UPDATE usuarios
+                SET
+                    usuario = %s,
+                    genero = %s,
+                    rol = %s,
+                    password = %s
+                WHERE id = %s
+            """, (
+                nuevo_usuario,
+                nuevo_genero,
+                nuevo_rol,
+                generate_password_hash(
+                    nueva_password
+                ),
+                id,
+            ))
+
+        else:
+
+            cursor.execute("""
+                UPDATE usuarios
+                SET
+                    usuario = %s,
+                    genero = %s,
+                    rol = %s
+                WHERE id = %s
+            """, (
+                nuevo_usuario,
+                nuevo_genero,
+                nuevo_rol,
+                id,
+            ))
+
+        # Si el usuario modifica su propio usuario
+        if (
+            session.get("usuario")
+            == usuario_actual["usuario"]
+        ):
+            session["usuario"] = nuevo_usuario
+            session["rol"] = nuevo_rol
+            session["genero"] = nuevo_genero
+
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        flash(
+            "Usuario actualizado correctamente.",
+            "success"
+        )
+
+        return redirect(
+            url_for("usuarios")
+        )
+
+    cursor.execute("""
+        SELECT
+            id,
+            usuario,
+            rol,
+            genero,
+            fecha_registro,
+            creado_por
+        FROM usuarios
+        WHERE id = %s
+    """, (id,))
+
+    usuario = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    if usuario is None:
+        flash(
+            "Usuario no encontrado.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("usuarios")
+        )
+
+    return render_template(
+        "editar_usuario.html",
+        usuario=usuario
+    )
+
+
+@app.route(
+    "/eliminar_usuario/<int:id>",
+    methods=["POST"]
+)
+def eliminar_usuario(id):
+    if not requiere_admin():
+        return redirect(url_for("index"))
+
+    conn = get_db()
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+    cursor.execute("""
+        SELECT
+            id,
+            usuario,
+            rol
+        FROM usuarios
+        WHERE id = %s
+    """, (id,))
+
+    usuario = cursor.fetchone()
+
+    if usuario is None:
+        cursor.close()
+        conn.close()
+
+        flash(
+            "El usuario no existe.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("usuarios")
+        )
+
+    # No permitir eliminarse a sí mismo
+    if usuario["usuario"] == session.get("usuario"):
+        cursor.close()
+        conn.close()
+
+        flash(
+            "No puedes eliminar el usuario con el que estás conectado.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("usuarios")
+        )
+
+    # No permitir eliminar el último administrador
+    if usuario["rol"] == "admin":
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM usuarios
+            WHERE rol = 'admin'
+        """)
+
+        cantidad_admins = cursor.fetchone()["total"]
+
+        if cantidad_admins <= 1:
+            cursor.close()
+            conn.close()
+
+            flash(
+                "No puedes eliminar el último administrador del sistema.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("usuarios")
+            )
+
+    cursor.execute("""
+        DELETE FROM usuarios
+        WHERE id = %s
+    """, (id,))
+
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    flash(
+        "Usuario eliminado correctamente.",
+        "success"
+    )
+
+    return redirect(
+        url_for("usuarios")
+    )
+
+
+# =========================================================
+# IMPORTACIÓN MASIVA DE PRODUCTOS
+# =========================================================
+
+@app.route(
+    "/importar_productos",
+    methods=["GET", "POST"]
+)
+def importar_productos():
+
+    if not requiere_admin():
+        return redirect(url_for("index"))
+
+    if request.method == "GET":
+        return render_template(
+            "importar_productos.html"
+        )
+
+    archivo = request.files.get("archivo")
+
+    if not archivo or not archivo.filename:
+        flash(
+            "Debe seleccionar un archivo.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_productos")
+        )
+
+    nombre_archivo = archivo.filename.lower()
+
+    try:
+
+        if nombre_archivo.endswith(".xlsx"):
+
+            workbook = load_workbook(
+                archivo,
+                read_only=True,
+                data_only=True
+            )
+
+            hoja = workbook.active
+
+            filas = list(
+                hoja.iter_rows(
+                    values_only=True
+                )
+            )
+
+            workbook.close()
+
+            if not filas:
+                raise ValueError(
+                    "El archivo Excel está vacío."
+                )
+
+            encabezados = [
+                str(valor).strip().lower()
+                if valor is not None
+                else ""
+                for valor in filas[0]
+            ]
+
+            datos = []
+
+            for fila in filas[1:]:
+                datos.append(
+                    dict(
+                        zip(
+                            encabezados,
+                            fila
+                        )
+                    )
+                )
+
+        elif nombre_archivo.endswith(".csv"):
+
+            df = pd.read_csv(
+                archivo,
+                encoding="utf-8-sig"
+            )
+
+            df.columns = [
+                str(columna).strip().lower()
+                for columna in df.columns
+            ]
+
+            datos = df.to_dict(
+                orient="records"
+            )
+
+        else:
+
+            flash(
+                "Formato no válido. Utiliza Excel .xlsx o CSV .csv.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("importar_productos")
+            )
+
+        columnas_requeridas = {
+            "nombre",
+            "categoria",
+            "precio_compra",
+            "precio",
+            "existencias",
+            "proveedor",
         }
 
+        columnas_actuales = set(
+            datos[0].keys()
+        ) if datos else set()
+
+        faltantes = (
+            columnas_requeridas
+            - columnas_actuales
+        )
+
+        if faltantes:
+            flash(
+                "Faltan columnas obligatorias: "
+                + ", ".join(
+                    sorted(faltantes)
+                ),
+                "danger"
+            )
+
+            return redirect(
+                url_for("importar_productos")
+            )
+
+        if not datos:
+            flash(
+                "No se encontraron productos en el archivo.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("importar_productos")
+            )
+
+        conn = get_db()
+        cursor = conn.cursor(
+            cursor_factory=RealDictCursor
+        )
+
+        productos_validos = []
+        errores = []
+        nombres_archivo = set()
+
+        for numero, fila in enumerate(
+            datos,
+            start=2
+        ):
+
+            nombre = str(
+                fila.get("nombre") or ""
+            ).strip()
+
+            categoria = str(
+                fila.get("categoria") or ""
+            ).strip()
+
+            proveedor_nombre = str(
+                fila.get("proveedor") or ""
+            ).strip()
+
+            try:
+
+                precio_compra = float(
+                    fila.get(
+                        "precio_compra",
+                        0
+                    )
+                )
+
+                precio = float(
+                    fila.get(
+                        "precio",
+                        0
+                    )
+                )
+
+                existencias = int(
+                    float(
+                        fila.get(
+                            "existencias",
+                            0
+                        )
+                    )
+                )
+
+            except (
+                TypeError,
+                ValueError
+            ):
+
+                errores.append(
+                    f"Fila {numero}: "
+                    "precio o existencias inválidos."
+                )
+
+                continue
+
+            if not nombre:
+
+                errores.append(
+                    f"Fila {numero}: "
+                    "el nombre es obligatorio."
+                )
+
+                continue
+
+            if not categoria:
+
+                errores.append(
+                    f"Fila {numero}: "
+                    "la categoría es obligatoria."
+                )
+
+                continue
+
+            if precio < 0:
+
+                errores.append(
+                    f"Fila {numero}: "
+                    "el precio no puede ser negativo."
+                )
+
+                continue
+
+            if precio_compra < 0:
+
+                errores.append(
+                    f"Fila {numero}: "
+                    "el precio de compra no puede ser negativo."
+                )
+
+                continue
+
+            if existencias < 0:
+
+                errores.append(
+                    f"Fila {numero}: "
+                    "las existencias no pueden ser negativas."
+                )
+
+                continue
+
+            nombre_clave = nombre.lower()
+
+            if nombre_clave in nombres_archivo:
+
+                errores.append(
+                    f"Fila {numero}: "
+                    f"producto duplicado en el archivo: {nombre}."
+                )
+
+                continue
+
+            nombres_archivo.add(
+                nombre_clave
+            )
+
+            cursor.execute("""
+                SELECT id
+                FROM productos
+                WHERE LOWER(nombre) = LOWER(%s)
+                LIMIT 1
+            """, (nombre,))
+
+            if cursor.fetchone():
+
+                errores.append(
+                    f"Fila {numero}: "
+                    f"el producto ya existe: {nombre}."
+                )
+
+                continue
+
+            proveedor_id = None
+
+            if proveedor_nombre:
+
+                cursor.execute("""
+                    SELECT id
+                    FROM proveedores
+                    WHERE LOWER(nombre) = LOWER(%s)
+                    LIMIT 1
+                """, (
+                    proveedor_nombre,
+                ))
+
+                proveedor = cursor.fetchone()
+
+                if proveedor is None:
+
+                    errores.append(
+                        f"Fila {numero}: "
+                        f"el proveedor '{proveedor_nombre}' no existe."
+                    )
+
+                    continue
+
+                proveedor_id = proveedor["id"]
+
+            productos_validos.append({
+                "nombre": nombre,
+                "categoria": categoria,
+                "precio_compra": precio_compra,
+                "precio": precio,
+                "existencias": existencias,
+                "proveedor_id": proveedor_id,
+            })
+
+        if errores:
+
+            cursor.close()
+            conn.close()
+
+            mensaje = (
+                f"Importación cancelada. "
+                f"Se encontraron {len(errores)} error(es). "
+                f"No se guardó ningún producto."
+            )
+
+            flash(
+                mensaje,
+                "danger"
+            )
+
+            return render_template(
+                "importar_productos.html",
+                errores=errores[:30],
+                cantidad_validos=len(
+                    productos_validos
+                )
+            )
+
+        if not productos_validos:
+
+            cursor.close()
+            conn.close()
+
+            flash(
+                "No hay productos válidos para importar.",
+                "warning"
+            )
+
+            return redirect(
+                url_for("importar_productos")
+            )
+
+        for producto in productos_validos:
+
+            cursor.execute("""
+                INSERT INTO productos (
+                    nombre,
+                    categoria,
+                    precio,
+                    existencias,
+                    precio_compra,
+                    proveedor_id
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s
+                )
+                RETURNING id
+            """, (
+                producto["nombre"],
+                producto["categoria"],
+                producto["precio"],
+                producto["existencias"],
+                producto["precio_compra"],
+                producto["proveedor_id"],
+            ))
+
+            producto_id = cursor.fetchone()["id"]
+
+            if producto["existencias"] > 0:
+
+                cursor.execute("""
+                    INSERT INTO movimientos (
+                        fecha,
+                        producto_id,
+                        tipo,
+                        cantidad,
+                        motivo,
+                        factura,
+                        orden_compra,
+                        comentarios,
+                        usuario
+                    )
+                    VALUES (
+                        CURRENT_TIMESTAMP,
+                        %s,
+                        'Entrada',
+                        %s,
+                        'Carga masiva Excel',
+                        '',
+                        '',
+                        'Stock inicial importado desde archivo',
+                        %s
+                    )
+                """, (
+                    producto_id,
+                    producto["existencias"],
+                    session.get(
+                        "usuario",
+                        "admin"
+                    ),
+                ))
+
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        flash(
+            f"Importación completada correctamente. "
+            f"Se agregaron {len(productos_validos)} productos.",
+            "success"
+        )
+
+        return redirect(
+            url_for("index")
+        )
+
+    except Exception as error:
+
+        try:
+            conn.rollback()
+            cursor.close()
+            conn.close()
+        except Exception:
+            pass
+
+        print(
+            "ERROR IMPORTANDO PRODUCTOS:",
+            error
+        )
+
+        flash(
+            "No fue posible procesar el archivo. "
+            "Verifica que tenga el formato correcto.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_productos")
+        )
+
+
+# =========================================================
+# PLANTILLA EXCEL
+# =========================================================
+
+@app.route("/plantilla_productos")
+def plantilla_productos():
+
+    if not requiere_admin():
+        return redirect(url_for("index"))
+
+    workbook = Workbook()
+    hoja = workbook.active
+    hoja.title = "Productos"
+
+    encabezados = [
+        "nombre",
+        "categoria",
+        "precio_compra",
+        "precio",
+        "existencias",
+        "proveedor",
+    ]
+
+    hoja.append(encabezados)
+
+    hoja.append([
+        "Laptop Lenovo",
+        "Computadores",
+        1800000,
+        2400000,
+        10,
+        "",
+    ])
+
+    hoja.append([
+        "Mouse Logitech",
+        "Accesorios",
+        40000,
+        65000,
+        50,
+        "",
+    ])
+
+    hoja.freeze_panes = "A2"
+
+    anchos = {
+        "A": 30,
+        "B": 25,
+        "C": 18,
+        "D": 18,
+        "E": 15,
+        "F": 30,
     }
 
-</style>
-```
-
-</head>
-
-<body>
-
-<!-- =====================================================
-     NAVBAR
-===================================================== -->
-
-<nav class="navbar navbar-dark bg-dark mb-4">
-
-```
-<div class="container-fluid px-4">
-
-
-    <a
-        href="/"
-        class="navbar-brand fw-bold"
-    >
-
-        📦 Sistema de Gestión de Inventario
-
-    </a>
-
-
-    <div class="d-flex gap-2">
-
-
-        <a
-            href="/registro"
-            class="btn btn-primary btn-sm"
-        >
-
-            ➕ Crear Usuario
-
-        </a>
-
-
-        <a
-            href="/"
-            class="btn btn-outline-light btn-sm"
-        >
-
-            Volver al Panel
-
-        </a>
-
-    </div>
-
-</div>
-```
-
-</nav>
-
-<div class="container-fluid px-4 pb-5">
-
-```
-<!-- ENCABEZADO -->
-
-<div class="mb-4">
-
-    <h2 class="fw-bold">
-
-        👥 Gestión de Usuarios
-
-    </h2>
-
-
-    <p class="text-muted">
-
-        Registro de usuarios creados en la plataforma,
-        incluyendo fecha y hora exacta.
-
-    </p>
-
-</div>
-
-
-
-<!-- MENSAJES -->
-
-{% with messages = get_flashed_messages(with_categories=true) %}
-
-    {% if messages %}
-
-        {% for category, message in messages %}
-
-            <div
-                class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show"
-                role="alert"
-            >
-
-                {{ message }}
-
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert"
-                ></button>
-
-            </div>
-
-        {% endfor %}
-
-    {% endif %}
-
-{% endwith %}
-
-
-
-<!-- RESUMEN -->
-
-<div class="row g-3 mb-4">
-
-
-    <div class="col-md-4">
-
-        <div class="card main-card p-3">
-
-            <small class="text-muted fw-bold">
-
-                TOTAL DE USUARIOS
-
-            </small>
-
-
-            <div class="fs-2 fw-bold">
-
-                {{ usuarios|length }}
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="col-md-4">
-
-        <div class="card main-card p-3">
-
-            <small class="text-muted fw-bold">
-
-                ADMINISTRADORES
-
-            </small>
-
-
-            <div class="fs-2 fw-bold text-primary">
-
-                {{ usuarios|selectattr('rol', 'equalto', 'admin')|list|length }}
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="col-md-4">
-
-        <div class="card main-card p-3">
-
-            <small class="text-muted fw-bold">
-
-                USUARIOS NORMALES
-
-            </small>
-
-
-            <div class="fs-2 fw-bold text-success">
-
-                {{ usuarios|selectattr('rol', 'equalto', 'usuario')|list|length }}
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-</div>
-
-
-
-<!-- TABLA -->
-
-<div class="card main-card">
-
-
-    <div class="card-header bg-dark text-white">
-
-        <h5 class="mb-0">
-
-            📋 Registro de usuarios
-
-        </h5>
-
-    </div>
-
-
-    <div class="table-box">
-
-
-        <table class="table table-hover align-middle mb-0 resizable-table">
-
-
-            <thead>
-
-                <tr>
-
-                    <th class="col-id">
-
-                        ID
-
-                        <span class="resize-handle"></span>
-
-                    </th>
-
-
-                    <th class="col-usuario">
-
-                        Usuario
-
-                        <span class="resize-handle"></span>
-
-                    </th>
-
-
-                    <th class="col-genero">
-
-                        Género
-
-                        <span class="resize-handle"></span>
-
-                    </th>
-
-
-                    <th class="col-rol">
-
-                        Rol
-
-                        <span class="resize-handle"></span>
-
-                    </th>
-
-
-                    <th class="col-fecha">
-
-                        Fecha de creación
-
-                        <span class="resize-handle"></span>
-
-                    </th>
-
-
-                    <th class="col-hora">
-
-                        Hora
-
-                        <span class="resize-handle"></span>
-
-                    </th>
-
-                </tr>
-
-            </thead>
-
-
-            <tbody>
-
-
-                {% if usuarios %}
-
-
-                    {% for user in usuarios %}
-
-
-                        <tr>
-
-
-                            <td>
-
-                                #{{ user['id'] }}
-
-                            </td>
-
-
-                            <td>
-
-                                <strong>
-
-                                    {% if user['genero'] == 'Mujer' %}
-
-                                        👩
-
-                                    {% else %}
-
-                                        👨
-
-                                    {% endif %}
-
-                                    {{ user['usuario'] }}
-
-                                </strong>
-
-                            </td>
-
-
-                            <td>
-
-                                {% if user['genero'] == 'Mujer' %}
-
-                                    <span class="badge bg-danger">
-
-                                        Mujer
-
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="badge bg-primary">
-
-                                        Hombre
-
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <td>
-
-                                {% if user['rol'] == 'admin' %}
-
-                                    <span class="badge bg-dark">
-
-                                        👑 Administrador
-
-                                    </span>
-
-                                {% else %}
-
-                                    <span class="badge bg-success">
-
-                                        👤 Usuario
-
-                                    </span>
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <td class="fecha">
-
-                                {% if user['fecha_creacion'] %}
-
-                                    {{ user['fecha_creacion'].strftime('%d/%m/%Y') }}
-
-                                {% else %}
-
-                                    -
-
-                                {% endif %}
-
-                            </td>
-
-
-                            <td>
-
-                                {% if user['fecha_creacion'] %}
-
-                                    <span class="badge bg-primary">
-
-                                        🕐 {{ user['fecha_creacion'].strftime('%H:%M:%S') }}
-
-                                    </span>
-
-                                {% else %}
-
-                                    -
-
-                                {% endif %}
-
-                            </td>
-
-
-                        </tr>
-
-
-                    {% endfor %}
-
-
-                {% else %}
-
-
-                    <tr>
-
-                        <td
-                            colspan="6"
-                            class="text-center text-muted py-5"
-                        >
-
-                            No hay usuarios registrados.
-
-                        </td>
-
-                    </tr>
-
-
-                {% endif %}
-
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-
-    <div class="table-help">
-
-        ↔️ Puedes arrastrar el borde de cada columna para
-        aumentar o reducir su tamaño.
-
-        📌 El encabezado permanece visible al desplazarte.
-
-    </div>
-
-</div>
-
-
-
-<!-- INFORMACIÓN -->
-
-<div class="alert alert-info mt-4">
-
-    <strong>ℹ️ Registro de auditoría:</strong>
-
-    La fecha y hora se guardan automáticamente utilizando
-    la hora oficial de Colombia.
-
-    Cada nuevo usuario queda registrado con sus datos
-    de creación.
-
-</div>
-```
-
-</div>
-
-<script>
-
-    /* =====================================================
-       REDIMENSIONAR COLUMNAS
-    ===================================================== */
-
-    document.querySelectorAll(".resizable-table").forEach(function(table) {
-
-        const headers =
-            table.querySelectorAll("thead th");
-
-        headers.forEach(function(header) {
-
-            const handle =
-                header.querySelector(".resize-handle");
-
-            if (!handle) return;
-
-            handle.addEventListener("mousedown", function(event) {
-
-                event.preventDefault();
-
-                const startX =
-                    event.pageX;
-
-                const startWidth =
-                    header.offsetWidth;
-
-                document.body.classList.add("resizing");
-
-
-                function resize(event) {
-
-                    const newWidth =
-                        startWidth +
-                        (event.pageX - startX);
-
-                    const minimumWidth = 90;
-
-                    if (newWidth >= minimumWidth) {
-
-                        header.style.width =
-                            newWidth + "px";
-
-                        header.style.minWidth =
-                            newWidth + "px";
-
-                    }
-
-                }
-
-
-                function stopResize() {
-
-                    document.body.classList.remove("resizing");
-
-                    document.removeEventListener(
-                        "mousemove",
-                        resize
-                    );
-
-                    document.removeEventListener(
-                        "mouseup",
-                        stopResize
-                    );
-
-                }
-
-
-                document.addEventListener(
-                    "mousemove",
-                    resize
-                );
-
-                document.addEventListener(
-                    "mouseup",
-                    stopResize
-                );
-
-            });
-
-        });
-
-    });
-
-</script>
-
-<script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-></script>
-
-</body>
-
-</html>
+    for columna, ancho in anchos.items():
+        hoja.column_dimensions[
+            columna
+        ].width = ancho
+
+    salida = BytesIO()
+
+    workbook.save(salida)
+
+    salida.seek(0)
+
+    return send_file(
+        salida,
+        as_attachment=True,
+        download_name="plantilla_productos.xlsx",
+        mimetype=(
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        ),
+    )

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Editar Usuario</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+            background:
+                linear-gradient(
+                    135deg,
+                    #eef3f8,
+                    #dce7f2
+                );
+        }
+
+        .card {
+            width: min(500px, calc(100% - 30px));
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow:
+                0 15px 40px
+                rgba(0,0,0,.12);
+        }
+
+        h1 {
+            margin-top: 0;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 6px;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccd5df;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #126de0;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0d5ec5;
+        }
+
+        .back {
+            display: block;
+            margin-top: 15px;
+            text-align: center;
+            text-decoration: none;
+            color: #126de0;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .info {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            color: #475569;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+    <h1>
+        ✏️ Editar usuario
+    </h1>
+
+    <div class="subtitle">
+        Modifica los datos del usuario.
+    </div>
+
+    <div class="info">
+
+        <strong>ID:</strong>
+        {{ usuario.id }}
+
+        <br>
+
+        <strong>Creado:</strong>
+        {{ usuario.fecha_registro.strftime('%d/%m/%Y %H:%M:%S')
+        if usuario.fecha_registro
+        else '-' }}
+
+        <br>
+
+        <strong>Creado por:</strong>
+        {{ usuario.creado_por or 'Sistema' }}
+
+    </div>
+
+
+    <form
+        method="POST"
+        action="{{ url_for(
+            'editar_usuario',
+            id=usuario.id
+        ) }}"
+    >
+
+        <label for="usuario">
+            Usuario
+        </label>
+
+        <input
+            type="text"
+            id="usuario"
+            name="usuario"
+            value="{{ usuario.usuario }}"
+            required
+        >
+
+
+        <label for="genero">
+            Género
+        </label>
+
+        <select
+            id="genero"
+            name="genero"
+            required
+        >
+
+            <option
+                value="Hombre"
+                {% if usuario.genero == 'Hombre' %}
+                selected
+                {% endif %}
+            >
+                Hombre
+            </option>
+
+            <option
+                value="Mujer"
+                {% if usuario.genero == 'Mujer' %}
+                selected
+                {% endif %}
+            >
+                Mujer
+            </option>
+
+        </select>
+
+
+        <label for="rol">
+            Rol
+        </label>
+
+        <select
+            id="rol"
+            name="rol"
+            required
+        >
+
+            <option
+                value="usuario"
+                {% if usuario.rol == 'usuario' %}
+                selected
+                {% endif %}
+            >
+                Usuario
+            </option>
+
+            <option
+                value="admin"
+                {% if usuario.rol == 'admin' %}
+                selected
+                {% endif %}
+            >
+                Administrador
+            </option>
+
+        </select>
+
+
+        <label for="password">
+            Nueva contraseña
+        </label>
+
+        <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Déjala vacía para conservar la actual"
+        >
+
+
+        <button type="submit">
+            💾 Guardar cambios
+        </button>
+
+    </form>
+
+
+    <a
+        href="{{ url_for('usuarios') }}"
+        class="back"
+    >
+        ← Volver a usuarios
+    </a>
+
+</div>
+
+</body>
+
+</html>

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Importar Productos</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #eef3f8;
+            color: #172033;
+        }
+
+        .navbar {
+            background: #20252b;
+            color: white;
+            padding: 14px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .brand {
+            font-weight: bold;
+        }
+
+        .nav-btn {
+            color: white;
+            text-decoration: none;
+            background: #126de0;
+            padding: 9px 13px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .container {
+            width: min(1050px, calc(100% - 30px));
+            margin: auto;
+            padding: 30px 0;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 25px;
+            box-shadow:
+                0 5px 18px
+                rgba(0,0,0,.07);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .description {
+            color: #66758a;
+            line-height: 1.6;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns:
+                repeat(3, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+
+        .step {
+            background: #f5f8fc;
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .step strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .upload-box {
+            border: 2px dashed #b9c7d8;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        input[type="file"] {
+            margin: 15px 0;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 11px 16px;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            background: #126de0;
+        }
+
+        .green {
+            background: #15945d;
+        }
+
+        .gray {
+            background: #64748b;
+        }
+
+        .preview {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 850px;
+        }
+
+        th {
+            background: #20252b;
+            color: white;
+            padding: 10px;
+            font-size: 11px;
+        }
+
+        td {
+            padding: 9px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 11px;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .danger {
+            background: #fde0e3;
+            color: #8d1e2b;
+        }
+
+        .warning {
+            background: #fff1cf;
+            color: #7b5a00;
+        }
+
+        @media (max-width: 700px) {
+
+            .steps {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="brand">
+        📥 Importación masiva de productos
+    </div>
+
+    <a
+        href="{{ url_for('index') }}"
+        class="nav-btn"
+    >
+        ← Dashboard
+    </a>
+
+</header>
+
+
+<main class="container">
+
+
+    <div class="card">
+
+        <h1>
+            📊 Cargar productos desde Excel
+        </h1>
+
+        <p class="description">
+
+            Puedes cargar cientos o miles de productos
+            utilizando una sola hoja de Excel.
+
+            El sistema validará los datos antes de
+            guardarlos en PostgreSQL.
+
+        </p>
+
+
+        <div class="steps">
+
+            <div class="step">
+
+                <strong>
+                    1️⃣ Descargar plantilla
+                </strong>
+
+                Utiliza el formato oficial.
+
+            </div>
+
+            <div class="step">
+
+                <strong>
+                    2️⃣ Completar Excel
+                </strong>
+
+                Una fila representa un producto.
+
+            </div>
+
+            <div class="step">
+
+                <strong>
+                    3️⃣ Seleccionar y cargar
+                </strong>
+
+                El sistema validará los datos.
+
+            </div>
+
+        </div>
+
+
+        <a
+            href="{{ url_for('plantilla_productos') }}"
+            class="button green"
+        >
+            📥 Descargar plantilla Excel
+        </a>
+
+    </div>
+
+
+    {% if errores %}
+
+    <div class="card">
+
+        <div class="message danger">
+
+            ❌ La importación fue cancelada.
+
+            Se encontraron errores.
+
+            No se guardó ningún producto.
+
+        </div>
+
+        {% for error in errores %}
+
+            <div class="message warning">
+                {{ error }}
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% endif %}
+
+
+    <div class="card">
+
+        <form
+            method="POST"
+            action="{{ url_for('importar_productos') }}"
+            enctype="multipart/form-data"
+            id="formImportacion"
+        >
+
+            <div class="upload-box">
+
+                <h3>
+                    📄 Selecciona tu archivo
+                </h3>
+
+                <p>
+                    Excel es la opción principal.
+                    CSV queda disponible como alternativa.
+                </p>
+
+                <input
+                    type="file"
+                    id="archivo"
+                    name="archivo"
+                    accept=".xlsx,.csv"
+                    required
+                >
+
+                <br>
+
+                <button
+                    type="submit"
+                    class="button"
+                >
+                    🚀 Importar productos
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <div
+        class="card"
+        id="previewCard"
+        style="display:none;"
+    >
+
+        <h2>
+            👀 Vista previa
+        </h2>
+
+        <p>
+            Revisa las primeras filas antes de importar.
+        </p>
+
+        <div class="preview">
+
+            <table>
+
+                <thead id="previewHead"></thead>
+
+                <tbody id="previewBody"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+</main>
+
+
+<script
+src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"
+></script>
+
+
+<script>
+
+const archivoInput =
+    document.getElementById("archivo");
+
+const previewCard =
+    document.getElementById("previewCard");
+
+const previewHead =
+    document.getElementById("previewHead");
+
+const previewBody =
+    document.getElementById("previewBody");
+
+
+archivoInput.addEventListener(
+    "change",
+    function () {
+
+        const archivo = this.files[0];
+
+        if (!archivo) {
+            return;
+        }
+
+        const lector =
+            new FileReader();
+
+        lector.onload = function (evento) {
+
+            try {
+
+                const datos =
+                    new Uint8Array(
+                        evento.target.result
+                    );
+
+                const workbook =
+                    XLSX.read(
+                        datos,
+                        {
+                            type: "array"
+                        }
+                    );
+
+                const hoja =
+                    workbook.Sheets[
+                        workbook.SheetNames[0]
+                    ];
+
+                const filas =
+                    XLSX.utils.sheet_to_json(
+                        hoja,
+                        {
+                            header: 1,
+                            defval: ""
+                        }
+                    );
+
+                if (!filas.length) {
+                    return;
+                }
+
+                previewHead.innerHTML = "";
+                previewBody.innerHTML = "";
+
+                const encabezados =
+                    filas[0];
+
+                let encabezadoHTML = "<tr>";
+
+                encabezados.forEach(
+                    function (columna) {
+
+                        encabezadoHTML +=
+                            "<th>" +
+                            String(columna) +
+                            "</th>";
+
+                    }
+                );
+
+                encabezadoHTML += "</tr>";
+
+                previewHead.innerHTML =
+                    encabezadoHTML;
+
+
+                const limite =
+                    Math.min(
+                        filas.length,
+                        11
+                    );
+
+                for (
+                    let i = 1;
+                    i < limite;
+                    i++
+                ) {
+
+                    let filaHTML =
+                        "<tr>";
+
+                    encabezados.forEach(
+                        function (_, indice) {
+
+                            filaHTML +=
+                                "<td>" +
+                                String(
+                                    filas[i][indice] || ""
+                                ) +
+                                "</td>";
+
+                        }
+                    );
+
+                    filaHTML += "</tr>";
+
+                    previewBody.innerHTML +=
+                        filaHTML;
+                }
+
+                previewCard.style.display =
+                    "block";
+
+            } catch (error) {
+
+                console.error(error);
+
+            }
+
+        };
+
+        lector.readAsArrayBuffer(
+            archivo
+        );
+
+    }
+);
+
+</script>
+
+</body>
+
+</html>

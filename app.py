@@ -40,7 +40,7 @@ app.secret_key = os.environ.get(
     "clave_secreta_inventario_2026",
 )
 
-DATABASE_URL = os.environ.get("DATABASE_URL")
+DATABASE_URL = "postgresql://postgres:Prueba23**@localhost:5432/inventario_db"
 
 
 # =========================================================
@@ -77,9 +77,19 @@ def password_is_hashed(password):
 
 
 def migrate_old_passwords(cursor):
+    cursor.execute("""SELECT id, password FROM usuarios""")
+    registros = cursor.fetchall()
+    if not registros:
+        return
+    
+    for usuario_id, password_actual in registros:
+        pass
+
+    
     cursor.execute("""
-        SELECT id, password
-        FROM usuarios
+    ALTER TABLE usuarios
+    ADD COLUMN IF NOT EXISTS creado_por
+    TEXT NOT NULL DEFAULT 'Sistema'
     """)
 
     for usuario_id, password_actual in cursor.fetchall():
@@ -157,6 +167,7 @@ def init_db():
                 password TEXT NOT NULL,
                 rol TEXT NOT NULL DEFAULT 'admin',
                 genero TEXT NOT NULL DEFAULT 'Hombre',
+                creado_por TEXT,
                 fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
@@ -690,26 +701,29 @@ def init_db():
 
         if usuario_admin is None:
             cursor.execute("""
-                INSERT INTO usuarios (
-                    usuario,
-                    password,
-                    rol,
-                    genero,
-                    fecha_registro
-                )
-                VALUES (
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    CURRENT_TIMESTAMP
-                )
-            """, (
-                "admin",
-                generate_password_hash("admin123"),
-                "admin",
-                "Hombre",
-            ))
+    INSERT INTO usuarios (
+        usuario,
+        password,
+        rol,
+        genero,
+        fecha_registro,
+        creado_por
+    )
+    VALUES (
+        %s,
+        %s,
+        %s,
+        %s,
+        CURRENT_TIMESTAMP,
+        %s
+    )
+""", (
+    'admin',                              
+    generate_password_hash('123456'),     
+    'admin',                              
+    'Masculino',                          
+    'Sistema',
+))
         else:
             cursor.execute("""
                 UPDATE usuarios
@@ -717,7 +731,11 @@ def init_db():
                 WHERE usuario = 'admin'
             """)
 
-        migrate_old_passwords(cursor)
+        try:
+            migrate_old_passwords(cursor)
+        except Exception:
+             pass
+    
 
         conn.commit()
 
@@ -1107,6 +1125,973 @@ def registro():
 
     return render_template("registro.html")
 
+# =========================================================
+# GESTIÓN DE USUARIOS
+# =========================================================
+
+@app.route("/usuarios")
+def usuarios():
+    if not requiere_admin():
+        return redirect(url_for("index"))
+
+    conn = get_db()
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+    cursor.execute("""
+        SELECT
+            id,
+            usuario,
+            rol,
+            genero,
+            fecha_registro,
+            creado_por
+        FROM usuarios
+        ORDER BY id DESC
+    """)
+
+    usuarios_lista = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM usuarios
+    """)
+    total_usuarios = cursor.fetchone()["total"]
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM usuarios
+        WHERE rol = 'admin'
+    """)
+    total_admins = cursor.fetchone()["total"]
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM usuarios
+        WHERE rol = 'usuario'
+    """)
+    total_normales = cursor.fetchone()["total"]
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM usuarios
+        WHERE genero = 'Hombre'
+    """)
+    total_hombres = cursor.fetchone()["total"]
+
+    cursor.execute("""
+        SELECT COUNT(*) AS total
+        FROM usuarios
+        WHERE genero = 'Mujer'
+    """)
+    total_mujeres = cursor.fetchone()["total"]
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "usuarios.html",
+        usuarios=usuarios_lista,
+        total_usuarios=total_usuarios,
+        total_admins=total_admins,
+        total_normales=total_normales,
+        total_hombres=total_hombres,
+        total_mujeres=total_mujeres,
+    )
+
+
+@app.route(
+    "/editar_usuario/<int:id>",
+    methods=["GET", "POST"]
+)
+def editar_usuario(id):
+    if not requiere_admin():
+        return redirect(url_for("index"))
+
+    conn = get_db()
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+    if request.method == "POST":
+
+        nuevo_usuario = request.form.get(
+            "usuario",
+            ""
+        ).strip()
+
+        nuevo_genero = request.form.get(
+            "genero",
+            ""
+        ).strip()
+
+        nuevo_rol = request.form.get(
+            "rol",
+            ""
+        ).strip()
+
+        nueva_password = request.form.get(
+            "password",
+            ""
+        )
+
+        if not nuevo_usuario:
+            flash(
+                "El nombre de usuario es obligatorio.",
+                "danger"
+            )
+
+            cursor.close()
+            conn.close()
+
+            return redirect(
+                url_for(
+                    "editar_usuario",
+                    id=id
+                )
+            )
+
+        if nuevo_genero not in (
+            "Hombre",
+            "Mujer"
+        ):
+            flash(
+                "Debe seleccionar un género válido.",
+                "danger"
+            )
+
+            cursor.close()
+            conn.close()
+
+            return redirect(
+                url_for(
+                    "editar_usuario",
+                    id=id
+                )
+            )
+
+        if nuevo_rol not in (
+            "admin",
+            "usuario"
+        ):
+            flash(
+                "Debe seleccionar un rol válido.",
+                "danger"
+            )
+
+            cursor.close()
+            conn.close()
+
+            return redirect(
+                url_for(
+                    "editar_usuario",
+                    id=id
+                )
+            )
+
+        cursor.execute("""
+            SELECT
+                id,
+                usuario,
+                rol
+            FROM usuarios
+            WHERE id = %s
+        """, (id,))
+
+        usuario_actual = cursor.fetchone()
+
+        if usuario_actual is None:
+            cursor.close()
+            conn.close()
+
+            flash(
+                "El usuario no existe.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("usuarios")
+            )
+
+        # Evitar duplicados
+        cursor.execute("""
+            SELECT id
+            FROM usuarios
+            WHERE usuario = %s
+              AND id <> %s
+        """, (
+            nuevo_usuario,
+            id
+        ))
+
+        if cursor.fetchone():
+            cursor.close()
+            conn.close()
+
+            flash(
+                "Ese nombre de usuario ya existe.",
+                "danger"
+            )
+
+            return redirect(
+                url_for(
+                    "editar_usuario",
+                    id=id
+                )
+            )
+
+        # No permitir dejar el sistema sin administrador
+        if (
+            usuario_actual["rol"] == "admin"
+            and nuevo_rol != "admin"
+        ):
+            cursor.execute("""
+                SELECT COUNT(*) AS total
+                FROM usuarios
+                WHERE rol = 'admin'
+            """)
+
+            cantidad_admins = cursor.fetchone()["total"]
+
+            if cantidad_admins <= 1:
+                cursor.close()
+                conn.close()
+
+                flash(
+                    "No puedes quitar el último administrador del sistema.",
+                    "danger"
+                )
+
+                return redirect(
+                    url_for(
+                        "editar_usuario",
+                        id=id
+                    )
+                )
+
+        if nueva_password.strip():
+
+            cursor.execute("""
+                UPDATE usuarios
+                SET
+                    usuario = %s,
+                    genero = %s,
+                    rol = %s,
+                    password = %s
+                WHERE id = %s
+            """, (
+                nuevo_usuario,
+                nuevo_genero,
+                nuevo_rol,
+                generate_password_hash(
+                    nueva_password
+                ),
+                id,
+            ))
+
+        else:
+
+            cursor.execute("""
+                UPDATE usuarios
+                SET
+                    usuario = %s,
+                    genero = %s,
+                    rol = %s
+                WHERE id = %s
+            """, (
+                nuevo_usuario,
+                nuevo_genero,
+                nuevo_rol,
+                id,
+            ))
+
+        # Si el usuario modifica su propio usuario
+        if (
+            session.get("usuario")
+            == usuario_actual["usuario"]
+        ):
+            session["usuario"] = nuevo_usuario
+            session["rol"] = nuevo_rol
+            session["genero"] = nuevo_genero
+
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        flash(
+            "Usuario actualizado correctamente.",
+            "success"
+        )
+
+        return redirect(
+            url_for("usuarios")
+        )
+
+    cursor.execute("""
+        SELECT
+            id,
+            usuario,
+            rol,
+            genero,
+            fecha_registro,
+            creado_por
+        FROM usuarios
+        WHERE id = %s
+    """, (id,))
+
+    usuario = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    if usuario is None:
+        flash(
+            "Usuario no encontrado.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("usuarios")
+        )
+
+    return render_template(
+        "editar_usuario.html",
+        usuario=usuario
+    )
+
+
+@app.route(
+    "/eliminar_usuario/<int:id>",
+    methods=["POST"]
+)
+def eliminar_usuario(id):
+    if not requiere_admin():
+        return redirect(url_for("index"))
+
+    conn = get_db()
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+    cursor.execute("""
+        SELECT
+            id,
+            usuario,
+            rol
+        FROM usuarios
+        WHERE id = %s
+    """, (id,))
+
+    usuario = cursor.fetchone()
+
+    if usuario is None:
+        cursor.close()
+        conn.close()
+
+        flash(
+            "El usuario no existe.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("usuarios")
+        )
+
+    # No permitir eliminarse a sí mismo
+    if usuario["usuario"] == session.get("usuario"):
+        cursor.close()
+        conn.close()
+
+        flash(
+            "No puedes eliminar el usuario con el que estás conectado.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("usuarios")
+        )
+
+    # No permitir eliminar el último administrador
+    if usuario["rol"] == "admin":
+
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM usuarios
+            WHERE rol = 'admin'
+        """)
+
+        cantidad_admins = cursor.fetchone()["total"]
+
+        if cantidad_admins <= 1:
+            cursor.close()
+            conn.close()
+
+            flash(
+                "No puedes eliminar el último administrador del sistema.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("usuarios")
+            )
+
+    cursor.execute("""
+        DELETE FROM usuarios
+        WHERE id = %s
+    """, (id,))
+
+    conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    flash(
+        "Usuario eliminado correctamente.",
+        "success"
+    )
+
+    return redirect(
+        url_for("usuarios")
+    )
+
+
+# =========================================================
+# IMPORTACIÓN MASIVA DE PRODUCTOS
+# =========================================================
+
+@app.route(
+    "/importar_productos",
+    methods=["GET", "POST"]
+)
+def importar_productos():
+
+    if not requiere_admin():
+        return redirect(url_for("index"))
+
+    if request.method == "GET":
+        return render_template(
+            "importar_productos.html"
+        )
+
+    archivo = request.files.get("archivo")
+
+    if not archivo or not archivo.filename:
+        flash(
+            "Debe seleccionar un archivo.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_productos")
+        )
+
+    nombre_archivo = archivo.filename.lower()
+
+    try:
+
+        if nombre_archivo.endswith(".xlsx"):
+
+            workbook = load_workbook(
+                archivo,
+                read_only=True,
+                data_only=True
+            )
+
+            hoja = workbook.active
+
+            filas = list(
+                hoja.iter_rows(
+                    values_only=True
+                )
+            )
+
+            workbook.close()
+
+            if not filas:
+                raise ValueError(
+                    "El archivo Excel está vacío."
+                )
+
+            encabezados = [
+                str(valor).strip().lower()
+                if valor is not None
+                else ""
+                for valor in filas[0]
+            ]
+
+            datos = []
+
+            for fila in filas[1:]:
+                datos.append(
+                    dict(
+                        zip(
+                            encabezados,
+                            fila
+                        )
+                    )
+                )
+
+        elif nombre_archivo.endswith(".csv"):
+
+            df = pd.read_csv(
+                archivo,
+                encoding="utf-8-sig"
+            )
+
+            df.columns = [
+                str(columna).strip().lower()
+                for columna in df.columns
+            ]
+
+            datos = df.to_dict(
+                orient="records"
+            )
+
+        else:
+
+            flash(
+                "Formato no válido. Utiliza Excel .xlsx o CSV .csv.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("importar_productos")
+            )
+
+        columnas_requeridas = {
+            "nombre",
+            "categoria",
+            "precio_compra",
+            "precio",
+            "existencias",
+            "proveedor",
+        }
+
+        columnas_actuales = set(
+            datos[0].keys()
+        ) if datos else set()
+
+        faltantes = (
+            columnas_requeridas
+            - columnas_actuales
+        )
+
+        if faltantes:
+            flash(
+                "Faltan columnas obligatorias: "
+                + ", ".join(
+                    sorted(faltantes)
+                ),
+                "danger"
+            )
+
+            return redirect(
+                url_for("importar_productos")
+            )
+
+        if not datos:
+            flash(
+                "No se encontraron productos en el archivo.",
+                "danger"
+            )
+
+            return redirect(
+                url_for("importar_productos")
+            )
+
+        conn = get_db()
+        cursor = conn.cursor(
+            cursor_factory=RealDictCursor
+        )
+
+        productos_validos = []
+        errores = []
+        nombres_archivo = set()
+
+        for numero, fila in enumerate(
+            datos,
+            start=2
+        ):
+
+            nombre = str(
+                fila.get("nombre") or ""
+            ).strip()
+
+            categoria = str(
+                fila.get("categoria") or ""
+            ).strip()
+
+            proveedor_nombre = str(
+                fila.get("proveedor") or ""
+            ).strip()
+
+            try:
+
+                precio_compra = float(
+                    fila.get(
+                        "precio_compra",
+                        0
+                    )
+                )
+
+                precio = float(
+                    fila.get(
+                        "precio",
+                        0
+                    )
+                )
+
+                existencias = int(
+                    float(
+                        fila.get(
+                            "existencias",
+                            0
+                        )
+                    )
+                )
+
+            except (
+                TypeError,
+                ValueError
+            ):
+
+                errores.append(
+                    f"Fila {numero}: "
+                    "precio o existencias inválidos."
+                )
+
+                continue
+
+            if not nombre:
+
+                errores.append(
+                    f"Fila {numero}: "
+                    "el nombre es obligatorio."
+                )
+
+                continue
+
+            if not categoria:
+
+                errores.append(
+                    f"Fila {numero}: "
+                    "la categoría es obligatoria."
+                )
+
+                continue
+
+            if precio < 0:
+
+                errores.append(
+                    f"Fila {numero}: "
+                    "el precio no puede ser negativo."
+                )
+
+                continue
+
+            if precio_compra < 0:
+
+                errores.append(
+                    f"Fila {numero}: "
+                    "el precio de compra no puede ser negativo."
+                )
+
+                continue
+
+            if existencias < 0:
+
+                errores.append(
+                    f"Fila {numero}: "
+                    "las existencias no pueden ser negativas."
+                )
+
+                continue
+
+            nombre_clave = nombre.lower()
+
+            if nombre_clave in nombres_archivo:
+
+                errores.append(
+                    f"Fila {numero}: "
+                    f"producto duplicado en el archivo: {nombre}."
+                )
+
+                continue
+
+            nombres_archivo.add(
+                nombre_clave
+            )
+
+            cursor.execute("""
+                SELECT id
+                FROM productos
+                WHERE LOWER(nombre) = LOWER(%s)
+                LIMIT 1
+            """, (nombre,))
+
+            if cursor.fetchone():
+
+                errores.append(
+                    f"Fila {numero}: "
+                    f"el producto ya existe: {nombre}."
+                )
+
+                continue
+
+            proveedor_id = None
+
+            if proveedor_nombre:
+
+                cursor.execute("""
+                    SELECT id
+                    FROM proveedores
+                    WHERE LOWER(nombre) = LOWER(%s)
+                    LIMIT 1
+                """, (
+                    proveedor_nombre,
+                ))
+
+                proveedor = cursor.fetchone()
+
+                if proveedor is None:
+
+                    errores.append(
+                        f"Fila {numero}: "
+                        f"el proveedor '{proveedor_nombre}' no existe."
+                    )
+
+                    continue
+
+                proveedor_id = proveedor["id"]
+
+            productos_validos.append({
+                "nombre": nombre,
+                "categoria": categoria,
+                "precio_compra": precio_compra,
+                "precio": precio,
+                "existencias": existencias,
+                "proveedor_id": proveedor_id,
+            })
+
+        if errores:
+
+            cursor.close()
+            conn.close()
+
+            mensaje = (
+                f"Importación cancelada. "
+                f"Se encontraron {len(errores)} error(es). "
+                f"No se guardó ningún producto."
+            )
+
+            flash(
+                mensaje,
+                "danger"
+            )
+
+            return render_template(
+                "importar_productos.html",
+                errores=errores[:30],
+                cantidad_validos=len(
+                    productos_validos
+                )
+            )
+
+        if not productos_validos:
+
+            cursor.close()
+            conn.close()
+
+            flash(
+                "No hay productos válidos para importar.",
+                "warning"
+            )
+
+            return redirect(
+                url_for("importar_productos")
+            )
+
+        for producto in productos_validos:
+
+            cursor.execute("""
+                INSERT INTO productos (
+                    nombre,
+                    categoria,
+                    precio,
+                    existencias,
+                    precio_compra,
+                    proveedor_id
+                )
+                VALUES (
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s,
+                    %s
+                )
+                RETURNING id
+            """, (
+                producto["nombre"],
+                producto["categoria"],
+                producto["precio"],
+                producto["existencias"],
+                producto["precio_compra"],
+                producto["proveedor_id"],
+            ))
+
+            producto_id = cursor.fetchone()["id"]
+
+            if producto["existencias"] > 0:
+
+                cursor.execute("""
+                    INSERT INTO movimientos (
+                        fecha,
+                        producto_id,
+                        tipo,
+                        cantidad,
+                        motivo,
+                        factura,
+                        orden_compra,
+                        comentarios,
+                        usuario
+                    )
+                    VALUES (
+                        CURRENT_TIMESTAMP,
+                        %s,
+                        'Entrada',
+                        %s,
+                        'Carga masiva Excel',
+                        '',
+                        '',
+                        'Stock inicial importado desde archivo',
+                        %s
+                    )
+                """, (
+                    producto_id,
+                    producto["existencias"],
+                    session.get(
+                        "usuario",
+                        "admin"
+                    ),
+                ))
+
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        flash(
+            f"Importación completada correctamente. "
+            f"Se agregaron {len(productos_validos)} productos.",
+            "success"
+        )
+
+        return redirect(
+            url_for("index")
+        )
+
+    except Exception as error:
+
+        try:
+            conn.rollback()
+            cursor.close()
+            conn.close()
+        except Exception:
+            pass
+
+        print(
+            "ERROR IMPORTANDO PRODUCTOS:",
+            error
+        )
+
+        flash(
+            "No fue posible procesar el archivo. "
+            "Verifica que tenga el formato correcto.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("importar_productos")
+        )
+
+
+# =========================================================
+# PLANTILLA EXCEL
+# =========================================================
+
+@app.route("/plantilla_productos")
+def plantilla_productos():
+
+    if not requiere_admin():
+        return redirect(url_for("index"))
+
+    workbook = Workbook()
+    hoja = workbook.active
+    hoja.title = "Productos"
+
+    encabezados = [
+        "nombre",
+        "categoria",
+        "precio_compra",
+        "precio",
+        "existencias",
+        "proveedor",
+    ]
+
+    hoja.append(encabezados)
+
+    hoja.append([
+        "Laptop Lenovo",
+        "Computadores",
+        1800000,
+        2400000,
+        10,
+        "",
+    ])
+
+    hoja.append([
+        "Mouse Logitech",
+        "Accesorios",
+        40000,
+        65000,
+        50,
+        "",
+    ])
+
+    hoja.freeze_panes = "A2"
+
+    anchos = {
+        "A": 30,
+        "B": 25,
+        "C": 18,
+        "D": 18,
+        "E": 15,
+        "F": 30,
+    }
+
+    for columna, ancho in anchos.items():
+        hoja.column_dimensions[
+            columna
+        ].width = ancho
+
+    salida = BytesIO()
+
+    workbook.save(salida)
+
+    salida.seek(0)
+
+    return send_file(
+        salida,
+        as_attachment=True,
+        download_name="plantilla_productos.xlsx",
+        mimetype=(
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        ),
+    )
 
 # =========================================================
 # CERRAR SESIÓN
