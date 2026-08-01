@@ -1,4 +1,5 @@
 import os
+import psycopg2
 import pandas as pd
 import matplotlib
 from openpyxl import Workbook, load_workbook
@@ -48,17 +49,23 @@ DATABASE_URL = "postgresql://postgres:Prueba23**@localhost:5432/inventario_db"
 # =========================================================
 
 def get_db():
-    if not DATABASE_URL:
-        raise RuntimeError(
-            "No se encontró la variable DATABASE_URL."
+    database_url = os.environ.get("DATABASE_URL")
+    
+    if database_url:
+        conn = psycopg2.connect(database_url)
+    else:
+        conn = psycopg2.connect(
+            dbname="inventario_db",
+            user="postgres",
+            password="123456",
+            host="localhost",
+            port="5432"
         )
-
-    conn = psycopg2.connect(DATABASE_URL)
-
+        
     cursor = conn.cursor()
     cursor.execute("SET TIME ZONE 'America/Bogota'")
     cursor.close()
-
+    
     return conn
 
 
