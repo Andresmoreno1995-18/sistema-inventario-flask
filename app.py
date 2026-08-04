@@ -41,7 +41,7 @@ app.secret_key = os.environ.get(
     "clave_secreta_inventario_2026",
 )
 
-DATABASE_URL = "postgresql://postgres:Prueba23**@localhost:5432/inventario_db"
+DATABASE_URL = "postgresql://postgres:123456@localhost:5432/inventario_db"
 
 
 # =========================================================
@@ -49,25 +49,21 @@ DATABASE_URL = "postgresql://postgres:Prueba23**@localhost:5432/inventario_db"
 # =========================================================
 
 def get_db():
-    database_url = os.environ.get("DATABASE_URL")
-    
-    if database_url:
-        conn = psycopg2.connect(database_url)
-    else:
-        conn = psycopg2.connect(
-            dbname="inventario_db",
-            user="postgres",
-            password="123456",
-            host="localhost",
-            port="5432"
-        )
-        
-    cursor = conn.cursor()
-    cursor.execute("SET TIME ZONE 'America/Bogota'")
-    cursor.close()
-    
-    return conn
+  # Conectamos directamente de forma local con tus credenciales
+  conn = psycopg2.connect(
+      dbname="inventario_db",
+      user="postgres",
+      password="123456",  # Cambia esto por tu contraseña real de Postgres
+      host="localhost",
+      port="5432",
+  )
 
+  # Configuramos la zona horaria para Colombia
+  cursor = conn.cursor()
+  cursor.execute("SET TIME ZONE 'America/Bogota'")
+  cursor.close()
+
+  return conn
 
 # =========================================================
 # SEGURIDAD DE CONTRASEÑAS
