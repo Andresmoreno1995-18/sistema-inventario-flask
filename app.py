@@ -1134,74 +1134,46 @@ def registro():
 
 @app.route("/usuarios")
 def usuarios():
-    if not requiere_admin():
-        return redirect(url_for("index"))
+  if not requiere_admin():
+    return redirect(url_for("index"))
+  conn = get_db()
+  cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    conn = get_db()
-    cursor = conn.cursor(
-        cursor_factory=RealDictCursor
-    )
+  cursor.execute(
+      "SELECT id, usuario, rol, genero, fecha_registro, creado_por FROM usuarios"
+      " ORDER BY ID DESC"
+  )
+  usuarios_lista = cursor.fetchall()
 
-    cursor.execute("""
-        SELECT
-            id,
-            usuario,
-            rol,
-            genero,
-            fecha_registro,
-            creado_por
-        FROM usuarios
-        ORDER BY id DESC
-    """)
+  cursor.execute("SELECT COUNT(*) AS total FROM usuarios")
+  total_usuarios = cursor.fetchone()["total"]
 
-    usuarios_lista = cursor.fetchall()
+  cursor.execute("SELECT COUNT(*) AS total FROM usuarios WHERE rol = 'admin'")
+  total_admins = cursor.fetchone()["total"]
 
-    cursor.execute("""
-        SELECT COUNT(*) AS total
-        FROM usuarios
-    """)
-    total_usuarios = cursor.fetchone()["total"]
+  cursor.execute(
+      "SELECT COUNT(*) AS total FROM usuarios WHERE rol = 'normal'"
+  )
+  total_normales = cursor.fetchone()["total"]
 
-    cursor.execute("""
-        SELECT COUNT(*) AS total
-        FROM usuarios
-        WHERE rol = 'admin'
-    """)
-    total_admins = cursor.fetchone()["total"]
+  cursor.execute("SELECT COUNT(*) AS total FROM usuarios WHERE genero = 'Hombre'")
+  total_hombres = cursor.fetchone()["total"]
 
-    cursor.execute("""
-        SELECT COUNT(*) AS total
-        FROM usuarios
-        WHERE rol = 'usuario'
-    """)
-    total_normales = cursor.fetchone()["total"]
+  cursor.execute("SELECT COUNT(*) AS total FROM usuarios WHERE genero = 'Mujer'")
+  total_mujeres = cursor.fetchone()["total"]
 
-    cursor.execute("""
-        SELECT COUNT(*) AS total
-        FROM usuarios
-        WHERE genero = 'Hombre'
-    """)
-    total_hombres = cursor.fetchone()["total"]
+  cursor.close()
+  conn.close()
 
-    cursor.execute("""
-        SELECT COUNT(*) AS total
-        FROM usuarios
-        WHERE genero = 'Mujer'
-    """)
-    total_mujeres = cursor.fetchone()["total"]
-
-    cursor.close()
-    conn.close()
-
-    return render_template(
-        "usuarios.html",
-        usuarios=usuarios_lista,
-        total_usuarios=total_usuarios,
-        total_admins=total_admins,
-        total_normales=total_normales,
-        total_hombres=total_hombres,
-        total_mujeres=total_mujeres,
-    )
+  return render_template(
+      "usuarios.html",
+      usuarios=usuarios_lista,
+      total_usuarios=total_usuarios,
+      total_admins=total_admins,
+      total_normales=total_normales,
+      total_hombres=total_hombres,
+      total_mujeres=total_mujeres,
+  )
 
 
 @app.route(
