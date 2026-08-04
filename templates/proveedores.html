@@ -2,47 +2,101 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Proveedores</title>
+    <title>Gestión de Proveedores</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .header-banner {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .table-box {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow-x: auto;
+            max-height: 550px;
+        }
+        .resizable-table th {
+            background-color: #2a5298 !important;
+            color: white !important;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            padding: 14px;
+        }
+        .resizable-table td {
+            padding: 14px;
+            vertical-align: middle;
+        }
+        .resizable-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container mt-5 mb-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Gestión de Proveedores</h2>
-            <a href="{{ url_for('index') }}" class="btn btn-secondary">Volver al Inicio</a>
+<body>
+    <div class="container mt-4 mb-5">
+        <!-- Cabecera Estilizada -->
+        <div class="header-banner d-flex justify-content-between align-items-center">
+            <div>
+                <h2><i class="fas fa-truck-field me-2"></i> Gestión de Proveedores</h2>
+                <p class="mb-0 text-white-50">Administra la información de tus socios comerciales y distribuidores.</p>
+            </div>
+            <a href="{{ url_for('index') }}" class="btn btn-light fw-bold shadow-sm">
+                <i class="fas fa-arrow-left me-1"></i> Volver al Inicio
+            </a>
         </div>
 
         <!-- Formulario para Agregar Proveedor -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h4 class="mb-3">Agregar Nuevo Proveedor</h4>
+        <div class="card mb-4">
+            <div class="card-body p-4">
+                <h5 class="card-title text-primary fw-bold mb-3">
+                    <i class="fas fa-user-plus me-2"></i> Agregar Nuevo Proveedor
+                </h5>
                 <form method="POST">
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <label class="form-label">Nombre</label>
-                            <input type="text" name="nombre" class="form-control" required>
+                            <label class="form-label text-muted fw-semibold">Nombre</label>
+                            <input type="text" name="nombre" class="form-control" placeholder="Ej. Comercializadora SAS" required>
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label class="form-label">Contacto</label>
-                            <input type="text" name="contacto" class="form-control">
+                            <label class="form-label text-muted fw-semibold">Contacto</label>
+                            <input type="text" name="contacto" class="form-control" placeholder="Ej. Juan Pérez">
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label class="form-label">Dirección</label>
-                            <input type="text" name="direccion" class="form-control">
+                            <label class="form-label text-muted fw-semibold">Dirección</label>
+                            <input type="text" name="direccion" class="form-control" placeholder="Ej. Calle 100 # 15-20">
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label class="form-label">Celular</label>
-                            <input type="text" name="numero_celular" class="form-control">
+                            <label class="form-label text-muted fw-semibold">Celular</label>
+                            <input type="text" name="numero_celular" class="form-control" placeholder="Ej. 3001234567">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Guardar Proveedor</button>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">
+                        <i class="fas fa-save me-1"></i> Guardar Proveedor
+                    </button>
                 </form>
             </div>
         </div>
 
-        <!-- Tabla Estilizada de Proveedores -->
-        <div class="table-box shadow-sm rounded bg-white p-3">
-            <table class="resizable-table table">
+        <!-- Tabla Estilizada -->
+        <div class="table-box">
+            <h5 class="text-secondary fw-bold mb-3"><i class="fas fa-list me-2"></i> Lista de Proveedores Registrados</h5>
+            <table class="resizable-table table table-hover align-middle">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -50,21 +104,29 @@
                         <th>Contacto</th>
                         <th>Dirección</th>
                         <th>Celular</th>
-                        <th>Acciones</th>
+                        <th class="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for p in proveedores %}
                     <tr>
-                        <td>{{ p.id }}</td>
-                        <td>{{ p.nombre }}</td>
+                        <td class="fw-bold text-muted">#{{ p.id }}</td>
+                        <td class="fw-semibold text-dark">{{ p.nombre }}</td>
                         <td>{{ p.contacto }}</td>
                         <td>{{ p.direccion }}</td>
                         <td>{{ p.numero_celular }}</td>
-                        <td>
-                            <a href="{{ url_for('editar_proveedor', id=p.id) }}" class="btn btn-sm btn-warning">Editar</a>
-                            <a href="{{ url_for('eliminar_proveedor', id=p.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de eliminar este proveedor?');">Eliminar</a>
+                        <td class="text-center">
+                            <a href="{{ url_for('editar_proveedor', id=p.id) }}" class="btn btn-sm btn-warning text-white fw-bold px-3 me-1">
+                                <i class="fas fa-pen-to-square"></i> Editar
+                            </a>
+                            <a href="{{ url_for('eliminar_proveedor', id=p.id) }}" class="btn btn-sm btn-danger fw-bold px-3" onclick="return confirm('¿Estás seguro de eliminar este proveedor?');">
+                                <i class="fas fa-trash-can"></i> Eliminar
+                            </a>
                         </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">No hay proveedores registrados todavía.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
