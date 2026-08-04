@@ -10,8 +10,9 @@
             background-color: #f4f6f9;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+        /* Cabecera temática en Naranja */
         .header-banner {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: linear-gradient(135deg, #d35400 0%, #f39c12 100%);
             color: white;
             border-radius: 12px;
             padding: 25px 30px;
@@ -31,8 +32,9 @@
             overflow-x: auto;
             max-height: 550px;
         }
+        /* Tabla con cabecera naranja uniforme */
         .resizable-table th {
-            background-color: #2a5298 !important;
+            background-color: #d35400 !important;
             color: white !important;
             text-transform: uppercase;
             font-size: 12px;
@@ -44,19 +46,28 @@
             vertical-align: middle;
         }
         .resizable-table tbody tr:hover {
-            background-color: #f8fafc;
+            background-color: #fcf3cf;
+        }
+        .btn-custom-orange {
+            background-color: #d35400;
+            color: white;
+            border: none;
+        }
+        .btn-custom-orange:hover {
+            background-color: #b94800;
+            color: white;
         }
     </style>
 </head>
 <body>
     <div class="container mt-4 mb-5">
-        <!-- Cabecera Estilizada -->
+        <!-- Cabecera Estilizada en Naranja con Camión -->
         <div class="header-banner d-flex justify-content-between align-items-center">
             <div>
-                <h2><i class="fas fa-truck-field me-2"></i> Gestión de Proveedores</h2>
+                <h2><i class="fas fa-truck me-2"></i> Gestión de Proveedores</h2>
                 <p class="mb-0 text-white-50">Administra la información de tus socios comerciales y distribuidores.</p>
             </div>
-            <a href="{{ url_for('index') }}" class="btn btn-light fw-bold shadow-sm">
+            <a href="{{ url_for('index') }}" class="btn btn-light fw-bold shadow-sm text-dark">
                 <i class="fas fa-arrow-left me-1"></i> Volver al Inicio
             </a>
         </div>
@@ -64,7 +75,7 @@
         <!-- Formulario para Agregar Proveedor -->
         <div class="card mb-4">
             <div class="card-body p-4">
-                <h5 class="card-title text-primary fw-bold mb-3">
+                <h5 class="card-title fw-bold mb-3" style="color: #d35400;">
                     <i class="fas fa-user-plus me-2"></i> Agregar Nuevo Proveedor
                 </h5>
                 <form method="POST">
@@ -86,7 +97,7 @@
                             <input type="text" name="numero_celular" class="form-control" placeholder="Ej. 3001234567">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">
+                    <button type="submit" class="btn btn-custom-orange px-4 fw-bold shadow-sm">
                         <i class="fas fa-save me-1"></i> Guardar Proveedor
                     </button>
                 </form>
@@ -95,7 +106,7 @@
 
         <!-- Tabla Estilizada -->
         <div class="table-box">
-            <h5 class="text-secondary fw-bold mb-3"><i class="fas fa-list me-2"></i> Lista de Proveedores Registrados</h5>
+            <h5 class="fw-bold mb-3" style="color: #d35400;"><i class="fas fa-list me-2"></i> Lista de Proveedores Registrados</h5>
             <table class="resizable-table table table-hover align-middle">
                 <thead>
                     <tr>
