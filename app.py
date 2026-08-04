@@ -2818,6 +2818,69 @@ def proveedores():
         "proveedores.html",
         proveedores=provs,
     )
+@app.route("/editar_proveedor/<int:id>", methods=["GET", "POST"])
+def editar_proveedor(id):
+  if not requiere_login():
+    return redirect(url_for("login"))
+
+  conn = get_db()
+  cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+  if request.method == "POST":
+    if not es_admin():
+      cursor.close()
+      conn.close()
+      flash("No tienes permisos para editar proveedores.", "danger")
+      return redirect(url_for("proveedores"))
+
+    nombre = request.form.get("nombre", "").strip()
+    contacto = request.form.get("contacto", "").strip()
+    direccion = request.form.get("direccion", "").strip()
+    numero_celular = request.form.get("numero_celular", "").strip()
+
+    cursor.execute(
+        """
+        UPDATE proveedores 
+        SET nombre = %s, contacto = %s, direccion = %s, numero_celular = %s 
+        WHERE id = %s
+    """,
+        (nombre, contacto, direccion, numero_celular, id),
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+    flash("Proveedor actualizado correctamente.", "success")
+    return redirect(url_for("proveedores"))
+
+  cursor.execute("SELECT * FROM proveedores WHERE id = %s", (id,))
+  proveedor = cursor.fetchone()
+  cursor.close()
+  conn.close()
+  return render_template("editar_proveedor.html", proveedor=proveedor)
+
+
+@app.route("/eliminar_proveedor/<int:id>", methods=["GET", "POST"])
+def eliminar_proveedor(id):
+  if not requiere_login() or not es_admin():
+    flash("No tienes permisos para realizar esta acción.", "danger")
+    return redirect(url_for("proveedores"))
+
+  conn = get_db()
+  cursor = conn.cursor()
+  try:
+    cursor.execute("DELETE FROM proveedores WHERE id = %s", (id,))
+    conn.commit()
+    flash("Proveedor eliminado correctamente.", "success")
+  except Exception as e:
+    conn.rollback()
+    flash(
+        "No se puede eliminar este proveedor porque tiene registros asociados.",
+        "danger",
+    )
+  finally:
+    cursor.close()
+    conn.close()
+  return redirect(url_for("proveedores"))
 
 
 # =========================================================

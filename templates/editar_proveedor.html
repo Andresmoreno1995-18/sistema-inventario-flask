@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Proveedor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Editar Proveedor</h2>
+            <a href="{{ url_for('proveedores') }}" class="btn btn-secondary">Volver</a>
+        </div>
+        <form method="POST" class="card p-4 shadow-sm">
+            <div class="mb-3">
+                <label class="form-label">1. Nombre</label>
+                <input type="text" name="nombre" class="form-control" value="{{ proveedor.nombre }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">2. Contacto</label>
+                <input type="text" name="contacto" class="form-control" value="{{ proveedor.contacto }}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">3. Dirección</label>
+                <input type="text" name="direccion" class="form-control" value="{{ proveedor.direccion }}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">4. Número de Celular</label>
+                <input type="text" name="numero_celular" class="form-control" value="{{ proveedor.numero_celular }}">
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </form>
+    </div>
+</body>
+</html>
