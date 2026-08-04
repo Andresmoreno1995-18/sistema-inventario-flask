@@ -20,8 +20,6 @@ from flask import (
     send_file,
     jsonify,
 )
-
-import psycopg2
 from psycopg2.extras import RealDictCursor
 
 from werkzeug.security import (
@@ -34,14 +32,10 @@ from werkzeug.security import (
 # CONFIGURACIÓN
 # =========================================================
 
+from config import SECRET_KEY, DATABASE_URL
+
 app = Flask(__name__)
-
-app.secret_key = os.environ.get(
-    "SECRET_KEY",
-    "clave_secreta_inventario_2026",
-)
-
-DATABASE_URL = "postgresql://postgres:Prueba23**@localhost:5432/inventario_db"
+app.secret_key = SECRET_KEY
 
 
 # =========================================================
@@ -49,7 +43,7 @@ DATABASE_URL = "postgresql://postgres:Prueba23**@localhost:5432/inventario_db"
 # =========================================================
 
 def get_db():
-    database_url = os.environ.get("DATABASE_URL")
+    database_url = DATABASE_URL
     
     if database_url:
         conn = psycopg2.connect(database_url)
